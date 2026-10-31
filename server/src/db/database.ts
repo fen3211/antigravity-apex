@@ -68,8 +68,22 @@ export function initDatabase(targetDb: any = db) {
       input_tokens INTEGER DEFAULT 0,
       output_tokens INTEGER DEFAULT 0,
       is_estimate INTEGER DEFAULT 0,
+      provenance TEXT DEFAULT 'DEMO',
       updated_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS session_token_usage (
+      conversation_id TEXT PRIMARY KEY,
+      file_path TEXT NOT NULL,
+      input_tokens INTEGER DEFAULT 0,
+      output_tokens INTEGER DEFAULT 0,
+      cache_read_tokens INTEGER DEFAULT 0,
+      model_tier TEXT NOT NULL DEFAULT 'gemini-3.8-flash-high',
+      step_count INTEGER DEFAULT 0,
+      last_updated TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_session_token_model ON session_token_usage(model_tier);
 
     CREATE TABLE IF NOT EXISTS log_parse_state (
       file_path TEXT PRIMARY KEY,
@@ -90,6 +104,12 @@ export function initDatabase(targetDb: any = db) {
     CREATE INDEX IF NOT EXISTS idx_log_parse_status ON log_parse_state(status);
     CREATE INDEX IF NOT EXISTS idx_log_parse_updated ON log_parse_state(last_parsed_at DESC);
   `);
+
+  // Migration: verify provenance column exists in model_usage
+  const modelUsageCols = targetDb.pragma('table_info(model_usage)') as { name: string }[];
+  if (!modelUsageCols.some(c => c.name === 'provenance')) {
+    targetDb.exec(`ALTER TABLE model_usage ADD COLUMN provenance TEXT DEFAULT 'DEMO';`);
+  }
 
   // Default settings
   const defaultSettings: ControlSettings = {
@@ -117,24 +137,26 @@ export function initDatabase(targetDb: any = db) {
     insertSetting.run('control_settings', JSON.stringify(defaultSettings));
   }
 
-  // Model usage defaults
+  // Model usage defaults with provenance='DEMO', is_estimate=1
   const tiers = [
-    { tier: 'gemini-3.8-flash-high', displayName: 'Gemini 3.8 Flash High (Директор)', runs: 12, completed: 11, esc: 1, inTokens: 145000, outTokens: 18400, isEst: 0 },
-    { tier: 'flash', displayName: 'Gemini Flash (Специалисты)', runs: 28, completed: 26, esc: 2, inTokens: 310000, outTokens: 42100, isEst: 0 },
-    { tier: 'pro', displayName: 'Gemini Pro (Senior Architect)', runs: 3, completed: 3, esc: 0, inTokens: 84000, outTokens: 9200, isEst: 0 },
-    { tier: 'gemini-4-argon-high', displayName: 'Gemini 4 Argon High (Эскалация L4)', runs: 1, completed: 1, esc: 0, inTokens: 45000, outTokens: 6100, isEst: 0 }
+    { tier: 'gemini-3.8-flash-high', displayName: 'Gemini 3.8 Flash High (Директор)', runs: 12, completed: 11, esc: 1, inTokens: 145000, outTokens: 18400, isEst: 1, provenance: 'DEMO' },
+    { tier: 'flash', displayName: 'Gemini Flash (Специалисты)', runs: 28, completed: 26, esc: 2, inTokens: 310000, outTokens: 42100, isEst: 1, provenance: 'DEMO' },
+    { tier: 'pro', displayName: 'Gemini Pro (Senior Architect)', runs: 3, completed: 3, esc: 0, inTokens: 84000, outTokens: 9200, isEst: 1, provenance: 'DEMO' },
+    { tier: 'gemini-4-argon-high', displayName: 'Gemini 4 Argon High (Эскалация L4)', runs: 1, completed: 1, esc: 0, inTokens: 45000, outTokens: 6100, isEst: 1, provenance: 'DEMO' }
   ];
 
   const insertTier = targetDb.prepare(`
     INSERT OR IGNORE INTO model_usage 
-    (tier, display_name, runs_count, tasks_completed, escalation_count, input_tokens, output_tokens, is_estimate, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    (tier, display_name, runs_count, tasks_completed, escalation_count, input_tokens, output_tokens, is_estimate, provenance, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const now = new Date().toISOString();
   for (const t of tiers) {
-    insertTier.run(t.tier, t.displayName, t.runs, t.completed, t.esc, t.inTokens, t.outTokens, t.isEst, now);
+    insertTier.run(t.tier, t.displayName, t.runs, t.completed, t.esc, t.inTokens, t.outTokens, t.isEst, t.provenance, now);
   }
+
+  targetDb.exec(`UPDATE model_usage SET provenance = 'DEMO', is_estimate = 1 WHERE provenance IS NULL;`);
 
   // Seed sample tasks if table is empty
   const countTasks = targetDb.prepare('SELECT count(*) as count FROM tasks').get() as { count: number };

@@ -9,6 +9,12 @@ export interface QuantumReadResult {
   hasMore: boolean;
   linesInQuantum: number;
   newOffset: number;
+  tokenDelta: {
+    input: number;
+    output: number;
+    cacheRead: number;
+  };
+  stepsCount: number;
 }
 
 export function extractConversationId(filePath: string): string {
@@ -131,7 +137,9 @@ export class JsonlStreamReader {
         },
         hasMore: false,
         linesInQuantum: 0,
-        newOffset: currentState.last_offset
+        newOffset: currentState.last_offset,
+        tokenDelta: { input: 0, output: 0, cacheRead: 0 },
+        stepsCount: 0
       };
     }
 
@@ -182,11 +190,19 @@ export class JsonlStreamReader {
         },
         hasMore: false,
         linesInQuantum: 0,
-        newOffset: lastOffset
+        newOffset: lastOffset,
+        tokenDelta: { input: 0, output: 0, cacheRead: 0 },
+        stepsCount: 0
       };
     }
 
     const events: EventPayload[] = [];
+    const tokenDelta = {
+      input: 0,
+      output: 0,
+      cacheRead: 0
+    };
+    let stepsCount = 0;
     let linesInQuantum = 0;
     let committedOffset = lastOffset;
     let readOffset = lastOffset;
@@ -212,7 +228,9 @@ export class JsonlStreamReader {
           },
           hasMore: false,
           linesInQuantum: 0,
-          newOffset: lastOffset
+          newOffset: lastOffset,
+          tokenDelta: { input: 0, output: 0, cacheRead: 0 },
+          stepsCount: 0
         };
       }
 
@@ -262,6 +280,26 @@ export class JsonlStreamReader {
           if (trimmed.length > 0) {
             try {
               const parsed = JSON.parse(trimmed);
+
+              // Extract tokens and step counts from parsed entries
+              let hasTokens = false;
+              if (typeof parsed.input_tokens === 'number') {
+                tokenDelta.input += parsed.input_tokens;
+                hasTokens = true;
+              }
+              if (typeof parsed.output_tokens === 'number') {
+                tokenDelta.output += parsed.output_tokens;
+                hasTokens = true;
+              }
+              if (typeof parsed.cache_read_tokens === 'number') {
+                tokenDelta.cacheRead += parsed.cache_read_tokens;
+                hasTokens = true;
+              }
+
+              if (parsed.type === 'PLANNER_RESPONSE' || parsed.step_index !== undefined || hasTokens) {
+                stepsCount++;
+              }
+
               const extracted = extractEventsFromTranscriptEntry(parsed, convId, lastLineNumber);
               events.push(...extracted);
             } catch (err: any) {
@@ -287,6 +325,25 @@ export class JsonlStreamReader {
           linesInQuantum++;
           committedOffset = stat.size;
           pendingFragment = '';
+
+          let hasTokens = false;
+          if (typeof parsed.input_tokens === 'number') {
+            tokenDelta.input += parsed.input_tokens;
+            hasTokens = true;
+          }
+          if (typeof parsed.output_tokens === 'number') {
+            tokenDelta.output += parsed.output_tokens;
+            hasTokens = true;
+          }
+          if (typeof parsed.cache_read_tokens === 'number') {
+            tokenDelta.cacheRead += parsed.cache_read_tokens;
+            hasTokens = true;
+          }
+
+          if (parsed.type === 'PLANNER_RESPONSE' || parsed.step_index !== undefined || hasTokens) {
+            stepsCount++;
+          }
+
           const extracted = extractEventsFromTranscriptEntry(parsed, convId, lastLineNumber);
           events.push(...extracted);
         } catch {
@@ -324,7 +381,9 @@ export class JsonlStreamReader {
       updatedState,
       hasMore,
       linesInQuantum,
-      newOffset: committedOffset
+      newOffset: committedOffset,
+      tokenDelta,
+      stepsCount
     };
   }
 }

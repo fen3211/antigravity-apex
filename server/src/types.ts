@@ -97,6 +97,8 @@ export interface KnowledgeDoc {
   size: number;
 }
 
+export type DataProvenance = 'LIVE' | 'ESTIMATED' | 'DEMO' | 'UNKNOWN';
+
 export interface ModelMetrics {
   tier: string;
   displayName: string;
@@ -107,6 +109,18 @@ export interface ModelMetrics {
   inputTokens: number;
   outputTokens: number;
   isEstimate: boolean;
+  provenance: DataProvenance;
+}
+
+export interface SessionTokenUsage {
+  conversation_id: string;
+  file_path: string;
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_tokens: number;
+  model_tier: string;
+  step_count: number;
+  last_updated: string;
 }
 
 export interface DirectorStatus {

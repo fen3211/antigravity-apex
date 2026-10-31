@@ -7,6 +7,7 @@ import { CONFIG } from './config.js';
 import { initDatabase, db } from './db/database.js';
 import { apiRouter } from './routes/api.js';
 import { eventBus } from './services/event-bus.js';
+import { analyticsService } from './services/analytics.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -145,6 +146,15 @@ if (isMainModule) {
     console.log(`[AI COMMAND CENTER] Antigravity dir: ${CONFIG.ANTIGRAVITY_DIR}`);
     console.log(`[AI COMMAND CENTER] Knowledge dir:   ${CONFIG.KNOWLEDGE_DIR}`);
     console.log('====================================================');
+
+    // Asynchronously scan historical sessions in the background without blocking event loop
+    analyticsService.syncHistoricalSessionsBackground(CONFIG.BRAIN_DIR).then(res => {
+      if (res.enqueued > 0) {
+        console.log(`[Analytics] Enqueued ${res.enqueued} historical transcripts for background ingestion.`);
+      }
+    }).catch(err => {
+      console.warn('[Analytics] Historical background sync error:', err.message);
+    });
   });
 }
 
