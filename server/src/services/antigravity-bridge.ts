@@ -4,14 +4,77 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import chokidar from 'chokidar';
 import { CONFIG, checkPathExists } from '../config.js';
+import { db } from '../db/database.js';
 import { eventBus } from './event-bus.js';
+import { ingestionQueue } from './ingestion-queue.js';
 import type { AgentInfo, KnowledgeDoc, DirectorStatus } from '../types.js';
 
 const execFileAsync = promisify(execFile);
 
+// Path filter predicate for Antigravity live watcher
+export function createAntigravityPathFilter(brainDir: string, presenceDir: string) {
+  const normBrain = path.resolve(brainDir).replace(/\\/g, '/').toLowerCase();
+  const normPresence = path.resolve(presenceDir).replace(/\\/g, '/').toLowerCase();
+
+  return function isAllowedPath(filePath: string, stats?: fs.Stats): boolean {
+    const norm = path.resolve(filePath).replace(/\\/g, '/');
+    const normLower = norm.toLowerCase();
+    const basename = path.basename(norm);
+
+    // 1. Temporary files, editor swap files, backup files, and junk
+    if (
+      basename.endsWith('.tmp') ||
+      basename.endsWith('.swp') ||
+      basename.endsWith('~') ||
+      basename.endsWith('.bak') ||
+      basename.startsWith('~$') ||
+      basename.endsWith('.crdownload')
+    ) {
+      return false;
+    }
+
+    // 2. Hidden dotfiles, except .system_generated directories and .lock files
+    if (basename.startsWith('.') && !basename.startsWith('.system_generated') && !basename.endsWith('.lock')) {
+      if (!normLower.includes('/.system_generated/')) {
+        return false;
+      }
+    }
+
+    // 3. For directories: allow descent into brain and presence subdirectories
+    const isDir = stats ? stats.isDirectory() : (!path.extname(norm) && !basename.includes('.'));
+    if (isDir) {
+      if (!normLower.startsWith(normBrain) && !normLower.startsWith(normPresence)) {
+        return false;
+      }
+      if (
+        basename === 'node_modules' ||
+        basename === '.git' ||
+        basename === 'dist' ||
+        basename === 'tempmediaStorage' ||
+        basename === 'scratch' ||
+        basename === '.user_uploaded'
+      ) {
+        return false;
+      }
+      return true;
+    }
+
+    // 4. Presence lock files
+    if (basename.endsWith('.lock') && normLower.startsWith(normPresence)) {
+      return true;
+    }
+
+    // 5. Transcript jsonl files strictly within brain directory
+    if (basename === 'transcript.jsonl' && normLower.startsWith(normBrain) && normLower.includes('/.system_generated/logs/')) {
+      return true;
+    }
+
+    return false;
+  };
+}
+
 export class AntigravityBridge {
   private watcher?: any;
-  private lastParsedStepIndex: Map<string, number> = new Map();
   private isAgyCliAvailable: boolean = false;
   private knownAgents: Map<string, AgentInfo> = new Map();
 
@@ -129,10 +192,12 @@ export class AntigravityBridge {
       return;
     }
 
+    const filter = createAntigravityPathFilter(CONFIG.BRAIN_DIR, CONFIG.PRESENCE_DIR);
+
     this.watcher = chokidar.watch(watchTargets, {
-      ignored: /(^|[\/\\])\../, // ignore dotfiles except those specifically targeted
+      ignored: (targetPath: string, stats?: fs.Stats) => !filter(targetPath, stats),
       persistent: true,
-      depth: 4,
+      depth: 6,
       awaitWriteFinish: {
         stabilityThreshold: 300,
         pollInterval: 100
@@ -142,6 +207,13 @@ export class AntigravityBridge {
     this.watcher.on('add', (filePath: string) => this.handleFileChange(filePath, 'add'));
     this.watcher.on('change', (filePath: string) => this.handleFileChange(filePath, 'change'));
     this.watcher.on('unlink', (filePath: string) => this.handleFileChange(filePath, 'unlink'));
+  }
+
+  public async closeWatcher(): Promise<void> {
+    if (this.watcher) {
+      await this.watcher.close();
+      this.watcher = undefined;
+    }
   }
 
   private handleFileChange(filePath: string, action: 'add' | 'change' | 'unlink') {
@@ -165,50 +237,43 @@ export class AntigravityBridge {
 
     // 2. Transcript JSONL files
     if (filePath.endsWith('transcript.jsonl')) {
-      this.parseTranscriptFile(filePath);
-    }
-  }
-
-  // Parse lines in transcript.jsonl incrementally
-  private parseTranscriptFile(filePath: string) {
-    try {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const lines = content.split('\n').filter(l => l.trim().length > 0);
-      const convId = path.basename(path.dirname(path.dirname(path.dirname(filePath))));
-
-      const lastIndex = this.lastParsedStepIndex.get(filePath) || 0;
-      if (lines.length <= lastIndex) return;
-
-      for (let i = lastIndex; i < lines.length; i++) {
+      if (action === 'unlink') {
         try {
-          const entry = JSON.parse(lines[i]);
-          this.processTranscriptEntry(entry, convId);
+          db.prepare('UPDATE log_parse_state SET status = ? WHERE file_path = ?').run('UNLINKED', filePath);
         } catch {
-          // ignore partial JSON
+          // ignore
         }
+      } else {
+        ingestionQueue.enqueue(filePath);
       }
-
-      this.lastParsedStepIndex.set(filePath, lines.length);
-    } catch (err) {
-      console.error('[Bridge] Error reading transcript file:', filePath, err);
     }
   }
 
-  private processTranscriptEntry(entry: any, convId: string) {
+  // Parse lines in transcript.jsonl incrementally via IngestionQueue
+  public async parseTranscriptFile(filePath: string): Promise<void> {
+    await ingestionQueue.processFile(filePath);
+  }
+
+  public processTranscriptEntry(entry: any, convId: string) {
     // Check for tool calls like invoke_subagent or run_command
     if (entry.tool_calls && Array.isArray(entry.tool_calls)) {
       for (const call of entry.tool_calls) {
         if (call.name === 'invoke_subagent') {
           const args = call.args || {};
+          const rawTypeName = typeof args.TypeName === 'string' ? args.TypeName : '';
+          const typeName = rawTypeName.replace(/^"|"$/g, '').trim() || 'subagent';
+          const rawRole = typeof args.Role === 'string' ? args.Role.replace(/^"|"$/g, '').trim() : undefined;
+          const rawModel = typeof args.Model === 'string' ? args.Model.replace(/^"|"$/g, '').trim() : 'inherit';
+
           eventBus.publish({
             type: 'agent.started',
             source: 'LIVE_AGY',
             project_id: convId,
-            agent_id: args.TypeName || 'subagent',
+            agent_id: typeName,
             data: {
-              role: args.Role,
-              typeName: args.TypeName,
-              model: args.Model || 'inherit',
+              role: rawRole || typeName,
+              typeName,
+              model: rawModel,
               promptSnippet: typeof args.Prompt === 'string' ? args.Prompt.slice(0, 150) : '',
               tokens: {
                 input: entry.input_tokens || 0,
@@ -286,23 +351,18 @@ export class AntigravityBridge {
 
   private getTokensFromTranscript(filePath: string): { input: number; output: number; cacheRead: number } {
     try {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const lines = content.split('\n').filter(l => l.trim().length > 0);
-      let input = 0;
-      let output = 0;
-      let cacheRead = 0;
-
-      for (const line of lines) {
-        try {
-          const obj = JSON.parse(line);
-          if (obj.input_tokens) input += obj.input_tokens;
-          if (obj.output_tokens) output += obj.output_tokens;
-          if (obj.cache_read_tokens) cacheRead += obj.cache_read_tokens;
-        } catch {
-          // skip
-        }
+      const convId = path.basename(path.dirname(path.dirname(path.dirname(filePath))));
+      const row = db.prepare(`
+        SELECT 
+          COALESCE(SUM(CAST(json_extract(data, '$.tokens.input') AS INTEGER)), 0) as input,
+          COALESCE(SUM(CAST(json_extract(data, '$.tokens.output') AS INTEGER)), 0) as output
+        FROM events 
+        WHERE project_id = ?
+      `).get(convId) as any;
+      if (row && (row.input > 0 || row.output > 0)) {
+        return { input: row.input, output: row.output, cacheRead: 0 };
       }
-      return { input, output, cacheRead };
+      return { input: 0, output: 0, cacheRead: 0 };
     } catch {
       return { input: 0, output: 0, cacheRead: 0 };
     }

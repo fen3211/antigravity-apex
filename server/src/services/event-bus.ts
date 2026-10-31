@@ -32,6 +32,7 @@ class EventBus {
     };
 
     // Save to SQLite
+    let persisted = false;
     try {
       const stmt = db.prepare(`
         INSERT INTO events (id, timestamp, project_id, task_id, agent_id, type, source, data)
@@ -47,14 +48,23 @@ class EventBus {
         fullEvent.source,
         JSON.stringify(fullEvent.data)
       );
+      persisted = true;
     } catch (err) {
       console.error('[EventBus] Error persisting event to DB:', err);
     }
 
-    // Broadcast to WebSocket clients
+    // Broadcast to WebSocket clients strictly if successfully persisted
+    if (persisted) {
+      this.broadcastRawEvent(fullEvent);
+    }
+
+    return fullEvent;
+  }
+
+  public broadcastRawEvent(event: EventPayload): void {
     const payload = JSON.stringify({
       channel: 'events',
-      event: fullEvent
+      event
     });
 
     for (const client of this.clients) {
@@ -66,8 +76,6 @@ class EventBus {
         }
       }
     }
-
-    return fullEvent;
   }
 
   public getRecentEvents(options: {

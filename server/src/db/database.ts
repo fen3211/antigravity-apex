@@ -7,9 +7,14 @@ export const db = new Database(CONFIG.DB_PATH);
 // Enable WAL mode for high performance concurrent reads
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+db.pragma('busy_timeout = 5000');
 
-export function initDatabase() {
-  db.exec(`
+export function initDatabase(targetDb: any = db) {
+  targetDb.pragma('journal_mode = WAL');
+  targetDb.pragma('foreign_keys = ON');
+  targetDb.pragma('busy_timeout = 5000');
+
+  targetDb.exec(`
     CREATE TABLE IF NOT EXISTS events (
       id TEXT PRIMARY KEY,
       timestamp TEXT NOT NULL,
@@ -24,6 +29,7 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp DESC);
     CREATE INDEX IF NOT EXISTS idx_events_type ON events(type);
     CREATE INDEX IF NOT EXISTS idx_events_agent ON events(agent_id);
+    CREATE INDEX IF NOT EXISTS idx_events_task ON events(task_id);
 
     CREATE TABLE IF NOT EXISTS tasks (
       id TEXT PRIMARY KEY,
@@ -46,6 +52,7 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
     CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
     CREATE INDEX IF NOT EXISTS idx_tasks_updated ON tasks(updated_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_tasks_agent ON tasks(assigned_agent);
 
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
@@ -63,6 +70,25 @@ export function initDatabase() {
       is_estimate INTEGER DEFAULT 0,
       updated_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS log_parse_state (
+      file_path TEXT PRIMARY KEY,
+      conversation_id TEXT NOT NULL,
+      last_offset INTEGER NOT NULL DEFAULT 0,
+      last_line_number INTEGER NOT NULL DEFAULT 0,
+      file_size INTEGER NOT NULL DEFAULT 0,
+      file_inode TEXT,
+      file_birthtime_ms REAL NOT NULL DEFAULT 0,
+      file_mtime_ms REAL NOT NULL DEFAULT 0,
+      last_parsed_at TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'ACTIVE',
+      error_count INTEGER NOT NULL DEFAULT 0,
+      last_error TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_log_parse_conv ON log_parse_state(conversation_id);
+    CREATE INDEX IF NOT EXISTS idx_log_parse_status ON log_parse_state(status);
+    CREATE INDEX IF NOT EXISTS idx_log_parse_updated ON log_parse_state(last_parsed_at DESC);
   `);
 
   // Default settings
@@ -84,8 +110,8 @@ export function initDatabase() {
     ]
   };
 
-  const getSetting = db.prepare('SELECT value FROM settings WHERE key = ?');
-  const insertSetting = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
+  const getSetting = targetDb.prepare('SELECT value FROM settings WHERE key = ?');
+  const insertSetting = targetDb.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
 
   if (!getSetting.get('control_settings')) {
     insertSetting.run('control_settings', JSON.stringify(defaultSettings));
@@ -99,7 +125,7 @@ export function initDatabase() {
     { tier: 'gemini-4-argon-high', displayName: 'Gemini 4 Argon High (Эскалация L4)', runs: 1, completed: 1, esc: 0, inTokens: 45000, outTokens: 6100, isEst: 0 }
   ];
 
-  const insertTier = db.prepare(`
+  const insertTier = targetDb.prepare(`
     INSERT OR IGNORE INTO model_usage 
     (tier, display_name, runs_count, tasks_completed, escalation_count, input_tokens, output_tokens, is_estimate, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -111,14 +137,14 @@ export function initDatabase() {
   }
 
   // Seed sample tasks if table is empty
-  const countTasks = db.prepare('SELECT count(*) as count FROM tasks').get() as { count: number };
+  const countTasks = targetDb.prepare('SELECT count(*) as count FROM tasks').get() as { count: number };
   if (countTasks.count === 0) {
-    seedInitialTasks();
+    seedInitialTasks(targetDb);
   }
 }
 
-function seedInitialTasks() {
-  const insertTask = db.prepare(`
+function seedInitialTasks(targetDb: any = db) {
+  const insertTask = targetDb.prepare(`
     INSERT INTO tasks (
       id, title, description, status, priority, assigned_agent, stage,
       created_at, updated_at, report, retry_count, max_retries, is_demo,
@@ -210,3 +236,6 @@ function seedInitialTasks() {
     });
   }
 }
+
+// Ensure schema is created immediately upon module load
+initDatabase();

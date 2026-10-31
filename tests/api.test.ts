@@ -3,13 +3,18 @@ process.env.NODE_ENV = 'test';
 
 import assert from 'assert';
 import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 import WebSocket from 'ws';
 import { db, initDatabase } from '../server/src/db/database.js';
 import { taskManager } from '../server/src/services/task-manager.js';
 import { eventBus } from '../server/src/services/event-bus.js';
-import { antigravityBridge } from '../server/src/services/antigravity-bridge.js';
+import { antigravityBridge, createAntigravityPathFilter } from '../server/src/services/antigravity-bridge.js';
 import { controlService } from '../server/src/services/control.js';
 import { analyticsService } from '../server/src/services/analytics.js';
+import { jsonlStreamReader, extractConversationId, extractEventsFromTranscriptEntry } from '../server/src/services/jsonl-stream-reader.js';
+import { ingestionQueue } from '../server/src/services/ingestion-queue.js';
 import { CONFIG } from '../server/src/config.js';
 import { app, server } from '../server/src/index.js';
 
@@ -373,18 +378,205 @@ async function runTests() {
     assert(wsHandshake.includes('Connected to AI Command Center Event Stream'), 'Handshake message received');
     console.log('✓ WebSocket security verified: Unauthorized token/origin closed with 1008, valid client handshakes.');
 
+    // 16. Stage 2: Database Pragmas, Indexes & log_parse_state Table Verification
+    console.log('\nTest 16: Stage 2 - Database Pragmas, Indexes & log_parse_state Table...');
+    const busyTimeout = db.pragma('busy_timeout', { simple: true });
+    assert.strictEqual(busyTimeout, 5000, 'busy_timeout pragma must be 5000ms');
+
+    const allTables = (db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as { name: string }[]).map(t => t.name);
+    assert(allTables.includes('log_parse_state'), 'log_parse_state table must exist');
+
+    const allIndexes = (db.prepare("SELECT name FROM sqlite_master WHERE type='index'").all() as { name: string }[]).map(i => i.name);
+    assert(allIndexes.includes('idx_events_task'), 'idx_events_task index must exist');
+    assert(allIndexes.includes('idx_tasks_agent'), 'idx_tasks_agent index must exist');
+    assert(allIndexes.includes('idx_log_parse_conv'), 'idx_log_parse_conv index must exist');
+    assert(allIndexes.includes('idx_log_parse_status'), 'idx_log_parse_status index must exist');
+    assert(allIndexes.includes('idx_log_parse_updated'), 'idx_log_parse_updated index must exist');
+    console.log('✓ Stage 2 Database schema verified: busy_timeout=5000, log_parse_state and all required indexes present.');
+
+    // 17. Stage 2: Antigravity Path Filter Predicate
+    console.log('\nTest 17: Stage 2 - Path Filter Predicate (createAntigravityPathFilter)...');
+    const fakeBrain = 'D:/mock/antigravity/brain';
+    const fakePresence = 'D:/mock/antigravity/presence';
+    const pathFilter = createAntigravityPathFilter(fakeBrain, fakePresence);
+
+    // Valid files:
+    assert.strictEqual(pathFilter(`${fakePresence}/test-session.lock`), true, 'Presence lock file must be allowed');
+    assert.strictEqual(pathFilter(`${fakeBrain}/conv-123/.system_generated/logs/transcript.jsonl`), true, 'Transcript JSONL must be allowed');
+
+    // Temporary & junk files:
+    assert.strictEqual(pathFilter(`${fakeBrain}/conv-123/.system_generated/logs/transcript.jsonl.tmp`), false, 'Temporary .tmp file must be rejected');
+    assert.strictEqual(pathFilter(`${fakeBrain}/conv-123/.system_generated/logs/.transcript.jsonl.swp`), false, 'Vim .swp swap file must be rejected');
+    assert.strictEqual(pathFilter(`${fakeBrain}/conv-123/.system_generated/logs/transcript.jsonl~`), false, 'Backup ~ file must be rejected');
+    assert.strictEqual(pathFilter(`${fakeBrain}/conv-123/notes.md`), false, 'Random markdown in brain must be rejected');
+    console.log('✓ Path filter predicate verified: accurately filters transcript.jsonl and presence locks while rejecting junk.');
+
+    // 18. Stage 2: Deterministic Event ID & TypeName Quote Normalization
+    console.log('\nTest 18: Stage 2 - Deterministic Event ID & TypeName Normalization...');
+    const sampleEntryWithQuotes = {
+      step_index: 3,
+      created_at: '2026-10-31T22:00:00Z',
+      tool_calls: [
+        {
+          name: 'invoke_subagent',
+          args: {
+            TypeName: '"frontend-developer"',
+            Role: 'UI Implementation',
+            Model: 'flash',
+            Prompt: 'Build Liquid Glass Dashboard'
+          }
+        }
+      ]
+    };
+    const testConvId = 'ede4734b-14a2-4f8c-ba01-test';
+    const extracted1 = extractEventsFromTranscriptEntry(sampleEntryWithQuotes, testConvId, 1);
+    assert.strictEqual(extracted1.length, 1);
+    assert.strictEqual(extracted1[0].id, 'evt_ede4734b_s3_t0_agent_started');
+    assert.strictEqual(extracted1[0].agent_id, 'frontend-developer', 'TypeName must have surrounding quotes stripped');
+    assert.strictEqual(extracted1[0].data.typeName, 'frontend-developer');
+
+    const errorEntry = {
+      step_index: 4,
+      created_at: '2026-10-31T22:01:00Z',
+      status: 'ERROR',
+      content: 'Compilation failed on syntax error'
+    };
+    const extractedError = extractEventsFromTranscriptEntry(errorEntry, testConvId, 2);
+    assert.strictEqual(extractedError.length, 1);
+    assert.strictEqual(extractedError[0].id, 'evt_ede4734b_s4_agent_failed');
+    assert.strictEqual(extractedError[0].type, 'agent.failed');
+    console.log('✓ Deterministic Event ID generation & TypeName quote normalization verified.');
+
+    // 19. Stage 2: Streaming JSONL Reader (UTF-8 Multi-byte, Malformed Recovery, Rotation)
+    console.log('\nTest 19: Stage 2 - JsonlStreamReader (Chunking, UTF-8, Malformed Recovery, Rotation)...');
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agy-reader-test-'));
+    const testTranscriptPath = path.join(tempDir, 'transcript.jsonl');
+
+    try {
+      const line1 = JSON.stringify({
+        step_index: 10,
+        tool_calls: [{ name: 'invoke_subagent', args: { TypeName: 'backend-developer' } }]
+      });
+      // Multi-byte UTF-8 Russian Cyrillic & emojis
+      const line2 = JSON.stringify({
+        step_index: 11,
+        content: 'Интеграция многобайтовых символов UTF-8: Привет, мир! 🚀 💎 ⚡'
+      });
+      // Malformed JSON line
+      const malformedLine = '{ malformed json line without closing brackets ...';
+      // Valid line after malformed
+      const line3 = JSON.stringify({
+        step_index: 12,
+        status: 'ERROR',
+        content: 'Recovered after malformed line'
+      });
+
+      fs.writeFileSync(testTranscriptPath, `${line1}\n${line2}\n${malformedLine}\n${line3}\n`, 'utf-8');
+
+      const initialState = {
+        file_path: testTranscriptPath,
+        conversation_id: 'test-session-1',
+        last_offset: 0,
+        last_line_number: 0,
+        file_size: 0,
+        file_inode: null,
+        file_birthtime_ms: 0,
+        file_mtime_ms: 0,
+        last_parsed_at: new Date().toISOString(),
+        status: 'ACTIVE' as const,
+        error_count: 0,
+        last_error: null
+      };
+
+      const quantum1 = await jsonlStreamReader.readQuantum(testTranscriptPath, initialState, 50, 100);
+      assert(quantum1.events.length >= 2, 'Should extract events from valid lines');
+      assert.strictEqual(quantum1.updatedState.error_count, 1, 'Should record exactly 1 error for malformed line');
+      assert(quantum1.updatedState.last_offset > 0, 'Offset must advance past processed lines');
+      assert.strictEqual(quantum1.updatedState.last_line_number, 4, 'Should have processed 4 lines');
+
+      // Rotation / Truncation detection: write shorter file
+      fs.writeFileSync(testTranscriptPath, `${line1}\n`, 'utf-8');
+      const quantumRotated = await jsonlStreamReader.readQuantum(testTranscriptPath, quantum1.updatedState, 50, 100);
+      assert.strictEqual(quantumRotated.updatedState.last_line_number, 1, 'Should reset line number upon truncation');
+      console.log('✓ JsonlStreamReader verified: UTF-8 safety, malformed JSON recovery, and truncation detection.');
+    } finally {
+      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch {}
+    }
+
+    // 20. Stage 2: Ingestion Queue, Deduplication, Post-Commit Broadcast Invariant & Metrics
+    console.log('\nTest 20: Stage 2 - IngestionQueue Deduplication, Atomic Transactions & Metrics...');
+    const tempDir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'agy-queue-test-'));
+    const queueTranscriptPath = path.join(tempDir2, 'transcript.jsonl');
+
+    try {
+      const testStepBase = Math.floor(Date.now() / 1000) % 1000000 + 10000;
+      const lineA = JSON.stringify({
+        step_index: testStepBase,
+        tool_calls: [{ name: 'invoke_subagent', args: { TypeName: 'qa-engineer' } }]
+      });
+      const lineB = JSON.stringify({
+        step_index: testStepBase + 1,
+        status: 'ERROR',
+        content: 'Test failure caught'
+      });
+
+      fs.writeFileSync(queueTranscriptPath, `${lineA}\n${lineB}\n`, 'utf-8');
+
+      let broadcastReceived = 0;
+      const originalBroadcast = eventBus.broadcastRawEvent.bind(eventBus);
+      eventBus.broadcastRawEvent = (evt) => {
+        broadcastReceived++;
+        // Verify that event exists in DB at the exact moment broadcast is called! (Strict Post-commit Invariant)
+        const inDb = db.prepare('SELECT id FROM events WHERE id = ?').get(evt.id);
+        assert(inDb, `Event ${evt.id} must be committed to database BEFORE broadcastRawEvent is invoked!`);
+        originalBroadcast(evt);
+      };
+
+      try {
+        // Process file through queue
+        await ingestionQueue.processFile(queueTranscriptPath);
+        assert.strictEqual(broadcastReceived, 2, 'Should broadcast both events post-commit');
+
+        // Verify DB state in log_parse_state
+        const parseState = ingestionQueue.getState(queueTranscriptPath);
+        assert(parseState, 'Parse state must be saved in SQLite log_parse_state');
+        assert.strictEqual(parseState?.last_line_number, 2);
+        assert.strictEqual(parseState?.status, 'ACTIVE');
+
+        // Verify Deduplication: re-processing the same file produces changes = 0, no duplicate events
+        const initialEventsCount = (db.prepare('SELECT count(*) as c FROM events').get() as any).c;
+        await ingestionQueue.processFile(queueTranscriptPath);
+        const finalEventsCount = (db.prepare('SELECT count(*) as c FROM events').get() as any).c;
+        assert.strictEqual(finalEventsCount, initialEventsCount, 'Deduplication: re-processing should not insert duplicate events');
+
+        // Verify Metrics counters
+        const metrics = ingestionQueue.getMetrics();
+        assert(metrics.totalLinesParsed >= 2, 'Metrics totalLinesParsed should be at least 2');
+        assert(metrics.totalEventsInserted >= 2, 'Metrics totalEventsInserted should be at least 2');
+        assert(metrics.totalBytesRead > 0, 'Metrics totalBytesRead should be positive');
+        console.log(`✓ IngestionQueue verified: Post-commit broadcast invariant satisfied, deduplication verified, metrics: parsed=${metrics.totalLinesParsed}, inserted=${metrics.totalEventsInserted}.`);
+      } finally {
+        eventBus.broadcastRawEvent = originalBroadcast;
+      }
+    } finally {
+      try { fs.rmSync(tempDir2, { recursive: true, force: true }); } catch {}
+    }
+
   } finally {
+    await antigravityBridge.closeWatcher();
     await new Promise<void>((resolve) => {
       server.close(() => resolve());
     });
   }
 
   console.log('\n======================================================');
-  console.log('ALL 15 SYSTEM & SECURITY TESTS PASSED SUCCESSFULLY! ✓');
+  console.log('ALL 20 SYSTEM, SECURITY & INGESTION TESTS PASSED! ✓');
   console.log('======================================================\n');
+  process.exit(0);
 }
 
 runTests().catch(err => {
   console.error('TEST SUITE FAILED:', err);
   process.exit(1);
 });
+

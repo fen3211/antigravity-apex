@@ -138,3 +138,31 @@ export interface ControlSettings {
   autoQualityGates: boolean;
   allowedAgents: string[];
 }
+
+export interface LogParseState {
+  file_path: string;
+  conversation_id: string;
+  last_offset: number;
+  last_line_number: number;
+  file_size: number;
+  file_inode: string | null;
+  file_birthtime_ms: number;
+  file_mtime_ms: number;
+  last_parsed_at: string;
+  status: 'ACTIVE' | 'ROTATED' | 'ERROR' | 'IDLE';
+  error_count: number;
+  last_error: string | null;
+}
+
+export interface IngestionMetrics {
+  totalEnqueued: number;
+  totalProcessed: number;
+  totalLinesParsed: number;
+  totalEventsInserted: number;
+  totalBytesRead: number;
+  totalErrors: number;
+  busyRetries: number;
+  queueLength: number;
+  activeWorkers: number;
+  lastProcessedAt: string | null;
+}

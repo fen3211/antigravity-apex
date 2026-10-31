@@ -10,7 +10,8 @@
     "client": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,magenta\" \"npm run server\" \"npm run client\"",
-    "test": "tsx tests/api.test.ts",
+    "test": "tsx tests/api.test.ts && tsx tests/ingestion.test.ts",
+    "test:ingestion": "tsx tests/ingestion.test.ts",
     "start": "node server/dist/index.js"
   },
   "keywords": [
