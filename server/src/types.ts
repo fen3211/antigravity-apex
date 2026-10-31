@@ -153,6 +153,24 @@ export interface ControlSettings {
   allowedAgents: string[];
 }
 
+export type ProcessState = 'QUEUED' | 'STARTING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'TIMEOUT';
+
+export interface ManagedProcess {
+  taskId: string;
+  pid: number | null;
+  agentName: string;
+  prompt: string;
+  state: ProcessState;
+  queuedAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  exitCode: number | null;
+  stdout: string;
+  stderr: string;
+  error: string | null;
+}
+
+
 export interface LogParseState {
   file_path: string;
   conversation_id: string;

@@ -1,7 +1,9 @@
 import { db } from '../db/database.js';
 import { antigravityBridge } from './antigravity-bridge.js';
 import { eventBus } from './event-bus.js';
-import type { ControlSettings } from '../types.js';
+import { taskManager } from './task-manager.js';
+import type { ControlSettings, TaskItem } from '../types.js';
+
 
 export class ControlService {
   public getSettings(): ControlSettings {
@@ -147,6 +149,58 @@ ${params.targetQuestion}
       };
     }
   }
+
+  /**
+   * Closed-loop de-escalation: routes an escalated task from Argon_L4 back to Specialist tier
+   * with the synthesized architectural verdict and directive.
+   */
+  public resolveArgonVerdict(params: {
+    taskId: string;
+    verdict: string;
+    targetSpecialist: string;
+  }): TaskItem {
+    const task = taskManager.getTaskById(params.taskId);
+    if (!task) {
+      throw new Error(`Task ${params.taskId} not found`);
+    }
+
+    const updatedSummary = task.resultSummary
+      ? `${task.resultSummary}\n\n[Argon L4 Verdict]: ${params.verdict}`
+      : `[Argon L4 Verdict]: ${params.verdict}`;
+
+    const updatedDescription = task.description
+      ? `${task.description}\n\n[Argon Resolution Directive]: ${params.verdict}`
+      : `[Argon Resolution Directive]: ${params.verdict}`;
+
+    const updated = taskManager.updateTask(params.taskId, {
+      stage: 'Specialist',
+      assignedAgent: params.targetSpecialist,
+      status: 'in_progress',
+      description: updatedDescription,
+      resultSummary: updatedSummary,
+      errorLog: undefined
+    });
+
+    if (!updated) {
+      throw new Error(`Failed to update task ${params.taskId}`);
+    }
+
+    eventBus.publish({
+      type: 'escalation.resolved',
+      source: 'INTERNAL_BRIDGE',
+      task_id: task.id,
+      agent_id: params.targetSpecialist,
+      data: {
+        previousStage: task.stage,
+        resolvedStage: 'Specialist',
+        verdict: params.verdict,
+        assignedAgent: params.targetSpecialist
+      }
+    });
+
+    return updated;
+  }
 }
 
 export const controlService = new ControlService();
+

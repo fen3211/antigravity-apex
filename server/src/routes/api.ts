@@ -7,8 +7,10 @@ import { taskManager } from '../services/task-manager.js';
 import { eventBus } from '../services/event-bus.js';
 import { analyticsService } from '../services/analytics.js';
 import { controlService } from '../services/control.js';
+import { processSupervisor } from '../services/process-supervisor.js';
 
 export const apiRouter = Router();
+
 
 // Helper to determine if incoming request is from local loopback
 function isLocalRequest(req: Request): boolean {
@@ -209,6 +211,55 @@ apiRouter.post('/tasks/:id/report', requireAuth, (req: Request, res: Response) =
   }
 });
 
+const executeTaskSchema = z.object({
+  prompt: z.string().optional(),
+  agentName: z.string().optional(),
+  timeoutMs: z.number().int().positive().optional()
+});
+
+apiRouter.post('/tasks/:id/execute', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const taskId = String(req.params.id);
+    const parsed = executeTaskSchema.parse(req.body || {});
+    const task = taskManager.getTaskById(taskId);
+    const prompt = parsed.prompt || task?.description || task?.title || `Execute task ${taskId}`;
+    const agentName = parsed.agentName || task?.assignedAgent || 'director';
+    const process = await processSupervisor.spawnTask(taskId, prompt, agentName, parsed.timeoutMs);
+    res.json({ success: true, process });
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+apiRouter.post('/tasks/:id/cancel', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const taskId = String(req.params.id);
+    const success = await processSupervisor.cancelTask(taskId);
+    res.json({ success, taskId });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+apiRouter.get('/tasks/:id/process-status', (req: Request, res: Response) => {
+  const taskId = String(req.params.id);
+  const proc = processSupervisor.getProcess(taskId);
+  if (!proc) {
+    return res.status(404).json({ error: 'Process not found for task' });
+  }
+  res.json(proc);
+});
+
+apiRouter.get('/processes', (req: Request, res: Response) => {
+  try {
+    const processes = processSupervisor.getAllProcesses();
+    res.json(processes);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // ==========================================
 // 4. Events
 // ==========================================
@@ -377,6 +428,23 @@ apiRouter.post('/control/run-prompt', requireAuth, async (req: Request, res: Res
     res.status(400).json({ error: err.errors || err.message });
   }
 });
+
+const argonVerdictSchema = z.object({
+  taskId: z.string().min(1, 'taskId is required'),
+  verdict: z.string().min(1, 'verdict is required'),
+  targetSpecialist: z.string().min(1, 'targetSpecialist is required')
+});
+
+apiRouter.post('/control/argon-verdict', requireAuth, (req: Request, res: Response) => {
+  try {
+    const parsed = argonVerdictSchema.parse(req.body);
+    const task = controlService.resolveArgonVerdict(parsed);
+    res.json({ success: true, task });
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
 
 // ==========================================
 // 8. Antigravity CLI Live Tools

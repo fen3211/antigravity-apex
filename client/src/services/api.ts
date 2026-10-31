@@ -6,8 +6,11 @@ import type {
   ModelMetrics,
   KnowledgeDoc,
   ControlSettings,
-  SubagentReport
+  SubagentReport,
+  ManagedProcess,
+  ProcessState
 } from '../types.js';
+
 
 const API_BASE = 'http://localhost:3001/api';
 const WS_BASE = 'ws://localhost:3001/ws';
@@ -112,6 +115,19 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ report })
     }),
+  executeTask: (id: string, prompt?: string, agentName?: string, timeoutMs?: number) =>
+    fetchJson<{ success: boolean; process: ManagedProcess }>(`/tasks/${id}/execute`, {
+      method: 'POST',
+      body: JSON.stringify({ prompt, agentName, timeoutMs })
+    }),
+  cancelTask: (id: string) =>
+    fetchJson<{ success: boolean; taskId: string }>(`/tasks/${id}/cancel`, {
+      method: 'POST'
+    }),
+  getTaskProcessStatus: (id: string) =>
+    fetchJson<ManagedProcess>(`/tasks/${id}/process-status`),
+  getAllProcesses: () =>
+    fetchJson<ManagedProcess[]>('/processes'),
 
   // Events
   getEvents: (params?: { limit?: number; type?: string }) => {
@@ -166,11 +182,17 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data)
     }),
+  submitArgonVerdict: (data: { taskId: string; verdict: string; targetSpecialist: string }) =>
+    fetchJson<{ success: boolean; task: TaskItem }>('/control/argon-verdict', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
   runPrompt: (prompt: string, agentName: string, confirm: boolean) =>
     fetchJson<{ success: boolean; output: string; error?: string }>('/control/run-prompt', {
       method: 'POST',
       body: JSON.stringify({ prompt, agentName, confirm })
     }),
+
 
   // CLI Tools
   getModels: () => fetchJson<{ id: string; name: string }[]>('/models'),
