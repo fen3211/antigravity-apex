@@ -9,6 +9,7 @@ import {
   FileCode,
   Copy
 } from 'lucide-react';
+import { useToast } from './Toast.js';
 import type { ControlSettings } from '../types.js';
 
 interface ControlCenterProps {
@@ -58,6 +59,8 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
   const [cliRunning, setCliRunning] = useState(false);
   const [cliOutput, setCliOutput] = useState<{ success: boolean; text: string } | null>(null);
 
+  const toast = useToast();
+
   React.useEffect(() => {
     if (settings) {
       setMaxAgents(settings.maxConcurrentAgents);
@@ -76,14 +79,17 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
     setIsSavingSettings(false);
     if (ok) {
       setSettingsSaved(true);
+      toast.success('Настройки оркестратора успешно сохранены', 'Настройки обновлены');
       setTimeout(() => setSettingsSaved(false), 3000);
+    } else {
+      toast.error('Не удалось сохранить настройки', 'Ошибка сохранения');
     }
   };
 
   const handleGenerateArgon = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!argonIssue || !argonHypothesis) {
-      alert('Пожалуйста, заполните суть проблемы и рабочую гипотезу.');
+      toast.warning('Пожалуйста, заполните суть проблемы и рабочую гипотезу.', 'Заполните поля');
       return;
     }
     setIsGeneratingArgon(true);
@@ -97,8 +103,9 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
         targetQuestion: argonQuestion || 'Предоставьте архитектурный диагноз и стратегию устранения проблемы.'
       });
       setGeneratedPack(res.promptPack);
+      toast.success(`Пакет ${res.filename} готов для передачи в Gemini 4 Argon`, 'Пакет эскалации сформирован');
     } catch (err: any) {
-      alert(err.message || 'Ошибка формирования пакета эскалации');
+      toast.error(err.message || 'Ошибка формирования пакета эскалации', 'Сбой формирования');
     } finally {
       setIsGeneratingArgon(false);
     }
@@ -106,11 +113,11 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
 
   const handleRunCLI = async () => {
     if (!cliConfirmed) {
-      alert('Перед запуском через CLI agy требуется явное подтверждение оператора.');
+      toast.warning('Перед запуском через CLI agy требуется явное подтверждение оператора.', 'Требуется подтверждение');
       return;
     }
     if (!cliPrompt.trim()) {
-      alert('Промпт не может быть пустым.');
+      toast.warning('Промпт не может быть пустым.', 'Пустой промпт');
       return;
     }
 
@@ -122,11 +129,17 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
         success: res.success,
         text: res.success ? res.output : (res.error || 'Выполнение не удалось')
       });
+      if (res.success) {
+        toast.success(`Команда выполнена агентом @${cliAgent}`, 'CLI выполнен');
+      } else {
+        toast.error(res.error || 'Команда завершилась с ошибкой', 'Ошибка CLI');
+      }
     } catch (err: any) {
       setCliOutput({
         success: false,
         text: err.message || 'Сбой вызова CLI процесса'
       });
+      toast.error(err.message || 'Сбой вызова CLI процесса', 'Сбой CLI');
     } finally {
       setCliRunning(false);
     }
@@ -136,6 +149,7 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
     if (!generatedPack) return;
     navigator.clipboard.writeText(generatedPack);
     setCopiedPack(true);
+    toast.info('Пакет эскалации скопирован в буфер обмена', 'Скопировано');
     setTimeout(() => setCopiedPack(false), 2000);
   };
 

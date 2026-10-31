@@ -29,6 +29,15 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, onSelectTask 
       gateRequirement: 'Автономное решение о триаже и изоляция контекста.'
     },
     {
+      id: 'Solo',
+      title: 'Соло-выполнение',
+      tier: 'Уровень 0 (Автономно)',
+      model: 'Gemini 3.8 Flash High',
+      role: 'Быстрое решение простых задач (<15 строк, утилиты, опечатки)',
+      description: 'Выполняется Директором напрямую без создания субагентов для максимальной экономии ресурсов и времени.',
+      gateRequirement: 'Прямая проверка силами Директора.'
+    },
+    {
       id: 'Specialist',
       title: 'Выполнение субагентами',
       tier: 'Специалисты',
@@ -102,7 +111,7 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, onSelectTask 
             <span>Интерактивная карта процессов Director</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Пайплайн качества: Триаж Директора → Субагенты → Шлюз L1 (Самопроверка) → Шлюз L2 (Аудит) → Финальное утверждение
+            Пайплайн качества: Триаж → Соло / Субагенты → Шлюз L1 (Самопроверка) → Шлюз L2 (Аудит) → Финальное утверждение
           </p>
         </div>
 
@@ -123,9 +132,9 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, onSelectTask 
       </div>
 
       {/* Основной холст визуализации */}
-      <div className="glass-panel p-6 space-y-8 overflow-x-auto">
-        {/* Линейный основной поток */}
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 min-w-[800px]">
+      <div className="glass-panel p-4 sm:p-6 space-y-8">
+        {/* Адаптивный линейный основной поток (вертикально на мобильных, горизонтально на десктопе) */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {stages.map((stage, idx) => {
             const stageTasks = getTasksForStage(stage.id);
             const isSelected = selectedStage === stage.id;
@@ -136,23 +145,23 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, onSelectTask 
                 {/* Блок узла */}
                 <div
                   onClick={() => setSelectedStage(stage.id)}
-                  className={`flex-1 p-4 rounded-2xl cursor-pointer transition-all relative border ${
+                  className={`flex-1 p-3.5 sm:p-4 rounded-2xl cursor-pointer transition-all relative border ${
                     isSelected
-                      ? 'bg-director-blue/15 border-director-cyan shadow-glass-active'
+                      ? 'bg-director-blue/15 border-director-cyan shadow-glass-active ring-1 ring-director-cyan/30'
                       : hasActiveTasks
                       ? 'bg-surface-card border-director-blue/40 hover:border-white/20'
                       : 'bg-surface-card border-white/5 hover:border-white/15'
                   }`}
                 >
-                  <div className="flex items-center justify-between text-[10px] font-mono mb-2">
+                  <div className="flex items-center justify-between text-[10px] font-mono mb-1.5">
                     <span className="text-director-cyan font-semibold">{stage.tier}</span>
-                    <span className="text-slate-400">{stage.model}</span>
+                    <span className="text-slate-400 truncate max-w-[120px]">{stage.model}</span>
                   </div>
 
                   <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
                     {stage.title}
                     {hasActiveTasks && (
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
                     )}
                   </h3>
 
@@ -172,9 +181,9 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, onSelectTask 
 
                 {/* Стрелка-коннектор */}
                 {idx < stages.length - 1 && (
-                  <div className="flex items-center justify-center shrink-0 text-slate-600">
-                    <ArrowRight className="w-5 h-5 hidden lg:block" />
-                    <ArrowDown className="w-5 h-5 lg:hidden" />
+                  <div className="flex items-center justify-center shrink-0 text-slate-600 py-0.5 lg:py-0">
+                    <ArrowRight className="w-4 h-4 hidden lg:block" />
+                    <ArrowDown className="w-4 h-4 lg:hidden" />
                   </div>
                 )}
               </React.Fragment>
@@ -204,8 +213,8 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, onSelectTask 
                   className={`p-4 rounded-2xl cursor-pointer transition-all border ${
                     isSelected
                       ? isArgon
-                        ? 'bg-pink-500/15 border-pink-400 shadow-glow-argon'
-                        : 'bg-purple-500/15 border-purple-400'
+                        ? 'bg-pink-500/15 border-pink-400 shadow-glow-argon ring-1 ring-pink-400/40'
+                        : 'bg-purple-500/15 border-purple-400 ring-1 ring-purple-400/40'
                       : isArgon
                       ? 'bg-surface-card border-pink-500/20 hover:border-pink-500/40'
                       : 'bg-surface-card border-purple-500/20 hover:border-purple-500/40'
@@ -246,7 +255,7 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, onSelectTask 
 
       {/* Панель деталей выбранного этапа */}
       <div className="glass-panel p-5 space-y-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono text-director-cyan">{activeStageInfo.tier}</span>

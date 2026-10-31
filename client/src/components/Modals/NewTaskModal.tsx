@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Sparkles, CheckSquare } from 'lucide-react';
+import { useToast } from '../Toast.js';
 import type { TaskItem } from '../../types.js';
 
 interface NewTaskModalProps {
@@ -13,6 +14,7 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
   onClose,
   onCreate
 }) => {
+  const toast = useToast();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [assignedAgent, setAssignedAgent] = useState('director');
@@ -39,9 +41,10 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
       });
       setTitle('');
       setDescription('');
+      toast.success(`Задача "${title.trim()}" успешно поставлена в очередь`, 'Задача создана');
       onClose();
     } catch (err: any) {
-      alert(err.message || 'Ошибка создания задачи');
+      toast.error(err.message || 'Ошибка создания задачи', 'Сбой создания задачи');
     } finally {
       setIsSubmitting(false);
     }

@@ -6,16 +6,17 @@ import {
   Info,
   Database
 } from 'lucide-react';
-import type { ModelMetrics } from '../types.js';
+import type { ModelMetrics, DataProvenance } from '../types.js';
 
 interface ModelAnalyticsProps {
   analytics: {
     tiers: ModelMetrics[];
-    totalTokens: { input: number; output: number; cacheRead: number };
+    totalTokens: { input: number; output: number; cacheRead: number; provenance?: DataProvenance };
     totalRuns: number;
     overallSuccessRate: number;
     escalationRate: number;
     verifiedRealSessionsCount: number;
+    provenance?: DataProvenance;
   } | null;
 }
 
@@ -27,6 +28,23 @@ export const ModelAnalytics: React.FC<ModelAnalyticsProps> = ({ analytics }) => 
       </div>
     );
   }
+
+  const renderProvenanceBadge = (provenance?: string, isEstimate?: boolean) => {
+    const norm = (provenance || (isEstimate ? 'ESTIMATED' : 'LIVE')).toUpperCase();
+    if (norm === 'LIVE') {
+      return <span className="badge-live text-[10px] py-0.5 px-2 font-mono">LIVE</span>;
+    }
+    if (norm === 'DEMO') {
+      return <span className="badge-demo text-[10px] py-0.5 px-2 font-mono">DEMO</span>;
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/20">
+        ESTIMATED
+      </span>
+    );
+  };
+
+  const overallProvenance = analytics.totalTokens.provenance || analytics.provenance || 'DEMO';
 
   return (
     <div className="space-y-6">
@@ -58,7 +76,7 @@ export const ModelAnalytics: React.FC<ModelAnalyticsProps> = ({ analytics }) => 
             <span className="font-semibold text-white">Политика достоверности данных:</span>
             <p className="text-slate-400 leading-relaxed">
               Токены и временные метки извлекаются напрямую из активных и архивных логов <code className="text-director-cyan">transcript.jsonl</code> каталога Antigravity. 
-              Antigravity не транслирует облачный долларовый баланс через локальный CLI, поэтому глобальные квоты аккаунта помечены бейджем <span className="text-amber-400 font-mono">ОЦЕНКА</span>.
+              Метрики классифицируются по источникам: <span className="badge-live text-[10px] py-0 px-1.5 font-mono">LIVE</span> (реальные сессии), <span className="badge-demo text-[10px] py-0 px-1.5 font-mono">DEMO</span> (стендовые данные) и <span className="text-sky-400 font-mono text-[10px]">ESTIMATED</span> (расчётные оценки).
             </p>
           </div>
         </div>
@@ -77,22 +95,28 @@ export const ModelAnalytics: React.FC<ModelAnalyticsProps> = ({ analytics }) => 
         </div>
 
         <div className="glass-card p-5">
-          <span className="text-xs text-slate-400">Подтверждённые входные токены</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400">Входные токены</span>
+            {renderProvenanceBadge(overallProvenance)}
+          </div>
           <div className="mt-2 text-2xl font-bold font-mono text-director-cyan">
             {(analytics.totalTokens.input / 1000).toFixed(1)}k
           </div>
-          <span className="text-[11px] text-emerald-400 mt-1 block font-mono">
-            LIVE из transcript.jsonl
+          <span className="text-[11px] text-slate-500 mt-1 block font-mono">
+            {overallProvenance === 'LIVE' ? 'Подтверждено transcript.jsonl' : 'Сводный пул токенов'}
           </span>
         </div>
 
         <div className="glass-card p-5">
-          <span className="text-xs text-slate-400">Подтверждённые выходные токены</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400">Выходные токены</span>
+            {renderProvenanceBadge(overallProvenance)}
+          </div>
           <div className="mt-2 text-2xl font-bold font-mono text-director-blue">
             {(analytics.totalTokens.output / 1000).toFixed(1)}k
           </div>
-          <span className="text-[11px] text-emerald-400 mt-1 block font-mono">
-            LIVE из transcript.jsonl
+          <span className="text-[11px] text-slate-500 mt-1 block font-mono">
+            {overallProvenance === 'LIVE' ? 'Подтверждено transcript.jsonl' : 'Сводный пул токенов'}
           </span>
         </div>
 
@@ -149,11 +173,9 @@ export const ModelAnalytics: React.FC<ModelAnalyticsProps> = ({ analytics }) => 
                   </div>
                 </div>
 
-                {tier.isEstimate ? (
-                  <span className="badge-demo text-[10px] py-0 px-2 font-mono">ОЦЕНКА</span>
-                ) : (
-                  <span className="badge-live text-[10px] py-0 px-2 font-mono">ПОДТВЕРЖДЕНО LIVE</span>
-                )}
+                <div>
+                  {renderProvenanceBadge(tier.provenance, tier.isEstimate)}
+                </div>
               </div>
 
               {/* Панель цифр */}

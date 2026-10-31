@@ -8,7 +8,7 @@ import type {
   ControlSettings,
   SubagentReport,
   ManagedProcess,
-  ProcessState
+  DataProvenance
 } from '../types.js';
 
 
@@ -146,11 +146,12 @@ export const api = {
   getAnalytics: () =>
     fetchJson<{
       tiers: ModelMetrics[];
-      totalTokens: { input: number; output: number; cacheRead: number };
+      totalTokens: { input: number; output: number; cacheRead: number; provenance?: DataProvenance };
       totalRuns: number;
       overallSuccessRate: number;
       escalationRate: number;
       verifiedRealSessionsCount: number;
+      provenance?: DataProvenance;
     }>('/analytics'),
 
   // Knowledge Base

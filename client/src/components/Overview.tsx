@@ -13,7 +13,8 @@ import type {
   AgentInfo, 
   TaskItem, 
   EventPayload, 
-  ModelMetrics 
+  ModelMetrics,
+  DataProvenance
 } from '../types.js';
 import type { NavTab } from './Sidebar.js';
 
@@ -24,11 +25,12 @@ interface OverviewProps {
   events: EventPayload[];
   analytics: {
     tiers: ModelMetrics[];
-    totalTokens: { input: number; output: number; cacheRead: number };
+    totalTokens: { input: number; output: number; cacheRead: number; provenance?: DataProvenance };
     totalRuns: number;
     overallSuccessRate: number;
     escalationRate: number;
     verifiedRealSessionsCount: number;
+    provenance?: DataProvenance;
   } | null;
   onNavigate: (tab: NavTab) => void;
   onOpenNewTask: () => void;
@@ -215,16 +217,27 @@ export const Overview: React.FC<OverviewProps> = ({
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-400">Шлюзы качества</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
-              <CheckCircle2 className="w-4 h-4" />
+            <div className="flex items-center gap-2">
+              {analytics?.provenance === 'LIVE' || (analytics?.verifiedRealSessionsCount ?? 0) > 0 ? (
+                <span className="badge-live text-[10px] py-0 px-1.5 font-mono">LIVE</span>
+              ) : (
+                <span className="badge-demo text-[10px] py-0 px-1.5 font-mono">DEMO</span>
+              )}
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-emerald-400">
-              {analytics?.overallSuccessRate || 98}%
+              {analytics !== null
+                ? `${analytics.overallSuccessRate}%`
+                : (tasks.length > 0
+                    ? `${Math.round((completedTasks.length / tasks.length) * 100)}%`
+                    : '100%')}
             </span>
             <span className="text-xs text-slate-400 font-mono">
-              ({analytics?.totalRuns || tasks.length} запусков)
+              ({analytics?.totalRuns ?? tasks.length} запусков)
             </span>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-slate-400 pt-3 border-t border-white/[0.06]">

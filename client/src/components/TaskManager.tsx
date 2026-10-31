@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   CheckSquare, 
   Plus, 
@@ -6,9 +6,15 @@ import {
   FileText, 
   AlertTriangle, 
   Flame, 
-  Search
+  Search,
+  Play,
+  Square,
+  Activity
 } from 'lucide-react';
-import type { TaskItem } from '../types.js';
+import { api, eventStream } from '../services/api.js';
+import { useToast } from './Toast.js';
+import { ArgonVerdictModal } from './Modals/ArgonVerdictModal.js';
+import type { TaskItem, ManagedProcess } from '../types.js';
 
 interface TaskManagerProps {
   tasks: TaskItem[];
@@ -16,6 +22,7 @@ interface TaskManagerProps {
   onRestartTask: (taskId: string) => void;
   onViewReport: (task: TaskItem) => void;
   onSelectTask: (task: TaskItem) => void;
+  onRefreshTasks?: () => void;
 }
 
 export const TaskManager: React.FC<TaskManagerProps> = ({
@@ -23,10 +30,92 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
   onOpenNewTask,
   onRestartTask,
   onViewReport,
-  onSelectTask
+  onSelectTask,
+  onRefreshTasks
 }) => {
+  const toast = useToast();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [processes, setProcesses] = useState<Record<string, ManagedProcess>>({});
+  const [executingTaskIds, setExecutingTaskIds] = useState<Set<string>>(new Set());
+  const [cancellingTaskIds, setCancellingTaskIds] = useState<Set<string>>(new Set());
+  const [argonModalTask, setArgonModalTask] = useState<TaskItem | null>(null);
+
+  // Загрузка активных процессов супервизора
+  const refreshProcesses = useCallback(async () => {
+    try {
+      const list = await api.getAllProcesses();
+      const map: Record<string, ManagedProcess> = {};
+      list.forEach(p => {
+        map[p.taskId] = p;
+      });
+      setProcesses(map);
+    } catch {
+      // Игнорируем сетевые сбои
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshProcesses();
+    const interval = setInterval(refreshProcesses, 3000);
+
+    const unsubscribe = eventStream.subscribe((event) => {
+      if (event.type.startsWith('task.') || event.type.startsWith('escalation.')) {
+        refreshProcesses();
+      }
+    });
+
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+    };
+  }, [refreshProcesses]);
+
+  // Запуск задачи в CLI через супервизор
+  const handleExecuteInCli = async (task: TaskItem) => {
+    setExecutingTaskIds(prev => new Set(prev).add(task.id));
+    try {
+      const res = await api.executeTask(task.id);
+      if (res.success) {
+        toast.success(`Задача "${task.title}" запущена в CLI супервизоре`, 'CLI запущен');
+        await refreshProcesses();
+        onRefreshTasks?.();
+      } else {
+        toast.error('Не удалось запустить процесс в CLI супервизоре', 'Ошибка запуска');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Ошибка выполнения задачи в CLI', 'Сбой CLI');
+    } finally {
+      setExecutingTaskIds(prev => {
+        const next = new Set(prev);
+        next.delete(task.id);
+        return next;
+      });
+    }
+  };
+
+  // Отмена процесса задачи
+  const handleCancelTask = async (task: TaskItem) => {
+    setCancellingTaskIds(prev => new Set(prev).add(task.id));
+    try {
+      const res = await api.cancelTask(task.id);
+      if (res.success) {
+        toast.info(`Процесс задачи "${task.title}" отменён`, 'Процесс остановлен');
+        await refreshProcesses();
+        onRefreshTasks?.();
+      } else {
+        toast.warning('Процесс уже завершён или не найден', 'Отмена процесса');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Ошибка отмены процесса', 'Сбой отмены');
+    } finally {
+      setCancellingTaskIds(prev => {
+        const next = new Set(prev);
+        next.delete(task.id);
+        return next;
+      });
+    }
+  };
 
   const filteredTasks = tasks.filter(t => {
     const matchesSearch = 
@@ -81,16 +170,16 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
             <CheckSquare className="w-5 h-5 text-director-blue" />
-            <span>Очередь задач и пайплайн выполнения</span>
+            <span>Очередь задач и TaskProcessSupervisor</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Контроль жизненного цикла задач, назначения субагентов, 9-пунктных отчётов качества и авто-эскалации.
+            Контроль жизненного цикла задач, исполнение в CLI agy, шлюзы качества и замкнутый цикл Аргона.
           </p>
         </div>
 
         <button
           onClick={onOpenNewTask}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-director-blue to-blue-600 hover:from-blue-500 hover:to-director-blue text-white text-xs font-semibold shadow-glass-subtle transition-all self-start md:self-auto"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-director-blue to-blue-600 hover:from-blue-500 hover:to-director-blue text-white text-xs font-semibold shadow-glass-subtle transition-all self-start md:self-auto active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
           <span>Создать задачу</span>
@@ -144,11 +233,19 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
             const isEscalated = task.status === 'escalated';
             const isInProgress = task.status === 'in_progress';
             const isFailed = task.status === 'failed';
+            const isArgonStage = task.stage === 'Argon_L4';
+
+            const proc = processes[task.id];
+            const isProcActive = proc && (proc.state === 'RUNNING' || proc.state === 'STARTING' || proc.state === 'QUEUED');
+            const isExecuting = executingTaskIds.has(task.id);
+            const isCancelling = cancellingTaskIds.has(task.id);
 
             return (
               <div
                 key={task.id}
-                className="glass-card p-5 space-y-3 hover:border-white/20 transition-all"
+                className={`glass-card p-4 sm:p-5 space-y-3 hover:border-white/20 transition-all ${
+                  isArgonStage ? 'border-pink-500/30 shadow-glow-argon' : ''
+                }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-2">
@@ -166,6 +263,14 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                     }`}>
                       {translateStatus(task.status)}
                     </span>
+
+                    {/* Бейдж активного процесса CLI супервизора */}
+                    {isProcActive && (
+                      <span className="badge-live text-[10px] py-0.5 px-2 font-mono flex items-center gap-1.5">
+                        <Activity className="w-3 h-3 text-emerald-400 animate-pulse" />
+                        <span>CLI RUNNING {proc?.pid ? `(PID ${proc.pid})` : ''}</span>
+                      </span>
+                    )}
 
                     {/* Плашка приоритета */}
                     <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold ${
@@ -224,7 +329,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                   </div>
                 )}
 
-                {/* Управление и политика повторов */}
+                {/* Управление задачей, CLI и Аргон */}
                 <div className="pt-3 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-3 font-mono text-slate-400 text-[11px]">
                     <span>
@@ -240,9 +345,55 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Кнопка "Ввести вердикт Аргона" при стадии Argon_L4 */}
+                    {isArgonStage && (
+                      <button
+                        type="button"
+                        onClick={() => setArgonModalTask(task)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-500/25 via-purple-500/20 to-pink-500/25 hover:from-pink-500/35 hover:to-purple-500/35 text-pink-300 font-semibold border border-pink-500/40 shadow-glow-argon transition-all active:scale-95"
+                      >
+                        <Flame className="w-3.5 h-3.5 text-director-argon animate-pulse" />
+                        <span>Ввести вердикт Аргона</span>
+                      </button>
+                    )}
+
+                    {/* Кнопка "Отменить" активный процесс CLI супервизора */}
+                    {(isProcActive || isInProgress) && (
+                      <button
+                        type="button"
+                        onClick={() => handleCancelTask(task)}
+                        disabled={isCancelling}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 font-medium border border-rose-500/25 transition-all disabled:opacity-50"
+                        title="Остановить процесс супервизора"
+                      >
+                        <Square className="w-3.5 h-3.5 text-rose-400" />
+                        <span>{isCancelling ? 'Отмена...' : 'Отменить'}</span>
+                      </button>
+                    )}
+
+                    {/* Кнопка "Выполнить в CLI" */}
+                    {!isProcActive && !isInProgress && (
+                      <button
+                        type="button"
+                        onClick={() => handleExecuteInCli(task)}
+                        disabled={isExecuting}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-director-cyan font-medium border border-director-blue/30 transition-all shadow-glass-subtle disabled:opacity-50 active:scale-95"
+                        title="Запустить выполнение задачи в CLI agy через TaskProcessSupervisor"
+                      >
+                        {isExecuting ? (
+                          <span className="w-3.5 h-3.5 border-2 border-director-cyan border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                        )}
+                        <span>Выполнить в CLI</span>
+                      </button>
+                    )}
+
+                    {/* Просмотр отчёта 9 пунктов */}
                     {task.report && (
                       <button
+                        type="button"
                         onClick={() => onViewReport(task)}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/20 transition-all"
                       >
@@ -251,7 +402,9 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                       </button>
                     )}
 
+                    {/* Перезапуск / повтор задачи */}
                     <button
+                      type="button"
                       onClick={() => onRestartTask(task.id)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 font-medium border border-white/10 transition-all"
                       title={task.retryCount >= task.maxRetries ? 'Будет выполнена эскалация на следующий уровень' : 'Повторить выполнение'}
@@ -266,6 +419,18 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
           })
         )}
       </div>
+
+      {/* Модальное окно вердикта Gemini 4 Argon */}
+      <ArgonVerdictModal
+        isOpen={Boolean(argonModalTask)}
+        task={argonModalTask}
+        onClose={() => setArgonModalTask(null)}
+        onSuccess={(updatedTask) => {
+          toast.success(`Задача "${updatedTask.title}" возвращена специалисту @${updatedTask.assignedAgent}`, 'Де-эскалация Аргона выполнена');
+          onRefreshTasks?.();
+          refreshProcesses();
+        }}
+      />
     </div>
   );
 };

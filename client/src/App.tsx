@@ -9,6 +9,7 @@ import { TaskManager } from './components/TaskManager.js';
 import { MemoryExplorer } from './components/MemoryExplorer.js';
 import { ControlCenter } from './components/ControlCenter.js';
 import { EventLog } from './components/EventLog.js';
+import { ToastProvider, toast } from './components/Toast.js';
 
 import { PromptModal } from './components/Modals/PromptModal.js';
 import { ReportModal } from './components/Modals/ReportModal.js';
@@ -25,11 +26,13 @@ import type {
   ControlSettings,
   EventType,
   SubagentReport,
-  ConnectionStatus
+  ConnectionStatus,
+  DataProvenance
 } from './types.js';
 
-export function App() {
+export function AppContent() {
   const [activeTab, setActiveTab] = useState<NavTab>('overview');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Данные приложения
   const [status, setStatus] = useState<DirectorStatus | null>(null);
@@ -38,11 +41,12 @@ export function App() {
   const [events, setEvents] = useState<EventPayload[]>([]);
   const [analytics, setAnalytics] = useState<{
     tiers: ModelMetrics[];
-    totalTokens: { input: number; output: number; cacheRead: number };
+    totalTokens: { input: number; output: number; cacheRead: number; provenance?: DataProvenance };
     totalRuns: number;
     overallSuccessRate: number;
     escalationRate: number;
     verifiedRealSessionsCount: number;
+    provenance?: DataProvenance;
   } | null>(null);
   const [knowledgeDocs, setKnowledgeDocs] = useState<KnowledgeDoc[]>([]);
   const [settings, setSettings] = useState<ControlSettings | null>(null);
@@ -154,6 +158,7 @@ export function App() {
     const newStatus = currentEnabled ? 'paused' : 'idle';
     await api.updateAgentStatus(agentId, newStatus);
     setAgents(prev => prev.map(a => a.id === agentId ? { ...a, enabled: !currentEnabled, status: newStatus as any } : a));
+    toast.info(`Агент @${agentId} переключен в статус: ${newStatus}`);
   };
 
   const handleRestartTask = async (taskId: string) => {
@@ -163,10 +168,12 @@ export function App() {
         setTasks(prev => prev.map(t => t.id === taskId ? res.task : t));
       }
       if (res.escalated) {
-        alert(res.message);
+        toast.warning(res.message, 'Эскалация задачи');
+      } else {
+        toast.success(`Задача перезапущена`, 'Перезапуск');
       }
     } catch (err: any) {
-      alert(err.message || 'Ошибка перезапуска задачи');
+      toast.error(err.message || 'Ошибка перезапуска задачи', 'Ошибка');
     }
   };
 
@@ -207,6 +214,7 @@ export function App() {
         timestamp: new Date().toISOString()
       }
     });
+    toast.info(`Тестовое событие "${type}" отправлено в шину`, 'Событие опубликовано');
   };
 
   const handleSelectTaskFromWorkflow = (task: TaskItem) => {
@@ -228,19 +236,23 @@ export function App() {
         status={status}
         connectionStatus={connectionStatus}
         onOpenNewTask={() => setIsNewTaskOpen(true)}
+        isMobileMenuOpen={isMobileMenuOpen}
+        onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)}
       />
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Боковая панель навигации */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Боковая панель навигации (с поддержкой адаптивного Drawer на мобильных) */}
         <Sidebar
           activeTab={activeTab}
           onSelectTab={setActiveTab}
           pendingTasksCount={tasks.filter(t => t.status === 'in_progress' || t.status === 'pending').length}
           liveEventsCount={events.length}
+          isMobileOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
         />
 
         {/* Основная рабочая область */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
           {activeTab === 'overview' && (
             <Overview
               status={status}
@@ -290,6 +302,7 @@ export function App() {
               tasks={tasks}
               onOpenNewTask={() => setIsNewTaskOpen(true)}
               onRestartTask={handleRestartTask}
+              onRefreshTasks={loadAllData}
               onViewReport={(task) => {
                 if (task.report) {
                   setReportModalTask({
@@ -356,6 +369,14 @@ export function App() {
         onCreate={handleCreateTask}
       />
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   );
 }
 

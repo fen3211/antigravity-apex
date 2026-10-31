@@ -1,11 +1,14 @@
+import React from 'react';
 import { 
   Terminal, 
   Database, 
   Wifi, 
-  WifiOff,
+  WifiOff, 
   Plus, 
-  Sparkles,
-  Layers
+  Sparkles, 
+  Layers,
+  Menu,
+  X
 } from 'lucide-react';
 import type { DirectorStatus, ConnectionStatus } from '../types.js';
 
@@ -13,12 +16,16 @@ interface HeaderProps {
   status: DirectorStatus | null;
   onOpenNewTask: () => void;
   connectionStatus?: ConnectionStatus;
+  isMobileMenuOpen?: boolean;
+  onToggleMobileMenu?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
   status, 
   onOpenNewTask, 
-  connectionStatus = 'DISCONNECTED' 
+  connectionStatus = 'DISCONNECTED',
+  isMobileMenuOpen = false,
+  onToggleMobileMenu
 }) => {
   const isLive = status?.state === 'ACTIVE' || status?.state === 'ONLINE';
   const liveSessions = status?.activeSessions.filter(s => s.isLive).length || 0;
@@ -33,25 +40,40 @@ export const Header: React.FC<HeaderProps> = ({
     : 'ПОДКЛЮЧЕНИЕ...';
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-deep bg-background/80 border-b border-white/[0.08] px-6 py-3.5 transition-all">
-      <div className="flex items-center justify-between gap-4">
-        {/* Бренд и статус Director */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-director-blue/30 via-director-violet/20 to-transparent border border-white/10 shadow-glass-subtle">
-              <Sparkles className="w-5 h-5 text-director-cyan animate-pulse-slow" />
+    <header className="sticky top-0 z-40 w-full backdrop-blur-deep bg-background/80 border-b border-white/[0.08] px-3.5 sm:px-6 py-2.5 sm:py-3.5 transition-all">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
+        {/* Бренд, статус Director и мобильный гамбургер */}
+        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+          {/* Кнопка мобильного меню (только <lg) */}
+          <button
+            type="button"
+            onClick={onToggleMobileMenu}
+            aria-label={isMobileMenuOpen ? "Закрыть мобильное меню" : "Открыть мобильное меню"}
+            aria-expanded={isMobileMenuOpen}
+            className="lg:hidden p-2 rounded-xl bg-white/[0.05] hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-director-cyan shrink-0 active:scale-95"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-5 h-5 text-director-cyan" />
+            ) : (
+              <Menu className="w-5 h-5 text-slate-300" />
+            )}
+          </button>
+
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-director-blue/30 via-director-violet/20 to-transparent border border-white/10 shadow-glass-subtle shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-director-cyan animate-pulse-slow" />
               <div className="absolute -inset-0.5 rounded-xl bg-director-blue/20 blur-sm -z-10" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold tracking-tight text-white font-sans">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="text-sm sm:text-base font-bold tracking-tight text-white font-sans truncate">
                   AI COMMAND CENTER
                 </h1>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.08] text-slate-400 border border-white/5">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.08] text-slate-400 border border-white/5 shrink-0 hidden xs:inline-block">
                   v1.0.0
                 </span>
               </div>
-              <p className="text-xs text-slate-400 flex items-center gap-1.5">
+              <p className="text-[11px] sm:text-xs text-slate-400 hidden sm:flex items-center gap-1.5 truncate">
                 <span>Панель оркестрации Antigravity</span>
                 <span className="text-slate-600">•</span>
                 <span className="text-director-cyan font-mono text-[11px]">Протокол Director 3.8</span>
@@ -62,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="h-6 w-px bg-white/10 hidden md:block" />
 
           {/* Индикатор статуса Director */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 shrink-0">
             <span className="relative flex h-2 w-2">
               {isLive && (
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -72,14 +94,14 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-xs font-semibold tracking-wide text-slate-200">
               ДИРЕКТОР: <span className={isLive ? 'text-emerald-400' : 'text-amber-400'}>{stateLabel}</span>
             </span>
-            <span className="text-xs font-mono text-slate-400 border-l border-white/10 pl-2">
+            <span className="text-xs font-mono text-slate-400 border-l border-white/10 pl-2 hidden xl:inline">
               {status?.model || 'Gemini 3.8 Flash High'}
             </span>
           </div>
         </div>
 
         {/* Метрики реального времени и статусы подсистем */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Индикатор сессий Antigravity */}
           <div className="hidden lg:flex items-center gap-3 text-xs bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-1.5">
             <div className="flex items-center gap-1.5 text-slate-300">
@@ -167,13 +189,24 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
 
+          {/* Мобильный компактный индикатор статуса соединения */}
+          <div className="md:hidden flex items-center">
+            {connectionStatus === 'CONNECTED' ? (
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500" title="WS Онлайн" />
+            ) : (
+              <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" title="WS Офлайн" />
+            )}
+          </div>
+
           {/* Кнопка создания задачи */}
           <button
+            type="button"
             onClick={onOpenNewTask}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-director-blue to-blue-600 hover:from-blue-500 hover:to-director-blue text-white text-xs font-semibold shadow-glass-subtle transition-all active:scale-[0.98]"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-director-blue to-blue-600 hover:from-blue-500 hover:to-director-blue text-white text-xs font-semibold shadow-glass-subtle transition-all active:scale-[0.98] shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Новая задача</span>
+            <span className="hidden xs:inline">Новая задача</span>
+            <span className="xs:hidden">Задача</span>
           </button>
         </div>
       </div>
