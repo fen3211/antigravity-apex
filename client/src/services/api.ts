@@ -12,13 +12,59 @@ import type {
 const API_BASE = 'http://localhost:3001/api';
 const WS_BASE = 'ws://localhost:3001/ws';
 
+let cachedAuthToken: string | null = null;
+let tokenPromise: Promise<string | null> | null = null;
+
+/**
+ * Retrieves the current authentication token, auto-fetching from /api/auth/token if needed.
+ */
+export async function getAuthToken(): Promise<string | null> {
+  if (cachedAuthToken) return cachedAuthToken;
+  if (!tokenPromise) {
+    tokenPromise = (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/auth/token`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data.token === 'string') {
+            cachedAuthToken = data.token;
+            return cachedAuthToken;
+          }
+        }
+      } catch (err) {
+        console.warn('[API] Failed to auto-fetch auth token:', err);
+      } finally {
+        if (!cachedAuthToken) {
+          tokenPromise = null;
+        }
+      }
+      return null;
+    })();
+  }
+  return tokenPromise;
+}
+
+export function setAuthToken(token: string | null) {
+  cachedAuthToken = token;
+  tokenPromise = null;
+}
+
 export async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options?.headers as Record<string, string> || {})
+  };
+
+  if (endpoint !== '/auth/token' && !headers['Authorization'] && !headers['authorization']) {
+    const token = await getAuthToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
   const res = await fetch(`${API_BASE}${endpoint}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers
-    },
-    ...options
+    ...options,
+    headers
   });
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
@@ -141,9 +187,11 @@ export class EventStreamClient {
     this.connect();
   }
 
-  private connect() {
+  private async connect() {
     try {
-      this.ws = new WebSocket(WS_BASE);
+      const token = await getAuthToken();
+      const wsUrl = token ? `${WS_BASE}?token=${encodeURIComponent(token)}` : WS_BASE;
+      this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
         this.isReconnecting = false;

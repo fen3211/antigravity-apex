@@ -131,8 +131,8 @@ ${params.targetQuestion}
       return { success: false, output: '', error: 'Prompt cannot be empty' };
     }
 
-    const args = ['-p', prompt.trim(), '--agent', agentName];
-    const result = await antigravityBridge.runAgyCommand(args, 20000);
+    const args = ['-p', prompt.trim(), '--agent', agentName, '--dangerously-skip-permissions'];
+    const result = await antigravityBridge.runAgyCommand(args, 60000);
 
     if (result.success) {
       return {

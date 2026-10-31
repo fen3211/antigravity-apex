@@ -5,4 +5,5 @@ command_center.sqlite
 command_center.sqlite-wal
 command_center.sqlite-shm
 .playwright-mcp
+backups/
 .DS_Store

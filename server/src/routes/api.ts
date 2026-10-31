@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import { CONFIG } from '../config.js';
+import { requireAuth } from '../middleware/auth.js';
 import { antigravityBridge } from '../services/antigravity-bridge.js';
 import { taskManager } from '../services/task-manager.js';
 import { eventBus } from '../services/event-bus.js';
@@ -8,7 +10,32 @@ import { controlService } from '../services/control.js';
 
 export const apiRouter = Router();
 
+// Helper to determine if incoming request is from local loopback
+function isLocalRequest(req: Request): boolean {
+  const ip = req.ip || req.socket.remoteAddress || '';
+  const localIps = ['127.0.0.1', '::1', '::ffff:127.0.0.1', 'localhost'];
+  return localIps.includes(ip) || ip.endsWith('127.0.0.1');
+}
+
+// ==========================================
+// 0. Auth & Token Bootstrapping
+// ==========================================
+apiRouter.get('/auth/token', (req: Request, res: Response) => {
+  const origin = req.headers.origin || req.get('origin');
+  if (origin && !CONFIG.ALLOWED_ORIGINS.includes(origin)) {
+    return res.status(403).json({ error: 'Blocked by CORS policy: Origin not allowed' });
+  }
+
+  if (!isLocalRequest(req)) {
+    return res.status(403).json({ error: 'Access denied: Token endpoint is only accessible from local loopback' });
+  }
+
+  res.json({ token: CONFIG.API_KEY });
+});
+
+// ==========================================
 // 1. Director & System Status
+// ==========================================
 apiRouter.get('/status', (req: Request, res: Response) => {
   try {
     const status = antigravityBridge.getDirectorStatus();
@@ -18,7 +45,9 @@ apiRouter.get('/status', (req: Request, res: Response) => {
   }
 });
 
+// ==========================================
 // 2. Agents
+// ==========================================
 apiRouter.get('/agents', (req: Request, res: Response) => {
   try {
     const agents = antigravityBridge.getKnownAgents();
@@ -38,17 +67,29 @@ apiRouter.get('/agents/:id', (req: Request, res: Response) => {
   res.json(agent);
 });
 
-apiRouter.post('/agents/:id/status', (req: Request, res: Response) => {
-  const agentId = String(req.params.id);
-  const { status, currentTask } = req.body;
-  if (!status) {
-    return res.status(400).json({ error: 'Status is required' });
-  }
-  antigravityBridge.updateAgentStatus(agentId, status, currentTask);
-  res.json({ success: true, agentId, status });
+const updateAgentStatusSchema = z.object({
+  status: z.enum(['idle', 'running', 'paused', 'blocked', 'escalated']),
+  currentTask: z.string().optional()
 });
 
+apiRouter.post('/agents/:id/status', requireAuth, (req: Request, res: Response) => {
+  try {
+    const agentId = String(req.params.id);
+    const agents = antigravityBridge.getKnownAgents();
+    if (!agents.some(a => a.id === agentId)) {
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+    const parsed = updateAgentStatusSchema.parse(req.body);
+    antigravityBridge.updateAgentStatus(agentId, parsed.status, parsed.currentTask);
+    res.json({ success: true, agentId, status: parsed.status });
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+// ==========================================
 // 3. Tasks
+// ==========================================
 apiRouter.get('/tasks', (req: Request, res: Response) => {
   try {
     const { status, isDemo, agentId } = req.query;
@@ -81,7 +122,7 @@ const createTaskSchema = z.object({
   isDemo: z.boolean().default(false)
 });
 
-apiRouter.post('/tasks', (req: Request, res: Response) => {
+apiRouter.post('/tasks', requireAuth, (req: Request, res: Response) => {
   try {
     const parsed = createTaskSchema.parse(req.body);
     const task = taskManager.createTask(parsed);
@@ -98,31 +139,79 @@ apiRouter.get('/tasks/:id', (req: Request, res: Response) => {
   res.json(task);
 });
 
-apiRouter.patch('/tasks/:id', (req: Request, res: Response) => {
-  const taskId = String(req.params.id);
-  const updated = taskManager.updateTask(taskId, req.body);
-  if (!updated) return res.status(404).json({ error: 'Task not found' });
-  res.json(updated);
+const updateTaskSchema = z.object({
+  title: z.string().min(1).max(250).optional(),
+  description: z.string().optional(),
+  status: z.enum(['pending', 'in_progress', 'verification', 'completed', 'failed', 'escalated']).optional(),
+  priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+  assignedAgent: z.string().min(1).max(64).optional(),
+  stage: z.enum([
+    'Director_Triage',
+    'Solo',
+    'Specialist',
+    'QualityGate_L1',
+    'Independent_L2',
+    'Architect_L3',
+    'Argon_L4',
+    'Approved'
+  ]).optional(),
+  retryCount: z.number().int().min(0).optional(),
+  maxRetries: z.number().int().min(0).optional(),
+  resultSummary: z.string().optional(),
+  errorLog: z.string().optional(),
+  isDemo: z.boolean().optional()
 });
 
-apiRouter.post('/tasks/:id/restart', (req: Request, res: Response) => {
+apiRouter.patch('/tasks/:id', requireAuth, (req: Request, res: Response) => {
+  try {
+    const taskId = String(req.params.id);
+    const parsed = updateTaskSchema.parse(req.body);
+    const updated = taskManager.updateTask(taskId, parsed);
+    if (!updated) return res.status(404).json({ error: 'Task not found' });
+    res.json(updated);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+apiRouter.post('/tasks/:id/restart', requireAuth, (req: Request, res: Response) => {
   const taskId = String(req.params.id);
   const result = taskManager.restartTask(taskId);
   res.json(result);
 });
 
-apiRouter.post('/tasks/:id/report', (req: Request, res: Response) => {
-  const taskId = String(req.params.id);
-  const { report } = req.body;
-  if (!report || !report.taskName || !report.status) {
-    return res.status(400).json({ error: 'Invalid 9-point report format' });
-  }
-  const updated = taskManager.submitSubagentReport(taskId, report);
-  if (!updated) return res.status(404).json({ error: 'Task not found' });
-  res.json(updated);
+const subagentReportSchema = z.object({
+  taskName: z.string().min(1, 'taskName is required'),
+  status: z.enum(['SUCCESS', 'FAILURE', 'BLOCKED']),
+  summary: z.string().min(1, 'summary is required'),
+  modifiedFiles: z.array(z.string()),
+  executedChecks: z.array(z.string()),
+  checkResults: z.string().min(1, 'checkResults is required'),
+  issuesAndRisks: z.string().min(1, 'issuesAndRisks is required'),
+  pendingItems: z.string().min(1, 'pendingItems is required'),
+  nextSteps: z.string().min(1, 'nextSteps is required')
 });
 
+const postReportBodySchema = z.object({
+  report: subagentReportSchema
+}).or(subagentReportSchema);
+
+apiRouter.post('/tasks/:id/report', requireAuth, (req: Request, res: Response) => {
+  try {
+    const taskId = String(req.params.id);
+    const parsed = postReportBodySchema.parse(req.body);
+    const reportData = 'report' in parsed ? parsed.report : parsed;
+    const updated = taskManager.submitSubagentReport(taskId, reportData);
+    if (!updated) return res.status(404).json({ error: 'Task not found' });
+    res.json(updated);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+// ==========================================
 // 4. Events
+// ==========================================
 apiRouter.get('/events', (req: Request, res: Response) => {
   const { limit, type, agent_id, task_id } = req.query;
   const events = eventBus.getRecentEvents({
@@ -134,20 +223,33 @@ apiRouter.get('/events', (req: Request, res: Response) => {
   res.json(events);
 });
 
-apiRouter.post('/events', (req: Request, res: Response) => {
-  const { type, source, agent_id, task_id, data } = req.body;
-  if (!type) return res.status(400).json({ error: 'Type is required' });
-  const event = eventBus.publish({
-    type,
-    source: source || 'DEMO',
-    agent_id,
-    task_id,
-    data
-  });
-  res.status(201).json(event);
+const createEventSchema = z.object({
+  type: z.string().min(1),
+  source: z.enum(['LIVE_AGY', 'INTERNAL_BRIDGE', 'SYSTEM', 'DEMO']).optional(),
+  agent_id: z.string().optional(),
+  task_id: z.string().optional(),
+  data: z.record(z.any()).optional()
 });
 
+apiRouter.post('/events', requireAuth, (req: Request, res: Response) => {
+  try {
+    const parsed = createEventSchema.parse(req.body);
+    const event = eventBus.publish({
+      type: parsed.type as any,
+      source: parsed.source || 'DEMO',
+      agent_id: parsed.agent_id,
+      task_id: parsed.task_id,
+      data: parsed.data || {}
+    });
+    res.status(201).json(event);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+// ==========================================
 // 5. Analytics
+// ==========================================
 apiRouter.get('/analytics', (req: Request, res: Response) => {
   try {
     const analytics = analyticsService.getModelAnalytics();
@@ -157,7 +259,11 @@ apiRouter.get('/analytics', (req: Request, res: Response) => {
   }
 });
 
+// ==========================================
 // 6. Knowledge Base
+// ==========================================
+const knowledgeFilenameRegex = /^[a-zA-Z0-9_-]+\.md$/;
+
 apiRouter.get('/knowledge', (req: Request, res: Response) => {
   try {
     const docs = antigravityBridge.getKnowledgeDocs();
@@ -169,14 +275,22 @@ apiRouter.get('/knowledge', (req: Request, res: Response) => {
 
 apiRouter.get('/knowledge/:filename', (req: Request, res: Response) => {
   const filename = String(req.params.filename);
+  if (!knowledgeFilenameRegex.test(filename)) {
+    return res.status(400).json({ error: 'Invalid filename' });
+  }
   const docs = antigravityBridge.getKnowledgeDocs();
   const doc = docs.find(d => d.filename.toLowerCase() === filename.toLowerCase());
   if (!doc) return res.status(404).json({ error: 'Knowledge doc not found' });
   res.json(doc);
 });
 
-apiRouter.post('/knowledge/:filename', (req: Request, res: Response) => {
+apiRouter.post('/knowledge/:filename', requireAuth, (req: Request, res: Response) => {
   const filename = String(req.params.filename);
+  if (!knowledgeFilenameRegex.test(filename)) {
+    return res.status(400).json({
+      error: 'Invalid filename: only alphanumeric characters, dashes, underscores, and .md extension are allowed'
+    });
+  }
   const { content } = req.body;
   if (typeof content !== 'string') {
     return res.status(400).json({ error: 'Content must be a string' });
@@ -188,63 +302,85 @@ apiRouter.post('/knowledge/:filename', (req: Request, res: Response) => {
   res.json({ success: true, filename });
 });
 
+// ==========================================
 // 7. Control Center
-apiRouter.get('/control/settings', (req: Request, res: Response) => {
+// ==========================================
+apiRouter.get('/control/settings', requireAuth, (req: Request, res: Response) => {
   const settings = controlService.getSettings();
   res.json(settings);
 });
 
-apiRouter.post('/control/settings', (req: Request, res: Response) => {
+const updateSettingsSchema = z.object({
+  maxConcurrentAgents: z.number().int().min(1).max(10).optional(),
+  maxRetryAttempts: z.number().int().min(1).max(10).optional(),
+  defaultModelTier: z.string().min(1).optional(),
+  escalationPolicy: z.enum(['strict', 'relaxed']).optional(),
+  autoQualityGates: z.boolean().optional(),
+  allowedAgents: z.array(z.string().regex(/^[a-zA-Z0-9_-]{1,64}$/)).optional()
+});
+
+apiRouter.post('/control/settings', requireAuth, (req: Request, res: Response) => {
   try {
-    const updated = controlService.updateSettings(req.body);
+    const parsed = updateSettingsSchema.parse(req.body);
+    const updated = controlService.updateSettings(parsed);
     res.json(updated);
   } catch (err: any) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ error: err.errors || err.message });
   }
 });
 
-apiRouter.post('/control/escalate-argon', (req: Request, res: Response) => {
-  const {
-    taskId,
-    issueTitle,
-    rootCauseHypothesis,
-    failedAttempt1,
-    failedAttempt2,
-    isolatedContextSnippet,
-    targetQuestion
-  } = req.body;
-
-  if (!issueTitle || !rootCauseHypothesis) {
-    return res.status(400).json({ error: 'Issue title and root cause hypothesis are required' });
-  }
-
-  const result = controlService.generateArgonEscalationPack({
-    taskId,
-    issueTitle,
-    rootCauseHypothesis,
-    failedAttempt1: failedAttempt1 || 'Attempt 1 failed verification tests.',
-    failedAttempt2: failedAttempt2 || 'Attempt 2 caused architectural regression.',
-    isolatedContextSnippet: isolatedContextSnippet || '// Isolated reproduction code',
-    targetQuestion: targetQuestion || 'Provide architectural diagnosis and resolution strategy.'
-  });
-
-  res.json(result);
+const escalateArgonSchema = z.object({
+  taskId: z.string().optional(),
+  issueTitle: z.string().min(3).max(500),
+  rootCauseHypothesis: z.string().min(3).max(5000),
+  failedAttempt1: z.string().optional(),
+  failedAttempt2: z.string().optional(),
+  isolatedContextSnippet: z.string().optional(),
+  targetQuestion: z.string().optional()
 });
 
-apiRouter.post('/control/run-prompt', async (req: Request, res: Response) => {
-  const { prompt, agentName, confirm } = req.body;
-  if (!confirm) {
-    return res.status(400).json({ error: 'Action requires explicit user confirmation' });
+apiRouter.post('/control/escalate-argon', requireAuth, (req: Request, res: Response) => {
+  try {
+    const parsed = escalateArgonSchema.parse(req.body);
+    const result = controlService.generateArgonEscalationPack({
+      taskId: parsed.taskId,
+      issueTitle: parsed.issueTitle,
+      rootCauseHypothesis: parsed.rootCauseHypothesis,
+      failedAttempt1: parsed.failedAttempt1 || 'Attempt 1 failed verification tests.',
+      failedAttempt2: parsed.failedAttempt2 || 'Attempt 2 caused architectural regression.',
+      isolatedContextSnippet: parsed.isolatedContextSnippet || '// Isolated reproduction code',
+      targetQuestion: parsed.targetQuestion || 'Provide architectural diagnosis and resolution strategy.'
+    });
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
   }
-  if (!prompt) {
-    return res.status(400).json({ error: 'Prompt is required' });
-  }
-
-  const result = await controlService.executeTaskPrompt(prompt, agentName || 'director');
-  res.json(result);
 });
 
-// 8. Antigravity CLI live tools
+const runPromptSchema = z.object({
+  prompt: z.string().min(1).max(10000),
+  agentName: z.string().regex(/^[a-zA-Z0-9_-]{1,64}$/).default('director'),
+  confirm: z.literal(true)
+});
+
+apiRouter.post('/control/run-prompt', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { prompt, agentName, confirm } = runPromptSchema.parse(req.body);
+    const settings = controlService.getSettings();
+    if (!settings.allowedAgents.includes(agentName)) {
+      return res.status(400).json({ error: `Agent "${agentName}" is not in the allowed agents whitelist` });
+    }
+
+    const result = await controlService.executeTaskPrompt(prompt, agentName);
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+// ==========================================
+// 8. Antigravity CLI Live Tools
+// ==========================================
 apiRouter.get('/models', async (req: Request, res: Response) => {
   const cliRes = await antigravityBridge.runAgyCommand(['models']);
   if (cliRes.success && cliRes.stdout) {

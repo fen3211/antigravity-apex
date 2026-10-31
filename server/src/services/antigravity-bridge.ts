@@ -340,8 +340,19 @@ export class AntigravityBridge {
   }
 
   public saveKnowledgeDoc(filename: string, content: string): boolean {
+    if (filename.includes('..')) {
+      console.warn('[Bridge] Path traversal rejected (".."):', filename);
+      return false;
+    }
+
     const safeFilename = path.basename(filename);
-    const targetPath = path.join(CONFIG.KNOWLEDGE_DIR, safeFilename);
+    const resolvedKnowledgeDir = path.resolve(CONFIG.KNOWLEDGE_DIR);
+    const targetPath = path.resolve(CONFIG.KNOWLEDGE_DIR, safeFilename);
+
+    if (!targetPath.startsWith(resolvedKnowledgeDir)) {
+      console.warn('[Bridge] Path traversal rejected (outside knowledge dir):', targetPath);
+      return false;
+    }
 
     // Ensure directory exists
     if (!fs.existsSync(CONFIG.KNOWLEDGE_DIR)) {

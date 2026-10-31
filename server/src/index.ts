@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
+import crypto from 'crypto';
 import { WebSocketServer } from 'ws';
 import { CONFIG } from './config.js';
 import { initDatabase, db } from './db/database.js';
@@ -13,14 +14,14 @@ const server = http.createServer(app);
 // Initialize DB schema & seeds
 initDatabase();
 
-// Middleware
+// 1. CORS Hardening
 app.use(cors({
   origin: (origin, callback) => {
     // Allow local tools, Vite dev, or requests without origin (like curl)
     if (!origin || CONFIG.ALLOWED_ORIGINS.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, true); // Dev convenience for localhost
+      callback(new Error('Blocked by CORS policy: Origin not allowed'));
     }
   },
   credentials: true
@@ -41,10 +42,65 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api', apiRouter);
 
+// Express Error Handling Middleware (CORS error -> 403 Forbidden)
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err && err.message && err.message.includes('Blocked by CORS policy')) {
+    return res.status(403).json({ error: err.message });
+  }
+  console.error('[Server Error]', err);
+  res.status(500).json({ error: err?.message || 'Internal Server Error' });
+});
+
 // WebSocket Server
 const wss = new WebSocketServer({ server, path: '/ws' });
 
 wss.on('connection', (ws, req) => {
+  const origin = req.headers.origin;
+
+  // Origin check
+  if (origin && !CONFIG.ALLOWED_ORIGINS.includes(origin)) {
+    console.warn(`[WS] Connection rejected: unauthorized origin "${origin}"`);
+    ws.close(1008, 'Unauthorized: Origin not allowed');
+    return;
+  }
+
+  // Token extraction
+  let token: string | null = null;
+  try {
+    const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
+    token = url.searchParams.get('token');
+  } catch {
+    // ignore parse error
+  }
+
+  if (!token && req.headers.authorization) {
+    if (req.headers.authorization.toLowerCase().startsWith('bearer ')) {
+      token = req.headers.authorization.slice(7).trim();
+    } else {
+      token = req.headers.authorization.trim();
+    }
+  }
+
+  if (!token && req.headers['x-api-key']) {
+    token = String(req.headers['x-api-key']).trim();
+  }
+
+  // Safe timing comparison for token
+  let isTokenValid = false;
+  if (token && CONFIG.API_KEY) {
+    const tokenBuf = Buffer.from(token);
+    const expectedBuf = Buffer.from(CONFIG.API_KEY);
+    if (tokenBuf.length === expectedBuf.length && crypto.timingSafeEqual(tokenBuf, expectedBuf)) {
+      isTokenValid = true;
+    }
+  }
+
+  if (!isTokenValid) {
+    console.warn('[WS] Connection rejected: unauthorized token');
+    ws.close(1008, 'Unauthorized');
+    return;
+  }
+
   eventBus.registerClient(ws);
 
   // Send initial handshake
@@ -66,16 +122,31 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-// Start listening
-const PORT = CONFIG.PORT;
-server.listen(PORT, CONFIG.HOST, () => {
-  console.log('====================================================');
-  console.log(`[AI COMMAND CENTER] Server running on http://${CONFIG.HOST}:${PORT}`);
-  console.log(`[AI COMMAND CENTER] WebSocket stream at ws://${CONFIG.HOST}:${PORT}/ws`);
-  console.log(`[AI COMMAND CENTER] Antigravity dir: ${CONFIG.ANTIGRAVITY_DIR}`);
-  console.log(`[AI COMMAND CENTER] Knowledge dir:   ${CONFIG.KNOWLEDGE_DIR}`);
-  console.log('====================================================');
-});
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+export { app, server, wss };
+
+// Start listening only when executed as main module (not when imported in tests)
+const isMainModule = process.argv[1] && (() => {
+  try {
+    return fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+  } catch {
+    return false;
+  }
+})();
+
+if (isMainModule) {
+  const PORT = CONFIG.PORT;
+  server.listen(PORT, CONFIG.HOST, () => {
+    console.log('====================================================');
+    console.log(`[AI COMMAND CENTER] Server running on http://${CONFIG.HOST}:${PORT}`);
+    console.log(`[AI COMMAND CENTER] WebSocket stream at ws://${CONFIG.HOST}:${PORT}/ws`);
+    console.log(`[AI COMMAND CENTER] Antigravity dir: ${CONFIG.ANTIGRAVITY_DIR}`);
+    console.log(`[AI COMMAND CENTER] Knowledge dir:   ${CONFIG.KNOWLEDGE_DIR}`);
+    console.log('====================================================');
+  });
+}
 
 // Graceful shutdown
 process.on('SIGINT', () => {
