@@ -24,7 +24,8 @@ import type {
   KnowledgeDoc, 
   ControlSettings,
   EventType,
-  SubagentReport
+  SubagentReport,
+  ConnectionStatus
 } from './types.js';
 
 export function App() {
@@ -45,6 +46,10 @@ export function App() {
   } | null>(null);
   const [knowledgeDocs, setKnowledgeDocs] = useState<KnowledgeDoc[]>([]);
   const [settings, setSettings] = useState<ControlSettings | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(() => eventStream.getStatus());
+  const prevStatusRef = React.useRef<ConnectionStatus>(eventStream.getStatus());
+  const tasksDebounceTimer = React.useRef<any>(null);
+  const agentsDebounceTimer = React.useRef<any>(null);
 
   // Модальные окна
   const [promptModalAgent, setPromptModalAgent] = useState<AgentInfo | null>(null);
@@ -87,21 +92,46 @@ export function App() {
   useEffect(() => {
     loadAllData();
 
+    // Слушатель статуса WebSocket (реконсиляция при восстановлении связи)
+    const unsubscribeStatus = eventStream.onStatusChange((newStatus) => {
+      const prevStatus = prevStatusRef.current;
+      setConnectionStatus(newStatus);
+      prevStatusRef.current = newStatus;
+
+      // Реконсиляция: при переходе из 'RECONNECTING' или 'DISCONNECTED' в 'CONNECTED'
+      if (newStatus === 'CONNECTED' && (prevStatus === 'RECONNECTING' || prevStatus === 'DISCONNECTED')) {
+        console.log('[App] WS reconnected, reconciling state via loadAllData()...');
+        loadAllData();
+      }
+    });
+
     // Подписка на живые WebSocket события
-    const unsubscribe = eventStream.subscribe((event: EventPayload) => {
-      // 1. Добавляем событие в начало ленты
+    const unsubscribeEvents = eventStream.subscribe((event: EventPayload) => {
+      // 1. Добавляем событие в начало ленты мгновенно
       setEvents(prev => [event, ...prev.slice(0, 199)]);
 
-      // 2. Реагируем на обновления задач
+      // 2. Реагируем на обновления задач с дебаунсом 300мс
       if (event.type.startsWith('task.') || event.type.startsWith('escalation.') || event.type.startsWith('quality_gate.')) {
-        api.getTasks().then(setTasks).catch(() => {});
-        api.getAnalytics().then(setAnalytics).catch(() => {});
+        if (tasksDebounceTimer.current) {
+          clearTimeout(tasksDebounceTimer.current);
+        }
+        tasksDebounceTimer.current = setTimeout(() => {
+          tasksDebounceTimer.current = null;
+          api.getTasks().then(setTasks).catch(() => {});
+          api.getAnalytics().then(setAnalytics).catch(() => {});
+        }, 300);
       }
 
-      // 3. Реагируем на изменения агентов
+      // 3. Реагируем на изменения агентов с дебаунсом 300мс
       if (event.type.startsWith('agent.')) {
-        api.getAgents().then(setAgents).catch(() => {});
-        api.getStatus().then(setStatus).catch(() => {});
+        if (agentsDebounceTimer.current) {
+          clearTimeout(agentsDebounceTimer.current);
+        }
+        agentsDebounceTimer.current = setTimeout(() => {
+          agentsDebounceTimer.current = null;
+          api.getAgents().then(setAgents).catch(() => {});
+          api.getStatus().then(setStatus).catch(() => {});
+        }, 300);
       }
     });
 
@@ -111,7 +141,10 @@ export function App() {
     }, 15000);
 
     return () => {
-      unsubscribe();
+      unsubscribeStatus();
+      unsubscribeEvents();
+      if (tasksDebounceTimer.current) clearTimeout(tasksDebounceTimer.current);
+      if (agentsDebounceTimer.current) clearTimeout(agentsDebounceTimer.current);
       clearInterval(interval);
     };
   }, []);
@@ -193,6 +226,7 @@ export function App() {
       {/* Шапка и статусная строка */}
       <Header
         status={status}
+        connectionStatus={connectionStatus}
         onOpenNewTask={() => setIsNewTaskOpen(true)}
       />
 

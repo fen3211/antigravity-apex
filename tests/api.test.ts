@@ -564,6 +564,7 @@ async function runTests() {
 
   } finally {
     await antigravityBridge.closeWatcher();
+    eventBus.stopHeartbeat();
     await new Promise<void>((resolve) => {
       server.close(() => resolve());
     });

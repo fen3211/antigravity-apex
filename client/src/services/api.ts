@@ -177,55 +177,183 @@ export const api = {
   getPlugins: () => fetchJson<{ raw: string; success: boolean }>('/plugins')
 };
 
+export type ConnectionStatus = 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED' | 'ERROR';
+
+export function calculateBackoffDelay(attempt: number, randomValue = Math.random()): number {
+  const base = Math.min(1000 * Math.pow(1.5, attempt), 15000);
+  const jitter = randomValue * 500;
+  return base + jitter;
+}
+
+export interface EventStreamClientOptions {
+  url?: string;
+  token?: string;
+  autoConnect?: boolean;
+}
+
 // WebSocket Event Subscription Manager
 export class EventStreamClient {
-  private ws: WebSocket | null = null;
+  private ws: any = null;
   private listeners: Set<(event: EventPayload) => void> = new Set();
-  private isReconnecting = false;
+  private statusListeners: Set<(status: ConnectionStatus) => void> = new Set();
+  private status: ConnectionStatus = 'DISCONNECTED';
+  private reconnectAttempt = 0;
+  private reconnectTimer: any = null;
+  private isManualDisconnect = false;
+  private isConnecting = false;
+  private customUrl?: string;
+  private customToken?: string;
 
-  constructor() {
-    this.connect();
+  constructor(options?: EventStreamClientOptions) {
+    this.customUrl = options?.url;
+    this.customToken = options?.token;
+    if (options?.autoConnect !== false) {
+      this.connect();
+    }
   }
 
-  private async connect() {
-    try {
-      const token = await getAuthToken();
-      const wsUrl = token ? `${WS_BASE}?token=${encodeURIComponent(token)}` : WS_BASE;
-      this.ws = new WebSocket(wsUrl);
+  private setStatus(newStatus: ConnectionStatus): void {
+    if (this.status === newStatus) return;
+    this.status = newStatus;
+    this.statusListeners.forEach(cb => {
+      try {
+        cb(newStatus);
+      } catch (err) {
+        console.error('[EventStreamClient] Error in status listener:', err);
+      }
+    });
+  }
 
-      this.ws.onopen = () => {
-        this.isReconnecting = false;
+  public getStatus(): ConnectionStatus {
+    return this.status;
+  }
+
+  public onStatusChange(cb: (status: ConnectionStatus) => void): () => void {
+    this.statusListeners.add(cb);
+    try {
+      cb(this.status);
+    } catch (err) {
+      console.error('[EventStreamClient] Error in initial status listener call:', err);
+    }
+    return () => {
+      this.statusListeners.delete(cb);
+    };
+  }
+
+  public async connect(): Promise<void> {
+    this.isManualDisconnect = false;
+
+    if (this.status === 'CONNECTED' || this.isConnecting) {
+      return;
+    }
+
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
+    this.isConnecting = true;
+    this.setStatus(this.reconnectAttempt > 0 ? 'RECONNECTING' : 'CONNECTING');
+
+    try {
+      const token = this.customToken !== undefined ? this.customToken : await getAuthToken();
+      if (this.isManualDisconnect) {
+        this.isConnecting = false;
+        return;
+      }
+
+      const baseUrl = this.customUrl || WS_BASE;
+      const wsUrl = token ? `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : baseUrl;
+      const WS = typeof WebSocket !== 'undefined' ? WebSocket : (globalThis as any).WebSocket;
+      if (!WS) {
+        throw new Error('WebSocket runtime is unavailable');
+      }
+
+      const ws = new WS(wsUrl);
+      this.ws = ws;
+
+      ws.onopen = () => {
+        if (this.ws !== ws) return;
+        this.isConnecting = false;
+        this.reconnectAttempt = 0;
+        this.setStatus('CONNECTED');
       };
 
-      this.ws.onmessage = (msg) => {
+      ws.onmessage = (msg: any) => {
         try {
-          const data = JSON.parse(msg.data);
+          const raw = typeof msg.data === 'string' ? msg.data : msg.data.toString();
+          const data = JSON.parse(raw);
           if (data.channel === 'events' && data.event) {
             this.listeners.forEach(cb => cb(data.event));
           }
         } catch {
-          // ignore
+          // ignore parse errors
         }
       };
 
-      this.ws.onclose = () => {
+      ws.onclose = () => {
+        if (this.ws !== ws) return;
+        this.ws = null;
+        this.isConnecting = false;
+        if (this.isManualDisconnect) {
+          this.setStatus('DISCONNECTED');
+          return;
+        }
         this.scheduleReconnect();
       };
 
-      this.ws.onerror = () => {
-        this.ws?.close();
+      ws.onerror = () => {
+        if (this.ws !== ws) return;
+        this.isConnecting = false;
+        this.setStatus('ERROR');
+        try {
+          ws.close();
+        } catch {
+          // ignore
+        }
       };
-    } catch {
+    } catch (err) {
+      this.isConnecting = false;
+      this.setStatus('ERROR');
       this.scheduleReconnect();
     }
   }
 
-  private scheduleReconnect() {
-    if (this.isReconnecting) return;
-    this.isReconnecting = true;
-    setTimeout(() => {
+  private scheduleReconnect(): void {
+    if (this.isManualDisconnect) return;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
+    this.isConnecting = false;
+    this.setStatus('RECONNECTING');
+
+    const delay = calculateBackoffDelay(this.reconnectAttempt);
+    this.reconnectAttempt++;
+
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
       this.connect();
-    }, 3000);
+    }, delay);
+  }
+
+  public disconnect(): void {
+    this.isManualDisconnect = true;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    this.isConnecting = false;
+    if (this.ws) {
+      try {
+        this.ws.close();
+      } catch {
+        // ignore
+      }
+      this.ws = null;
+    }
+    this.setStatus('DISCONNECTED');
   }
 
   public subscribe(cb: (event: EventPayload) => void): () => void {

@@ -53,7 +53,13 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // WebSocket Server
-const wss = new WebSocketServer({ server, path: '/ws' });
+const MAX_WS_PAYLOAD = 64 * 1024; // 64KB
+
+const wss = new WebSocketServer({
+  server,
+  path: '/ws',
+  maxPayload: MAX_WS_PAYLOAD
+});
 
 wss.on('connection', (ws, req) => {
   const origin = req.headers.origin;
@@ -112,19 +118,55 @@ wss.on('connection', (ws, req) => {
   }));
 
   ws.on('message', (message) => {
+    // Check message byte length
+    const byteLength = Buffer.isBuffer(message)
+      ? message.length
+      : Array.isArray(message)
+      ? message.reduce((acc, b) => acc + b.length, 0)
+      : Buffer.byteLength(message.toString());
+
+    if (byteLength > MAX_WS_PAYLOAD) {
+      console.warn(`[WS] Message payload exceeded 64KB limit (${byteLength} bytes). Closing connection.`);
+      eventBus.unregisterClient(ws);
+      try {
+        ws.close(1009, 'Message too large');
+        ws.terminate();
+      } catch {}
+      return;
+    }
+
     try {
       const data = JSON.parse(message.toString());
       if (data.type === 'ping') {
+        (ws as any).isAlive = true;
         ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
+      } else if (data.type === 'pong') {
+        (ws as any).isAlive = true;
       }
     } catch {
       // ignore
     }
   });
+
+  ws.on('error', (err) => {
+    console.warn('[WS] Socket error:', err.message);
+    eventBus.unregisterClient(ws);
+    try {
+      ws.terminate();
+    } catch {}
+  });
+
+  ws.on('close', () => {
+    eventBus.unregisterClient(ws);
+  });
 });
 
 import { fileURLToPath } from 'url';
 import path from 'path';
+
+export function stopHeartbeat(): void {
+  eventBus.stopHeartbeat();
+}
 
 export { app, server, wss };
 
@@ -161,6 +203,7 @@ if (isMainModule) {
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('\n[AI COMMAND CENTER] Shutting down...');
+  stopHeartbeat();
   db.close();
   server.close(() => {
     process.exit(0);

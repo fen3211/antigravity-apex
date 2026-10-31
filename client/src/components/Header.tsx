@@ -1,20 +1,25 @@
-import React from 'react';
 import { 
   Terminal, 
   Database, 
   Wifi, 
+  WifiOff,
   Plus, 
   Sparkles,
   Layers
 } from 'lucide-react';
-import type { DirectorStatus } from '../types.js';
+import type { DirectorStatus, ConnectionStatus } from '../types.js';
 
 interface HeaderProps {
   status: DirectorStatus | null;
   onOpenNewTask: () => void;
+  connectionStatus?: ConnectionStatus;
 }
 
-export const Header: React.FC<HeaderProps> = ({ status, onOpenNewTask }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  status, 
+  onOpenNewTask, 
+  connectionStatus = 'DISCONNECTED' 
+}) => {
   const isLive = status?.state === 'ACTIVE' || status?.state === 'ONLINE';
   const liveSessions = status?.activeSessions.filter(s => s.isLive).length || 0;
   const currentTokens = status?.activeSessions[0]?.tokenUsage;
@@ -123,10 +128,43 @@ export const Header: React.FC<HeaderProps> = ({ status, onOpenNewTask }) => {
               <span>Память</span>
             </div>
 
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-director-blue/10 border border-director-blue/20 text-director-cyan">
-              <Wifi className="w-3 h-3 animate-pulse" />
-              <span>WS Поток</span>
-            </div>
+            {/* Индикатор статуса WebSocket */}
+            {connectionStatus === 'CONNECTED' ? (
+              <div 
+                className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
+                title="WebSocket поток: подключен (WS Онлайн)"
+              >
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                </span>
+                <Wifi className="w-3 h-3 text-emerald-400" />
+                <span>WS Онлайн</span>
+              </div>
+            ) : (connectionStatus === 'CONNECTING' || connectionStatus === 'RECONNECTING') ? (
+              <div 
+                className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-amber-500/10 border-amber-500/20 text-amber-300"
+                title="WebSocket поток: восстановление соединения (WS Реконнект...)"
+              >
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500" />
+                </span>
+                <Wifi className="w-3 h-3 text-amber-400 animate-pulse" />
+                <span>WS Реконнект...</span>
+              </div>
+            ) : (
+              <div 
+                className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-rose-500/10 border-rose-500/20 text-rose-300"
+                title={`WebSocket поток: соединение разорвано (WS Офлайн - ${connectionStatus})`}
+              >
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
+                </span>
+                <WifiOff className="w-3 h-3 text-rose-400" />
+                <span>WS Офлайн</span>
+              </div>
+            )}
           </div>
 
           {/* Кнопка создания задачи */}

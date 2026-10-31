@@ -2,14 +2,89 @@ import { WebSocket } from 'ws';
 import { db } from '../db/database.js';
 import type { EventPayload, EventType, EventSource } from '../types.js';
 
-class EventBus {
-  private clients: Set<WebSocket> = new Set();
+interface HeartbeatWebSocket extends WebSocket {
+  isAlive?: boolean;
+}
 
-  public registerClient(ws: WebSocket) {
-    this.clients.add(ws);
-    ws.on('close', () => {
-      this.clients.delete(ws);
-    });
+export class EventBus {
+  private clients: Set<HeartbeatWebSocket> = new Set();
+  private heartbeatInterval: NodeJS.Timeout | null = null;
+
+  constructor() {
+    this.startHeartbeat(30000);
+  }
+
+  public registerClient(ws: WebSocket): void {
+    const client = ws as HeartbeatWebSocket;
+    client.isAlive = true;
+    this.clients.add(client);
+
+    const onPong = () => {
+      client.isAlive = true;
+    };
+
+    const onCloseOrError = () => {
+      this.unregisterClient(client);
+    };
+
+    client.on('pong', onPong);
+    client.on('close', onCloseOrError);
+    client.on('error', onCloseOrError);
+  }
+
+  public unregisterClient(ws: WebSocket): void {
+    this.clients.delete(ws as HeartbeatWebSocket);
+  }
+
+  public startHeartbeat(intervalMs = 30000): void {
+    this.stopHeartbeat();
+    this.heartbeatInterval = setInterval(() => {
+      this.checkHeartbeat();
+    }, intervalMs);
+    if (this.heartbeatInterval.unref) {
+      this.heartbeatInterval.unref();
+    }
+  }
+
+  public stopHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+  }
+
+  public checkHeartbeat(): void {
+    for (const client of Array.from(this.clients)) {
+      if (client.isAlive === false) {
+        this.clients.delete(client);
+        try {
+          client.terminate();
+        } catch {
+          // ignore termination error
+        }
+        continue;
+      }
+
+      client.isAlive = false;
+      try {
+        client.ping();
+      } catch (err) {
+        this.clients.delete(client);
+        try {
+          client.terminate();
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }
+
+  public getClientsCount(): number {
+    return this.clients.size;
+  }
+
+  public getClients(): Set<WebSocket> {
+    return this.clients as Set<WebSocket>;
   }
 
   public publish(event: {

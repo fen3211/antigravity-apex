@@ -56,6 +56,8 @@ export interface EventPayload {
   data: Record<string, any>;
 }
 
+export type ConnectionStatus = 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED' | 'ERROR';
+
 export type TaskStatus = 'pending' | 'in_progress' | 'verification' | 'completed' | 'failed' | 'escalated';
 
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
