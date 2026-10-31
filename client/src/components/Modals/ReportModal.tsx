@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, CheckCircle, AlertTriangle, ShieldCheck, FileText } from 'lucide-react';
+import { X, ShieldCheck } from 'lucide-react';
 import type { SubagentReport } from '../../types.js';
 
 interface ReportModalProps {
@@ -22,13 +22,13 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
       <div className="w-full max-w-2xl glass-panel p-6 space-y-5 max-h-[85vh] flex flex-col border border-white/15 shadow-glass-card">
-        {/* Header */}
+        {/* Шапка модального окна */}
         <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-5 h-5 text-emerald-400" />
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                Subagent 9-Point Verification Report
+                9-пунктный верификационный отчёт субагента
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
                   isSuccess 
                     ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
@@ -38,7 +38,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 </span>
               </h3>
               <p className="text-[11px] font-mono text-slate-400 mt-0.5">
-                Task: {taskTitle || report.taskName} {agentId ? `• Executor: @${agentId}` : ''}
+                Задача: {taskTitle || report.taskName} {agentId ? `• Исполнитель: @${agentId}` : ''}
               </p>
             </div>
           </div>
@@ -51,31 +51,31 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           </button>
         </div>
 
-        {/* 9 Structured Points List */}
+        {/* 9 структурированных пунктов протокола */}
         <div className="flex-1 overflow-y-auto pr-1 space-y-3.5 text-xs">
-          {/* 1 & 2 */}
+          {/* Пункты 1 и 2 */}
           <div className="p-3 rounded-xl bg-surface-card border border-white/5 space-y-1">
             <span className="text-[10px] uppercase font-mono text-slate-500 block">
-              1. Task Name & 2. Verified Status:
+              1. Название задачи и 2. Подтверждённый статус:
             </span>
             <div className="flex items-center justify-between">
               <span className="font-semibold text-white">{report.taskName}</span>
-              <span className="font-mono text-emerald-400">{report.status}</span>
+              <span className="font-mono text-emerald-400 font-bold">{report.status}</span>
             </div>
           </div>
 
-          {/* 3. What was done */}
+          {/* Пункт 3 */}
           <div className="p-3 rounded-xl bg-surface-card border border-white/5 space-y-1">
             <span className="text-[10px] uppercase font-mono text-slate-500 block">
-              3. What Was Done:
+              3. Что сделано:
             </span>
             <p className="text-slate-200 leading-relaxed">{report.summary}</p>
           </div>
 
-          {/* 4. Modified files */}
+          {/* Пункт 4 */}
           <div className="p-3 rounded-xl bg-surface-card border border-white/5 space-y-1">
             <span className="text-[10px] uppercase font-mono text-slate-500 block">
-              4. Modified Files:
+              4. Изменённые файлы:
             </span>
             {report.modifiedFiles && report.modifiedFiles.length > 0 ? (
               <ul className="space-y-0.5 font-mono text-director-cyan text-[11px]">
@@ -84,14 +84,14 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 ))}
               </ul>
             ) : (
-              <span className="text-slate-500 italic">No files modified directly</span>
+              <span className="text-slate-500 italic">Файлы напрямую не модифицировались</span>
             )}
           </div>
 
-          {/* 5 & 6. Executed checks and results */}
+          {/* Пункты 5 и 6 */}
           <div className="p-3 rounded-xl bg-surface-card border border-white/5 space-y-2">
             <span className="text-[10px] uppercase font-mono text-slate-500 block">
-              5. Executed Checks & 6. Check Results (Evidence):
+              5. Выполненные проверки и 6. Результаты проверок (Логи и факты):
             </span>
             <div className="space-y-1">
               <div className="flex flex-wrap gap-1.5">
@@ -107,33 +107,33 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             </div>
           </div>
 
-          {/* 7. Issues and risks */}
+          {/* Пункт 7 */}
           <div className="p-3 rounded-xl bg-surface-card border border-white/5 space-y-1">
             <span className="text-[10px] uppercase font-mono text-slate-500 block">
-              7. Discovered Issues & Remaining Risks:
+              7. Обнаруженные проблемы и оставшиеся риски:
             </span>
             <p className="text-amber-300/90 leading-relaxed">
-              {report.issuesAndRisks || 'None identified.'}
+              {report.issuesAndRisks || 'Рисков не обнаружено.'}
             </p>
           </div>
 
-          {/* 8 & 9. Pending and next steps */}
+          {/* Пункты 8 и 9 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-3 rounded-xl bg-surface-card border border-white/5 space-y-1">
               <span className="text-[10px] uppercase font-mono text-slate-500 block">
-                8. Pending Items:
+                8. Незавершённые пункты:
               </span>
               <p className="text-slate-300 text-[11px]">
-                {report.pendingItems || 'None'}
+                {report.pendingItems || 'Нет'}
               </p>
             </div>
 
             <div className="p-3 rounded-xl bg-surface-card border border-white/5 space-y-1">
               <span className="text-[10px] uppercase font-mono text-slate-500 block">
-                9. Recommended Next Steps:
+                9. Рекомендованные дальнейшие шаги:
               </span>
               <p className="text-director-cyan text-[11px]">
-                {report.nextSteps || 'Proceed to Director final approval'}
+                {report.nextSteps || 'Перейти к финальному утверждению Директора'}
               </p>
             </div>
           </div>

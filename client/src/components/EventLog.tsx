@@ -2,14 +2,9 @@ import React, { useState } from 'react';
 import { 
   Radio, 
   Search, 
-  Filter, 
-  Trash2, 
-  Pause, 
-  Play, 
   Copy, 
   Check, 
   Download,
-  PlusCircle,
   Sparkles
 } from 'lucide-react';
 import type { EventPayload, EventType } from '../types.js';
@@ -57,26 +52,26 @@ export const EventLog: React.FC<EventLogProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Заголовок */}
       <div className="glass-panel p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
             <Radio className="w-5 h-5 text-director-blue animate-pulse" />
-            <span>Unified Antigravity Event Stream</span>
+            <span>Единый поток событий Antigravity</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time telemetry stream synchronized via WebSocket. Standardized 10-type event bus.
+            Стриминг телеметрии в реальном времени через WebSocket. Стандартизированная 10-типовая шина событий.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Test Event Buttons */}
+          {/* Тестовые события для проверки шины */}
           <button
             onClick={() => onEmitTestEvent('quality_gate.passed')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-mono border border-emerald-500/20 transition-all"
           >
             <Sparkles className="w-3 h-3" />
-            <span>Emit QG Pass</span>
+            <span>Тест: Шлюз пройден</span>
           </button>
 
           <button
@@ -84,7 +79,7 @@ export const EventLog: React.FC<EventLogProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 text-xs font-mono border border-pink-500/20 transition-all"
           >
             <Sparkles className="w-3 h-3" />
-            <span>Emit Escalation</span>
+            <span>Тест: Эскалация L4</span>
           </button>
 
           <button
@@ -92,19 +87,19 @@ export const EventLog: React.FC<EventLogProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono border border-white/10 transition-all"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export JSON</span>
+            <span>Экспорт JSON</span>
           </button>
         </div>
       </div>
 
-      {/* Filter Bar */}
+      {/* Панель фильтров */}
       <div className="glass-card p-3.5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-1 min-w-[280px]">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search event type, task, or agent..."
+              placeholder="Поиск по типу события, задаче или агенту..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="glass-input pl-9 text-xs w-full font-mono"
@@ -116,26 +111,26 @@ export const EventLog: React.FC<EventLogProps> = ({
             onChange={e => setTypeFilter(e.target.value)}
             className="glass-input text-xs font-mono"
           >
-            <option value="all">All Events</option>
-            <option value="agent">agent.* (Started, Completed, Failed)</option>
-            <option value="task">task.* (Created, Updated, Completed)</option>
-            <option value="escalation">escalation.* (Requested, Resolved)</option>
-            <option value="quality_gate">quality_gate.* (Passed, Failed)</option>
+            <option value="all">Все события</option>
+            <option value="agent">agent.* (Запуск, Завершение, Сбой)</option>
+            <option value="task">task.* (Создание, Обновление, Завершение)</option>
+            <option value="escalation">escalation.* (Запрос, Разрешение)</option>
+            <option value="quality_gate">quality_gate.* (Пройден, Провален)</option>
           </select>
         </div>
 
         <div className="text-xs font-mono text-slate-400">
-          Showing <strong className="text-white">{filteredEvents.length}</strong> events
+          Отображено <strong className="text-white">{filteredEvents.length}</strong> событий
         </div>
       </div>
 
-      {/* Main Events Feed & Inspector */}
+      {/* Список событий и инспектор */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Events Table / List */}
+        {/* Список событий */}
         <div className="lg:col-span-2 glass-panel p-4 space-y-2 max-h-[600px] overflow-y-auto">
           {filteredEvents.length === 0 ? (
             <p className="text-center py-12 text-slate-500 text-xs">
-              No matching events in memory buffer.
+              Нет событий, соответствующих выбранному фильтру.
             </p>
           ) : (
             filteredEvents.map(evt => {
@@ -180,7 +175,7 @@ export const EventLog: React.FC<EventLogProps> = ({
 
                   <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
                     <span>
-                      {evt.agent_id ? `@${evt.agent_id}` : 'system'} {evt.task_id ? `• [${evt.task_id}]` : ''}
+                      {evt.agent_id ? `@${evt.agent_id}` : 'система'} {evt.task_id ? `• [${evt.task_id}]` : ''}
                     </span>
                     <span className="text-slate-500">
                       {new Date(evt.timestamp).toLocaleTimeString()}
@@ -192,11 +187,11 @@ export const EventLog: React.FC<EventLogProps> = ({
           )}
         </div>
 
-        {/* Selected Event JSON Inspector */}
+        {/* Инспектор структуры JSON */}
         <div className="glass-panel p-5 space-y-3 flex flex-col">
           <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
             <h3 className="text-xs font-bold font-mono text-slate-200 uppercase">
-              Event Payload Inspector
+              Инспектор структуры события
             </h3>
             {selectedEvent && (
               <button
@@ -206,12 +201,12 @@ export const EventLog: React.FC<EventLogProps> = ({
                 {copiedId === selectedEvent.id ? (
                   <>
                     <Check className="w-3 h-3 text-emerald-400" />
-                    <span>Copied!</span>
+                    <span>Скопировано!</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-3 h-3" />
-                    <span>Copy JSON</span>
+                    <span>Копировать JSON</span>
                   </>
                 )}
               </button>
@@ -224,7 +219,7 @@ export const EventLog: React.FC<EventLogProps> = ({
             </pre>
           ) : (
             <div className="flex-1 flex items-center justify-center text-center text-slate-500 text-xs py-20 font-mono">
-              Click any event from the stream to inspect full JSON metadata.
+              Выберите любое событие из потока для детального просмотра метаданных.
             </div>
           )}
         </div>

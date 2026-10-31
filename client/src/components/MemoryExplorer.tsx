@@ -4,11 +4,8 @@ import {
   FileText, 
   Save, 
   Check, 
-  Clock, 
   Database, 
-  FileCode, 
-  RefreshCw,
-  AlertCircle
+  RefreshCw
 } from 'lucide-react';
 import type { KnowledgeDoc } from '../types.js';
 
@@ -33,7 +30,6 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
 
   const currentDoc = docs.find(d => d.filename === selectedFile) || docs[0];
 
-  // Sync content when doc changes
   React.useEffect(() => {
     if (currentDoc) {
       setEditorContent(currentDoc.content);
@@ -44,7 +40,7 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
 
   const handleSelectDoc = (filename: string) => {
     if (hasUnsavedChanges) {
-      if (!confirm('You have unsaved changes. Discard and switch?')) {
+      if (!confirm('У вас есть несохранённые изменения. Сбросить их и переключить документ?')) {
         return;
       }
     }
@@ -65,40 +61,40 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Заголовок */}
       <div className="glass-panel p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
             <Brain className="w-5 h-5 text-director-blue" />
-            <span>AI Director Persistent Memory</span>
+            <span>Постоянная память и регламенты Director</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Connected to global repository at <code className="text-director-cyan font-mono">~/.gemini/antigravity/knowledge/ai-director</code>
+            Подключено к глобальному репозиторию <code className="text-director-cyan font-mono">~/.gemini/antigravity/knowledge/ai-director</code>
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <span className="badge-live">
             <Database className="w-3.5 h-3.5" />
-            <span>{docs.length} Knowledge Docs Connected</span>
+            <span>{docs.length} документов памяти подключено</span>
           </span>
 
           <button
             onClick={onRefresh}
             className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 border border-white/10 transition-all"
-            title="Refresh documents"
+            title="Обновить документы"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Editor Layout: Sidebar with doc list + Main markdown editor */}
+      {/* Сетка редактора: Список файлов слева + Текстовый редактор справа */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left Column: Docs List */}
+        {/* Список файлов */}
         <div className="glass-panel p-4 space-y-2">
           <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 px-2 block">
-            Memory Files
+            Файлы памяти
           </span>
 
           <div className="space-y-1">
@@ -129,11 +125,11 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Document Editor */}
+        {/* Область редактирования документа */}
         <div className="lg:col-span-3 glass-panel p-5 space-y-4 flex flex-col">
           {currentDoc ? (
             <>
-              {/* Doc header & save controls */}
+              {/* Шапка документа и сохранение */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/[0.08]">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -141,13 +137,13 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
                       {currentDoc.filename}
                     </h3>
                     {hasUnsavedChanges && (
-                      <span className="badge-demo text-[10px] py-0 px-1.5">UNSAVED</span>
+                      <span className="badge-demo text-[10px] py-0 px-1.5 font-mono">НЕ СОХРАНЕНО</span>
                     )}
                   </div>
                   <div className="flex items-center gap-3 text-[11px] font-mono text-slate-500">
-                    <span>Size: {(currentDoc.size / 1024).toFixed(1)} KB</span>
+                    <span>Размер: {(currentDoc.size / 1024).toFixed(1)} КБ</span>
                     <span>•</span>
-                    <span>Modified: {new Date(currentDoc.lastModified).toLocaleString()}</span>
+                    <span>Изменён: {new Date(currentDoc.lastModified).toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -155,7 +151,7 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
                   {saveSuccess && (
                     <span className="text-xs text-emerald-400 flex items-center gap-1 font-mono">
                       <Check className="w-3.5 h-3.5" />
-                      Saved & Synced!
+                      Сохранено и синхронизировано!
                     </span>
                   )}
 
@@ -169,12 +165,12 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
                     }`}
                   >
                     <Save className="w-3.5 h-3.5" />
-                    <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
+                    <span>{isSaving ? 'Сохранение...' : 'Сохранить изменения'}</span>
                   </button>
                 </div>
               </div>
 
-              {/* Textarea Editor */}
+              {/* Поле ввода редактора */}
               <div className="flex-1 min-h-[500px] flex flex-col">
                 <textarea
                   value={editorContent}
@@ -189,7 +185,7 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
             </>
           ) : (
             <div className="py-20 text-center text-slate-500">
-              No knowledge documents loaded.
+              Документы памяти не загружены.
             </div>
           )}
         </div>

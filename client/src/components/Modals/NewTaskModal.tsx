@@ -17,7 +17,7 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
   const [description, setDescription] = useState('');
   const [assignedAgent, setAssignedAgent] = useState('director');
   const [priority, setPriority] = useState<TaskItem['priority']>('medium');
-  const [stage, setStage] = useState<TaskItem['stage']>('Director_Triage');
+  const [stage] = useState<TaskItem['stage']>('Director_Triage');
   const [isDemo, setIsDemo] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,12 +37,11 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
         stage,
         isDemo
       });
-      // Reset
       setTitle('');
       setDescription('');
       onClose();
     } catch (err: any) {
-      alert(err.message || 'Failed to create task');
+      alert(err.message || 'Ошибка создания задачи');
     } finally {
       setIsSubmitting(false);
     }
@@ -51,12 +50,12 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
       <div className="w-full max-w-lg glass-panel p-6 space-y-5 border border-white/15 shadow-glass-card">
-        {/* Header */}
+        {/* Шапка модального окна */}
         <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
             <CheckSquare className="w-5 h-5 text-director-blue" />
             <h3 className="text-sm font-bold text-white">
-              Create & Dispatch New Task
+              Создать и запустить новую задачу
             </h3>
           </div>
           <button
@@ -67,17 +66,17 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
           </button>
         </div>
 
-        {/* Form */}
+        {/* Форма создания */}
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
             <label className="text-slate-300 font-medium block mb-1">
-              Task Title:
+              Заголовок задачи:
             </label>
             <input
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="e.g. Implement WebSocket Reconnect Logic"
+              placeholder="например: Реализовать логику переподключения WebSocket"
               className="glass-input w-full"
               required
             />
@@ -85,12 +84,12 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
 
           <div>
             <label className="text-slate-300 font-medium block mb-1">
-              Description & Specifications:
+              Описание и технические требования:
             </label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Provide exact boundaries, files to touch, and constraints..."
+              placeholder="Укажите точные границы задачи, изменяемые файлы и критерии проверки..."
               className="glass-input w-full h-24 resize-none font-sans"
             />
           </div>
@@ -98,37 +97,37 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-slate-300 font-medium block mb-1">
-                Assigned Specialist:
+                Назначенный исполнитель:
               </label>
               <select
                 value={assignedAgent}
                 onChange={e => setAssignedAgent(e.target.value)}
                 className="glass-input w-full"
               >
-                <option value="director">director (Director Triage)</option>
-                <option value="researcher">researcher (Docs & Codebase)</option>
-                <option value="frontend-developer">frontend-developer (UI/React)</option>
+                <option value="director">director (Триаж Директора)</option>
+                <option value="researcher">researcher (Исследования и код)</option>
+                <option value="frontend-developer">frontend-developer (React/UI)</option>
                 <option value="backend-developer">backend-developer (Node/DB/API)</option>
-                <option value="ui-ux-designer">ui-ux-designer (Ergonomics)</option>
-                <option value="qa-engineer">qa-engineer (Testing)</option>
-                <option value="code-reviewer">code-reviewer (Audit)</option>
-                <option value="senior-architect">senior-architect (Pro Tier)</option>
+                <option value="ui-ux-designer">ui-ux-designer (Эргономика)</option>
+                <option value="qa-engineer">qa-engineer (Тестирование)</option>
+                <option value="code-reviewer">code-reviewer (Аудит)</option>
+                <option value="senior-architect">senior-architect (Уровень Pro)</option>
               </select>
             </div>
 
             <div>
               <label className="text-slate-300 font-medium block mb-1">
-                Priority:
+                Приоритет:
               </label>
               <select
                 value={priority}
                 onChange={e => setPriority(e.target.value as any)}
                 className="glass-input w-full"
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
+                <option value="low">Низкий</option>
+                <option value="medium">Средний</option>
+                <option value="high">Высокий</option>
+                <option value="critical">Критический</option>
               </select>
             </div>
           </div>
@@ -141,10 +140,10 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
                 onChange={e => setIsDemo(e.target.checked)}
                 className="accent-amber-500 rounded"
               />
-              <span>Mark as DEMO Task (Non-production simulation)</span>
+              <span>Отметить как ДЕМО-задачу (Тестовая симуляция)</span>
             </label>
             <p className="text-[11px] text-slate-500 pl-5">
-              Distinguishes simulation exercises from verified local Antigravity workloads.
+              Отделяет тестовые упражнения от реальных подтверждённых процессов Antigravity.
             </p>
           </div>
 
@@ -154,7 +153,7 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
             >
-              Cancel
+              Отмена
             </button>
             <button
               type="submit"
@@ -162,7 +161,7 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-director-blue to-blue-600 hover:from-blue-500 text-white font-semibold shadow-glass-subtle transition-all"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{isSubmitting ? 'Creating...' : 'Dispatch Task'}</span>
+              <span>{isSubmitting ? 'Создание...' : 'Запустить задачу'}</span>
             </button>
           </div>
         </form>

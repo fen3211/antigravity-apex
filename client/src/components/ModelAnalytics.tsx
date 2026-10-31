@@ -3,11 +3,7 @@ import {
   BarChart3, 
   Cpu, 
   Flame, 
-  ShieldCheck, 
-  Layers, 
-  AlertCircle, 
   Info,
-  TrendingUp,
   Database
 } from 'lucide-react';
 import type { ModelMetrics } from '../types.js';
@@ -27,91 +23,91 @@ export const ModelAnalytics: React.FC<ModelAnalyticsProps> = ({ analytics }) => 
   if (!analytics) {
     return (
       <div className="glass-panel p-8 text-center text-slate-400">
-        Loading Antigravity model analytics...
+        Загрузка аналитики моделей Antigravity...
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header and Telemetry Integrity Notice */}
+      {/* Заголовок и уведомление о достоверности данных */}
       <div className="glass-panel p-5 space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
               <BarChart3 className="w-5 h-5 text-director-blue" />
-              <span>Model Routing Analytics & Telemetry</span>
+              <span>Аналитика маршрутизации моделей и телеметрия</span>
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Resource consumption breakdown across Gemini 3.8 Flash, Pro tier, and Gemini 4 Argon.
+              Детализация расхода ресурсов между Gemini 3.8 Flash, Pro-уровнем и Gemini 4 Argon.
             </p>
           </div>
 
           <div className="flex items-center gap-2 text-xs">
             <span className="badge-live">
               <Database className="w-3.5 h-3.5" />
-              <span>{analytics.verifiedRealSessionsCount} Real Sessions Verified</span>
+              <span>{analytics.verifiedRealSessionsCount} реальных сессий подтверждено</span>
             </span>
           </div>
         </div>
 
-        {/* Telemetry Integrity Note */}
+        {/* Заметка о прозрачности источников данных */}
         <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-slate-300 flex items-start gap-2.5">
           <Info className="w-4 h-4 text-director-cyan shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-semibold text-white">Data Provenance Policy:</span>
+            <span className="font-semibold text-white">Политика достоверности данных:</span>
             <p className="text-slate-400 leading-relaxed">
-              Tokens and timestamps are extracted directly from active and archived Antigravity <code className="text-director-cyan">transcript.jsonl</code> logs. 
-              Antigravity does not expose cloud account dollar limits or quotas through its local CLI, so global quota metrics are marked as <span className="text-amber-400 font-mono">ESTIMATED</span> where appropriate.
+              Токены и временные метки извлекаются напрямую из активных и архивных логов <code className="text-director-cyan">transcript.jsonl</code> каталога Antigravity. 
+              Antigravity не транслирует облачный долларовый баланс через локальный CLI, поэтому глобальные квоты аккаунта помечены бейджем <span className="text-amber-400 font-mono">ОЦЕНКА</span>.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Aggregate Metrics Cards */}
+      {/* Сводные агрегированные показатели */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card p-5">
-          <span className="text-xs text-slate-400">Total Recorded Runs</span>
+          <span className="text-xs text-slate-400">Всего запусков</span>
           <div className="mt-2 text-2xl font-bold font-mono text-white">
             {analytics.totalRuns}
           </div>
           <span className="text-[11px] text-slate-500 mt-1 block font-mono">
-            Across {analytics.tiers.length} model tiers
+            По {analytics.tiers.length} модельным уровням
           </span>
         </div>
 
         <div className="glass-card p-5">
-          <span className="text-xs text-slate-400">Verified Input Tokens</span>
+          <span className="text-xs text-slate-400">Подтверждённые входные токены</span>
           <div className="mt-2 text-2xl font-bold font-mono text-director-cyan">
             {(analytics.totalTokens.input / 1000).toFixed(1)}k
           </div>
           <span className="text-[11px] text-emerald-400 mt-1 block font-mono">
-            LIVE from transcript.jsonl
+            LIVE из transcript.jsonl
           </span>
         </div>
 
         <div className="glass-card p-5">
-          <span className="text-xs text-slate-400">Verified Output Tokens</span>
+          <span className="text-xs text-slate-400">Подтверждённые выходные токены</span>
           <div className="mt-2 text-2xl font-bold font-mono text-director-blue">
             {(analytics.totalTokens.output / 1000).toFixed(1)}k
           </div>
           <span className="text-[11px] text-emerald-400 mt-1 block font-mono">
-            LIVE from transcript.jsonl
+            LIVE из transcript.jsonl
           </span>
         </div>
 
         <div className="glass-card p-5">
-          <span className="text-xs text-slate-400">Escalation Frequency</span>
+          <span className="text-xs text-slate-400">Частота эскалаций</span>
           <div className="mt-2 text-2xl font-bold font-mono text-pink-400">
             {analytics.escalationRate}%
           </div>
           <span className="text-[11px] text-slate-400 mt-1 block font-mono">
-            L3 Senior Arch / L4 Argon
+            Senior Arch (L3) / Argon (L4)
           </span>
         </div>
       </div>
 
-      {/* Tiers Breakdown Cards */}
+      {/* Карточки по модельным уровням */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {analytics.tiers.map((tier) => {
           const isArgon = tier.tier.includes('argon');
@@ -154,32 +150,32 @@ export const ModelAnalytics: React.FC<ModelAnalyticsProps> = ({ analytics }) => 
                 </div>
 
                 {tier.isEstimate ? (
-                  <span className="badge-demo text-[10px] py-0 px-2">ESTIMATED</span>
+                  <span className="badge-demo text-[10px] py-0 px-2 font-mono">ОЦЕНКА</span>
                 ) : (
-                  <span className="badge-live text-[10px] py-0 px-2">VERIFIED LIVE</span>
+                  <span className="badge-live text-[10px] py-0 px-2 font-mono">ПОДТВЕРЖДЕНО LIVE</span>
                 )}
               </div>
 
-              {/* Stats Bar */}
+              {/* Панель цифр */}
               <div className="grid grid-cols-3 gap-3 p-3 rounded-xl bg-black/40 border border-white/5 text-center font-mono">
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase block">Runs</span>
+                  <span className="text-[10px] text-slate-500 uppercase block">Запусков</span>
                   <span className="text-base font-bold text-white">{tier.runsCount}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase block">Completed</span>
+                  <span className="text-[10px] text-slate-500 uppercase block">Завершено</span>
                   <span className="text-base font-bold text-emerald-400">{tier.tasksCompleted}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase block">Escalations</span>
+                  <span className="text-[10px] text-slate-500 uppercase block">Эскалаций</span>
                   <span className="text-base font-bold text-pink-400">{tier.escalationCount}</span>
                 </div>
               </div>
 
-              {/* Progress Bar */}
+              {/* Индикатор прогресса */}
               <div className="space-y-1.5 text-xs font-mono">
                 <div className="flex justify-between text-slate-400 text-[11px]">
-                  <span>Success Rate</span>
+                  <span>Успешность</span>
                   <span className="text-emerald-400 font-semibold">{tier.successRate}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
@@ -196,11 +192,11 @@ export const ModelAnalytics: React.FC<ModelAnalyticsProps> = ({ analytics }) => 
                 </div>
               </div>
 
-              {/* Tokens info */}
+              {/* Подсчёт токенов */}
               <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-2 border-t border-white/5">
-                <span>Tokens Tracked:</span>
+                <span>Учтено токенов:</span>
                 <span className="text-slate-200">
-                  {(tier.inputTokens + tier.outputTokens).toLocaleString()} tokens
+                  {(tier.inputTokens + tier.outputTokens).toLocaleString()} токенов
                 </span>
               </div>
             </div>

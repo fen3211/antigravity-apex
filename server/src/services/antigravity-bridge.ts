@@ -73,30 +73,30 @@ export class AntigravityBridge {
 
   private getAgentDomain(id: string): string {
     switch (id) {
-      case 'director': return 'Master Orchestration & Quality Authority';
-      case 'researcher': return 'Documentation, Dependencies & Deep Code Inspection';
-      case 'frontend-developer': return 'React, Next.js, TypeScript, UI Motion & Ergonomics';
-      case 'backend-developer': return 'APIs, Node.js, Python, Databases, Schemas & Security';
-      case 'ui-ux-designer': return 'Ergonomics, Liquid Glass Tokens, Visual Hierarchy';
-      case 'qa-engineer': return 'Unit/Integration/E2E Test Suites & Regression Verification';
-      case 'code-reviewer': return 'Independent Security Audit & Defect Detection';
-      case 'senior-architect': return 'Complex System Architecture, Concurrency & L3 Escalation';
-      case 'firestore-rules-author': return 'Cloud Firestore Security Rules & Audit';
-      default: return 'Specialist Subagent';
+      case 'director': return 'Главный оркестратор и арбитр качества';
+      case 'researcher': return 'Исследование документации, зависимостей и архитектуры кода';
+      case 'frontend-developer': return 'React, Next.js, TypeScript, UI-кинематика и эргономика';
+      case 'backend-developer': return 'API, Node.js, Python, базы данных, схемы и безопасность';
+      case 'ui-ux-designer': return 'Эргономика, дизайн-системы Liquid Glass, визуальная иерархия';
+      case 'qa-engineer': return 'Автоматизированные тесты (Unit/Интеграция/E2E), регрессии';
+      case 'code-reviewer': return 'Независимый аудит безопасности diff-ов и поиск дефектов';
+      case 'senior-architect': return 'Сложная архитектура, concurrency-гонки и эскалация L3';
+      case 'firestore-rules-author': return 'Правила безопасности Cloud Firestore и аудит';
+      default: return 'Профильный субагент';
     }
   }
 
   private getDefaultAgents(): AgentInfo[] {
     const list = [
-      { id: 'director', name: 'AI Development Director', role: 'ORCHESTRATOR', model: 'gemini-3.8-flash-high', isDirector: true },
-      { id: 'researcher', name: 'Researcher', role: 'RESEARCHER', model: 'flash' },
-      { id: 'frontend-developer', name: 'Frontend Developer', role: 'FRONTEND', model: 'flash' },
-      { id: 'backend-developer', name: 'Backend Developer', role: 'BACKEND', model: 'flash' },
-      { id: 'ui-ux-designer', name: 'UI/UX Designer', role: 'DESIGNER', model: 'flash' },
-      { id: 'qa-engineer', name: 'QA Engineer', role: 'QA', model: 'flash' },
-      { id: 'code-reviewer', name: 'Code Reviewer', role: 'AUDITOR', model: 'flash' },
-      { id: 'senior-architect', name: 'Senior Architect', role: 'ARCHITECT', model: 'pro' },
-      { id: 'firestore-rules-author', name: 'Firestore Rules Author', role: 'SECURITY', model: 'flash' }
+      { id: 'director', name: 'AI Development Director', role: 'ОРКЕСТРАТОР', model: 'gemini-3.8-flash-high', isDirector: true },
+      { id: 'researcher', name: 'Researcher', role: 'ИССЛЕДОВАТЕЛЬ', model: 'flash' },
+      { id: 'frontend-developer', name: 'Frontend Developer', role: 'ФРОНТЕНД', model: 'flash' },
+      { id: 'backend-developer', name: 'Backend Developer', role: 'БЭКЕНД', model: 'flash' },
+      { id: 'ui-ux-designer', name: 'UI/UX Designer', role: 'ДИЗАЙНЕР', model: 'flash' },
+      { id: 'qa-engineer', name: 'QA Engineer', role: 'ТЕСТИРОВЩИК', model: 'flash' },
+      { id: 'code-reviewer', name: 'Code Reviewer', role: 'РЕВЬЮЕР', model: 'flash' },
+      { id: 'senior-architect', name: 'Senior Architect', role: 'АРХИТЕКТОР', model: 'pro' },
+      { id: 'firestore-rules-author', name: 'Firestore Rules Author', role: 'БЕЗОПАСНОСТЬ', model: 'flash' }
     ];
 
     return list.map(a => ({

@@ -36,14 +36,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   liveEventsCount
 }) => {
   const navItems: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }>; badge?: number | string; badgeColor?: string }[] = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'agents', label: 'Agents', icon: Users, badge: '9' },
-    { id: 'workflow', label: 'Live Workflow', icon: GitBranch },
-    { id: 'analytics', label: 'Model Analytics', icon: BarChart3 },
-    { id: 'tasks', label: 'Task Queue', icon: CheckSquare, badge: pendingTasksCount > 0 ? pendingTasksCount : undefined, badgeColor: 'bg-director-blue text-white' },
-    { id: 'memory', label: 'Director Memory', icon: Brain, badge: '8 files' },
-    { id: 'control', label: 'Control Center', icon: Sliders },
-    { id: 'events', label: 'Event Stream', icon: Radio, badge: liveEventsCount > 0 ? `${liveEventsCount}` : undefined, badgeColor: 'bg-emerald-500/20 text-emerald-300' }
+    { id: 'overview', label: 'Обзор', icon: LayoutDashboard },
+    { id: 'agents', label: 'Агенты', icon: Users, badge: '9' },
+    { id: 'workflow', label: 'Карта процессов', icon: GitBranch },
+    { id: 'analytics', label: 'Аналитика моделей', icon: BarChart3 },
+    { id: 'tasks', label: 'Очередь задач', icon: CheckSquare, badge: pendingTasksCount > 0 ? pendingTasksCount : undefined, badgeColor: 'bg-director-blue text-white' },
+    { id: 'memory', label: 'Память Директора', icon: Brain, badge: '8 файлов' },
+    { id: 'control', label: 'Центр управления', icon: Sliders },
+    { id: 'events', label: 'Поток событий', icon: Radio, badge: liveEventsCount > 0 ? `${liveEventsCount}` : undefined, badgeColor: 'bg-emerald-500/20 text-emerald-300' }
   ];
 
   return (
@@ -51,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="space-y-6">
         <div>
           <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 px-3">
-            Navigation
+            Навигация
           </span>
           <nav className="mt-2 space-y-1">
             {navItems.map((item) => {
@@ -91,35 +91,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* Argon Escalation Status Card in sidebar */}
+        {/* Карточка статуса эскалации к Argon в боковой панели */}
         <div className="p-3.5 rounded-2xl bg-gradient-to-br from-pink-500/10 via-purple-500/5 to-transparent border border-pink-500/20 shadow-glow-argon">
           <div className="flex items-center gap-2 text-pink-400 text-xs font-semibold">
             <Flame className="w-4 h-4 text-director-argon animate-pulse" />
-            <span>Escalation Protocol</span>
+            <span>Протокол эскалации</span>
           </div>
           <p className="mt-1.5 text-[11px] text-slate-400 leading-relaxed">
-            Level 4 manual switch to <strong className="text-pink-300 font-medium">Gemini 4 Argon</strong> ready. Strict verification required.
+            Ручной переход 4-го уровня к <strong className="text-pink-300 font-medium">Gemini 4 Argon</strong> готов. Требуется строгая верификация.
           </p>
           <div className="mt-3 flex items-center justify-between text-[10px] font-mono text-slate-500">
-            <span>Policy: STRICT</span>
-            <span className="text-pink-400">Level 4</span>
+            <span>Политика: СТРОГАЯ</span>
+            <span className="text-pink-400 font-bold">Уровень 4</span>
           </div>
         </div>
       </div>
 
-      {/* System info footer */}
+      {/* Системная информация в подвале */}
       <div className="pt-4 border-t border-white/[0.08] text-[11px] text-slate-500 space-y-1">
         <div className="flex justify-between items-center font-mono">
-          <span>Engine</span>
+          <span>Движок</span>
           <span className="text-slate-300">Antigravity 2.0</span>
         </div>
         <div className="flex justify-between items-center font-mono">
-          <span>Environment</span>
-          <span className="text-slate-300">Windows Local</span>
+          <span>Окружение</span>
+          <span className="text-slate-300">Локально (Windows)</span>
         </div>
         <div className="flex justify-between items-center font-mono">
-          <span>Security</span>
-          <span className="text-emerald-400">Strict Localhost</span>
+          <span>Безопасность</span>
+          <span className="text-emerald-400 font-medium">Только Localhost</span>
         </div>
       </div>
     </aside>

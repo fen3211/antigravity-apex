@@ -30,7 +30,7 @@ import type {
 export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('overview');
 
-  // Core Data State
+  // Данные приложения
   const [status, setStatus] = useState<DirectorStatus | null>(null);
   const [agents, setAgents] = useState<AgentInfo[]>([]);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
@@ -46,12 +46,12 @@ export function App() {
   const [knowledgeDocs, setKnowledgeDocs] = useState<KnowledgeDoc[]>([]);
   const [settings, setSettings] = useState<ControlSettings | null>(null);
 
-  // Modals state
+  // Модальные окна
   const [promptModalAgent, setPromptModalAgent] = useState<AgentInfo | null>(null);
   const [reportModalTask, setReportModalTask] = useState<{ report: SubagentReport; title: string; agentId: string } | null>(null);
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
 
-  // Initial Data Fetch
+  // Первоначальная загрузка данных
   const loadAllData = async () => {
     try {
       const [
@@ -80,32 +80,32 @@ export function App() {
       if (fetchedDocs) setKnowledgeDocs(fetchedDocs);
       if (fetchedSettings) setSettings(fetchedSettings);
     } catch (err) {
-      console.error('Error initializing Command Center data:', err);
+      console.error('Ошибка инициализации данных Command Center:', err);
     }
   };
 
   useEffect(() => {
     loadAllData();
 
-    // Subscribe to live WebSocket events
+    // Подписка на живые WebSocket события
     const unsubscribe = eventStream.subscribe((event: EventPayload) => {
-      // 1. Add event to top of events feed
+      // 1. Добавляем событие в начало ленты
       setEvents(prev => [event, ...prev.slice(0, 199)]);
 
-      // 2. React to task updates
+      // 2. Реагируем на обновления задач
       if (event.type.startsWith('task.') || event.type.startsWith('escalation.') || event.type.startsWith('quality_gate.')) {
         api.getTasks().then(setTasks).catch(() => {});
         api.getAnalytics().then(setAnalytics).catch(() => {});
       }
 
-      // 3. React to agent updates
+      // 3. Реагируем на изменения агентов
       if (event.type.startsWith('agent.')) {
         api.getAgents().then(setAgents).catch(() => {});
         api.getStatus().then(setStatus).catch(() => {});
       }
     });
 
-    // Gentle polling for presence locks (every 15s)
+    // Регулярная проверка блокировок сессий (раз в 15 секунд)
     const interval = setInterval(() => {
       api.getStatus().then(setStatus).catch(() => {});
     }, 15000);
@@ -116,7 +116,7 @@ export function App() {
     };
   }, []);
 
-  // Handlers
+  // Обработчики
   const handleToggleAgent = async (agentId: string, currentEnabled: boolean) => {
     const newStatus = currentEnabled ? 'paused' : 'idle';
     await api.updateAgentStatus(agentId, newStatus);
@@ -133,7 +133,7 @@ export function App() {
         alert(res.message);
       }
     } catch (err: any) {
-      alert(err.message || 'Failed restarting task');
+      alert(err.message || 'Ошибка перезапуска задачи');
     }
   };
 
@@ -170,7 +170,7 @@ export function App() {
       type,
       source: 'DEMO',
       data: {
-        note: 'Manually triggered via Command Center UI test console',
+        note: 'Запущено вручную через тестовую панель Command Center',
         timestamp: new Date().toISOString()
       }
     });
@@ -190,14 +190,14 @@ export function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-slate-100">
-      {/* Top Navigation & Status Bar */}
+      {/* Шапка и статусная строка */}
       <Header
         status={status}
         onOpenNewTask={() => setIsNewTaskOpen(true)}
       />
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Navigation Sidebar */}
+        {/* Боковая панель навигации */}
         <Sidebar
           activeTab={activeTab}
           onSelectTab={setActiveTab}
@@ -205,7 +205,7 @@ export function App() {
           liveEventsCount={events.length}
         />
 
-        {/* Main Content Viewport */}
+        {/* Основная рабочая область */}
         <main className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
           {activeTab === 'overview' && (
             <Overview
@@ -229,7 +229,7 @@ export function App() {
                 if (agent.lastReport) {
                   setReportModalTask({
                     report: agent.lastReport,
-                    title: `Report from @${agent.id}`,
+                    title: `Отчёт агента @${agent.id}`,
                     agentId: agent.id
                   });
                 }
@@ -303,7 +303,7 @@ export function App() {
         </main>
       </div>
 
-      {/* Global Modals */}
+      {/* Глобальные модальные окна */}
       <PromptModal
         agent={promptModalAgent}
         onClose={() => setPromptModalAgent(null)}

@@ -93,10 +93,10 @@ export function initDatabase() {
 
   // Model usage defaults
   const tiers = [
-    { tier: 'gemini-3.8-flash-high', displayName: 'Gemini 3.8 Flash High (Director)', runs: 12, completed: 11, esc: 1, inTokens: 145000, outTokens: 18400, isEst: 0 },
-    { tier: 'flash', displayName: 'Gemini Flash (Specialists)', runs: 28, completed: 26, esc: 2, inTokens: 310000, outTokens: 42100, isEst: 0 },
+    { tier: 'gemini-3.8-flash-high', displayName: 'Gemini 3.8 Flash High (Директор)', runs: 12, completed: 11, esc: 1, inTokens: 145000, outTokens: 18400, isEst: 0 },
+    { tier: 'flash', displayName: 'Gemini Flash (Специалисты)', runs: 28, completed: 26, esc: 2, inTokens: 310000, outTokens: 42100, isEst: 0 },
     { tier: 'pro', displayName: 'Gemini Pro (Senior Architect)', runs: 3, completed: 3, esc: 0, inTokens: 84000, outTokens: 9200, isEst: 0 },
-    { tier: 'gemini-4-argon-high', displayName: 'Gemini 4 Argon High (Escalation Level 4)', runs: 1, completed: 1, esc: 0, inTokens: 45000, outTokens: 6100, isEst: 0 }
+    { tier: 'gemini-4-argon-high', displayName: 'Gemini 4 Argon High (Эскалация L4)', runs: 1, completed: 1, esc: 0, inTokens: 45000, outTokens: 6100, isEst: 0 }
   ];
 
   const insertTier = db.prepare(`
@@ -134,8 +134,8 @@ function seedInitialTasks() {
   const sampleTasks: TaskItem[] = [
     {
       id: 'task-live-init-audit',
-      title: 'Antigravity AI Director Pre-Development Audit',
-      description: 'Perform complete inspection of ~/.gemini/antigravity, knowledge base, presence locks, and agy CLI commands.',
+      title: 'Аудит подсистем Antigravity и конфигурации AI Director',
+      description: 'Полная проверка ~/.gemini/antigravity, базы знаний, наличия блокировок presence и CLI-команд agy.',
       status: 'completed',
       priority: 'high',
       assignedAgent: 'director',
@@ -145,23 +145,23 @@ function seedInitialTasks() {
       retryCount: 0,
       maxRetries: 2,
       isDemo: false,
-      resultSummary: 'Audited 8 knowledge files, 9 agents, agy CLI capabilities and transcript.jsonl log format.',
+      resultSummary: 'Проверено 8 файлов регламентов памяти, 9 агентов, возможности CLI agy и формат логов transcript.jsonl.',
       report: {
-        taskName: 'Pre-Development Audit',
+        taskName: 'Предварительный аудит архитектуры',
         status: 'SUCCESS',
-        summary: 'Direct inspection of all Antigravity configuration roots and knowledge base.',
+        summary: 'Прямая проверка всех каталогов Antigravity и базы знаний Директора.',
         modifiedFiles: ['d:/Projects/ai-command-center/shared/types.ts'],
-        executedChecks: ['agy agents', 'agy models', 'agy plugins list', 'transcript.jsonl verify'],
-        checkResults: 'All core Antigravity subsystems verified and accessible on local machine.',
-        issuesAndRisks: 'Antigravity does not expose a native open HTTP server; requires file watcher & CLI bridge.',
-        pendingItems: 'Frontend UI implementation and real-time WebSocket connection.',
-        nextSteps: 'Proceed with building AI Command Center UI and backend event bridge.'
+        executedChecks: ['agy agents', 'agy models', 'agy plugins list', 'проверка transcript.jsonl'],
+        checkResults: 'Все ключевые подсистемы Antigravity проверены и доступны на локальной машине.',
+        issuesAndRisks: 'Antigravity не предоставляет открытый HTTP сервер из коробки; необходим файловый наблюдатель и CLI мост.',
+        pendingItems: 'Разработка пользовательского интерфейса и синхронизация по WebSocket.',
+        nextSteps: 'Перейти к созданию визуальной панели AI Command Center.'
       }
     },
     {
       id: 'task-live-dashboard-ui',
-      title: 'Develop Liquid Dark Glass Command Center UI',
-      description: 'Create responsive visual dashboard with Overview, Live Workflow, Agent Management, and Knowledge Base.',
+      title: 'Разработка интерфейса AI Command Center (Liquid Dark Glass)',
+      description: 'Создание визуальной панели с вкладками Обзор, Карта процессов, Управление агентами и Память.',
       status: 'in_progress',
       priority: 'critical',
       assignedAgent: 'frontend-developer',
@@ -171,12 +171,12 @@ function seedInitialTasks() {
       retryCount: 0,
       maxRetries: 2,
       isDemo: false,
-      resultSummary: 'Vite React application scaffolded with Tailwind Dark Glass styling.'
+      resultSummary: 'Клиентское приложение на Vite React со стилями Liquid Dark Glass.'
     },
     {
       id: 'task-demo-security-audit',
-      title: 'Security and Auth Schema Verification',
-      description: 'Review API boundaries, sanitize input schemas with Zod, and ensure zero leaked secrets.',
+      title: 'Проверка безопасности и схем входных данных',
+      description: 'Аудит API-границ, санитизация входных данных через Zod и предотвращение утечки секретов.',
       status: 'pending',
       priority: 'medium',
       assignedAgent: 'code-reviewer',
@@ -186,7 +186,7 @@ function seedInitialTasks() {
       retryCount: 0,
       maxRetries: 2,
       isDemo: true,
-      resultSummary: 'Scheduled in quality gate queue.'
+      resultSummary: 'Задача поставлена в очередь шлюза качества.'
     }
   ];
 

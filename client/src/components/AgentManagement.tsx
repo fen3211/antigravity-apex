@@ -2,15 +2,11 @@ import React, { useState } from 'react';
 import { 
   Users, 
   Cpu, 
-  FileText, 
   Power, 
-  CheckCircle, 
-  AlertCircle, 
   Eye, 
-  Sparkles,
-  Shield,
-  Layers,
-  Search
+  Shield, 
+  Search,
+  FileText
 } from 'lucide-react';
 import type { AgentInfo } from '../types.js';
 
@@ -40,17 +36,28 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
     return matchesSearch && matchesModel;
   });
 
+  const translateStatus = (s: string) => {
+    switch (s) {
+      case 'running': return 'В РАБОТЕ';
+      case 'idle': return 'СВОБОДЕН';
+      case 'paused': return 'ПАУЗА';
+      case 'blocked': return 'БЛОКИРОВАН';
+      case 'escalated': return 'ЭСКАЛАЦИЯ';
+      default: return s.toUpperCase();
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header & Filter Controls */}
+      {/* Заголовок и фильтры */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-5">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
             <Users className="w-5 h-5 text-director-blue" />
-            <span>Agent Hierarchy & Registry</span>
+            <span>Иерархия и реестр агентов</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Global specialist subagents configured under <code className="text-director-cyan">~/.gemini/config/plugins/ai-director</code>
+            Глобальные субагенты-специалисты в конфигурации <code className="text-director-cyan">~/.gemini/config/plugins/ai-director</code>
           </p>
         </div>
 
@@ -59,7 +66,7 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
             <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Filter agents..."
+              placeholder="Поиск агента или роли..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="glass-input pl-9 text-xs w-48 sm:w-60"
@@ -71,15 +78,15 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
             onChange={e => setFilterModel(e.target.value)}
             className="glass-input text-xs"
           >
-            <option value="all">All Models</option>
-            <option value="flash-high">Flash High (Director)</option>
-            <option value="flash">Flash (Specialists)</option>
+            <option value="all">Все модели</option>
+            <option value="flash-high">Flash High (Директор)</option>
+            <option value="flash">Flash (Специалисты)</option>
             <option value="pro">Pro (Senior Architect)</option>
           </select>
         </div>
       </div>
 
-      {/* Agents Grid */}
+      {/* Сетка агентов */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredAgents.map(agent => {
           const isDirector = agent.isDirector || agent.id === 'director';
@@ -96,7 +103,7 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
                   : ''
               }`}
             >
-              {/* Card top */}
+              {/* Верхняя часть карточки */}
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5">
@@ -114,7 +121,7 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
                       <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
                         {agent.name}
                         {isDirector && (
-                          <span className="badge-live text-[9px] py-0 px-1.5">DIRECTOR</span>
+                          <span className="badge-live text-[9px] py-0 px-1.5">ДИРЕКТОР</span>
                         )}
                       </h3>
                       <span className="text-[11px] font-mono text-slate-400">
@@ -123,7 +130,7 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
                     </div>
                   </div>
 
-                  {/* Status Indicator */}
+                  {/* Индикатор статуса */}
                   <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded-full font-semibold border ${
                     agent.status === 'running'
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-glow-emerald'
@@ -131,11 +138,11 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
                       ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                       : 'bg-slate-500/10 text-slate-400 border-white/5'
                   }`}>
-                    {agent.status}
+                    {translateStatus(agent.status)}
                   </span>
                 </div>
 
-                {/* Domain & Model tags */}
+                {/* Домен и уровень модели */}
                 <p className="text-xs text-slate-300 leading-relaxed min-h-[36px]">
                   {agent.domain}
                 </p>
@@ -148,35 +155,35 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
                       ? 'bg-purple-500/15 text-purple-300 border-purple-500/25'
                       : 'bg-white/[0.04] text-slate-300 border-white/10'
                   }`}>
-                    Tier: {agent.model}
+                    Уровень: {agent.model}
                   </span>
 
                   <span className="text-slate-500">
-                    Runs: <strong className="text-slate-300 font-normal">{agent.runCount}</strong>
+                    Запусков: <strong className="text-slate-300 font-normal">{agent.runCount}</strong>
                   </span>
 
-                  <span className="text-emerald-400 ml-auto">
-                    {agent.successRate}% Success
+                  <span className="text-emerald-400 ml-auto font-medium">
+                    {agent.successRate}% Успех
                   </span>
                 </div>
 
-                {/* Current Task if any */}
+                {/* Текущая задача, если есть */}
                 {agent.currentTask && (
                   <div className="p-2.5 rounded-lg bg-black/40 border border-white/5 text-xs text-slate-300 space-y-1">
-                    <span className="text-[10px] uppercase font-mono text-slate-500">Current Assignment:</span>
+                    <span className="text-[10px] uppercase font-mono text-slate-500">Текущая задача:</span>
                     <p className="truncate text-director-cyan">{agent.currentTask}</p>
                   </div>
                 )}
               </div>
 
-              {/* Card Footer Actions */}
+              {/* Действия внизу карточки */}
               <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between gap-2">
                 <button
                   onClick={() => onViewPrompt(agent)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 text-xs font-medium border border-white/5 transition-all"
                 >
                   <Eye className="w-3.5 h-3.5 text-director-cyan" />
-                  <span>Prompt Spec</span>
+                  <span>Инструкции</span>
                 </button>
 
                 {agent.lastReport && (
@@ -185,7 +192,7 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-medium border border-emerald-500/20 transition-all"
                   >
                     <FileText className="w-3.5 h-3.5" />
-                    <span>9-Pt Report</span>
+                    <span>9-п. отчёт</span>
                   </button>
                 )}
 
@@ -197,7 +204,7 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
                         ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20' 
                         : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/20'
                     }`}
-                    title={agent.enabled ? 'Enabled in dispatch pool' : 'Disabled'}
+                    title={agent.enabled ? 'Включен в пул диспетчеризации' : 'Отключен'}
                   >
                     <Power className="w-3.5 h-3.5" />
                   </button>

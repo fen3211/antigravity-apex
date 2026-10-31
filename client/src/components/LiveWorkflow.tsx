@@ -2,17 +2,9 @@ import React, { useState } from 'react';
 import { 
   GitBranch, 
   ShieldCheck, 
-  Users, 
-  CheckCircle2, 
   Flame, 
-  RotateCcw, 
   ArrowRight, 
-  ArrowDown, 
-  AlertOctagon, 
-  Activity,
-  Layers,
-  Sparkles,
-  Info
+  ArrowDown
 } from 'lucide-react';
 import type { TaskItem, EventPayload } from '../types.js';
 
@@ -22,77 +14,77 @@ interface LiveWorkflowProps {
   onSelectTask: (task: TaskItem) => void;
 }
 
-export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSelectTask }) => {
+export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, onSelectTask }) => {
   const [selectedStage, setSelectedStage] = useState<string>('Director_Triage');
 
-  // Stages breakdown with tasks
+  // Этапы пайплайна с задачами
   const stages = [
     {
       id: 'Director_Triage',
-      title: 'Director Triage',
-      tier: 'Level 0',
+      title: 'Триаж Директора',
+      tier: 'Уровень 0',
       model: 'Gemini 3.8 Flash High',
-      role: 'Master Orchestrator',
-      description: 'Evaluates task complexity: <15 lines executes Solo; 1-3 files dispatches 1 Specialist; large dispatches multi-agent pipeline (max 3).',
-      gateRequirement: 'Autonomous triage decision & context boundary check.'
+      role: 'Главный оркестратор',
+      description: 'Оценивает сложность: простые (<15 строк) решает Соло; средние (1-3 файла) делегирует ровно 1 специалисту; крупные запускает в параллель (макс. 3).',
+      gateRequirement: 'Автономное решение о триаже и изоляция контекста.'
     },
     {
       id: 'Specialist',
-      title: 'Subagent Execution',
-      tier: 'Specialists',
+      title: 'Выполнение субагентами',
+      tier: 'Специалисты',
       model: 'Gemini Flash',
-      role: 'Domain Specialists (Max 3 parallel)',
-      description: 'Executes domain-isolated work. Strictly forbidden from modifying shared files simultaneously.',
-      gateRequirement: 'Level 1 Self-Verification with compiler/test logs before handoff.'
+      role: 'Профильные специалисты (макс. 3 параллельно)',
+      description: 'Работают в изолированных контекстах. Строго запрещено параллельно изменять общие файлы проекта.',
+      gateRequirement: 'Обязательная самопроверка L1 с логами линтера и сборки перед отчётом.'
     },
     {
       id: 'QualityGate_L1',
-      title: 'Quality Gate: L1 Self-Verify',
-      tier: 'Level 1 Gate',
-      model: 'Flash / Test Runner',
-      role: 'Executor Self-Check',
-      description: 'Specialist runs builds, type-checks, and test suites. 9-point structured report generated.',
-      gateRequirement: 'Zero compiler errors, zero test regressions. Evidence required.'
+      title: 'Шлюз L1: Самопроверка',
+      tier: 'Шлюз уровня 1',
+      model: 'Flash / Тестовый раннер',
+      role: 'Проверка исполнителем',
+      description: 'Исполнитель запускает тесты, компиляцию и сборку. Формирует структурированный отчёт из 9 пунктов.',
+      gateRequirement: 'Ноль ошибок компиляции, отсутствие регрессий. Доказательства в логах.'
     },
     {
       id: 'Independent_L2',
-      title: 'Quality Gate: L2 Independent Audit',
-      tier: 'Level 2 Gate',
+      title: 'Шлюз L2: Независимый аудит',
+      tier: 'Шлюз уровня 2',
       model: 'Gemini Flash',
       role: 'QA Engineer & Code Reviewer',
-      description: 'Independent audit of changes (>50 lines, schema, auth, contracts). No agent may approve their own work.',
-      gateRequirement: 'Independent approval by QA or Code Reviewer.'
+      description: 'Независимый аудит крупных изменений (>50 строк, схемы БД, авторизация, API). Никакой агент не одобряет свою работу сам.',
+      gateRequirement: 'Независимое подтверждение от QA или ревьюера.'
     },
     {
       id: 'Approved',
-      title: 'Director Final Approval',
-      tier: 'Delivery Gate',
+      title: 'Финальное утверждение',
+      tier: 'Шлюз сдачи',
       model: 'Gemini 3.8 Flash High',
-      role: 'Final Quality Authority',
-      description: 'Director certifies all quality gates have passed. Delivers verified code and evidence to the user.',
-      gateRequirement: 'Director signoff. Final report rendered.'
+      role: 'Финальный арбитр качества',
+      description: 'Директор заверяет прохождение всех шлюзов качества и передаёт проверенный результат пользователю.',
+      gateRequirement: 'Подпись Директора и отчёт по фактам проверок.'
     }
   ];
 
-  // Escalation stages
+  // Ветви эскалации
   const escalationStages = [
     {
       id: 'Architect_L3',
-      title: 'Level 3: Senior Architect',
-      tier: 'Level 3 Escalation',
+      title: 'Уровень 3: Senior Architect',
+      tier: 'Эскалация L3',
       model: 'Gemini Pro',
-      role: 'Root-Cause & Concurrency Specialist',
-      description: 'Triggered when an approach fails verification twice. Investigates subtle race conditions and architectural bugs.',
-      gateRequirement: 'Deep diagnosis and revised strategy before retry.'
+      role: 'Архитектурный анализ и глубокая отладка',
+      description: 'Привлекается, если один технический подход потерпел неудачу дважды. Исследует гонки данных, тонкие concurrency-баги и архитектуру.',
+      gateRequirement: 'Диагноз первопричины и скорректированная стратегия.'
     },
     {
       id: 'Argon_L4',
-      title: 'Level 4: Gemini 4 Argon',
-      tier: 'Level 4 Escalation',
+      title: 'Уровень 4: Gemini 4 Argon',
+      tier: 'Эскалация L4',
       model: 'Gemini 4 Argon High',
-      role: 'Supreme AI Authority (Manual Switch)',
-      description: 'Triggered upon fundamental architectural impasse or failure of two independent technical strategies. Uses strict Argon Escalation Protocol.',
-      gateRequirement: 'Manual prompt pack dispatch. Implementation returns to Flash.'
+      role: 'Экспертный ресурс высшего уровня',
+      description: 'Активируется при фундаментальном архитектурном тупике или провале двух независимых стратегий. Строгий ручной протокол.',
+      gateRequirement: 'Минимальный контекст (20-50 строк). Реализация возвращается на Flash.'
     }
   ];
 
@@ -102,37 +94,37 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSel
 
   return (
     <div className="space-y-6">
-      {/* Title & Legend */}
+      {/* Заголовок и легенда */}
       <div className="glass-panel p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
             <GitBranch className="w-5 h-5 text-director-cyan" />
-            <span>Multi-Agent Live Workflow Map</span>
+            <span>Интерактивная карта процессов Director</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time pipeline: Director Triage → Subagents → Level 1 Verification → Independent L2 Audit → Final Approval
+            Пайплайн качества: Триаж Директора → Субагенты → Шлюз L1 (Самопроверка) → Шлюз L2 (Аудит) → Финальное утверждение
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 text-xs">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-blue-500/20 border border-blue-400" />
-            <span className="text-slate-300">Standard Path</span>
+            <span className="text-slate-300">Основной маршрут</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-purple-500/20 border border-purple-400" />
-            <span className="text-slate-300">Level 3 Architect</span>
+            <span className="text-slate-300">Senior Architect (L3)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-pink-500/20 border border-pink-400 shadow-glow-argon" />
-            <span className="text-slate-300">Level 4 Argon</span>
+            <span className="text-slate-300">Gemini 4 Argon (L4)</span>
           </div>
         </div>
       </div>
 
-      {/* Main Workflow Visualization Canvas */}
+      {/* Основной холст визуализации */}
       <div className="glass-panel p-6 space-y-8 overflow-x-auto">
-        {/* Main Linear Flow */}
+        {/* Линейный основной поток */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4 min-w-[800px]">
           {stages.map((stage, idx) => {
             const stageTasks = getTasksForStage(stage.id);
@@ -141,7 +133,7 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSel
 
             return (
               <React.Fragment key={stage.id}>
-                {/* Node Box */}
+                {/* Блок узла */}
                 <div
                   onClick={() => setSelectedStage(stage.id)}
                   className={`flex-1 p-4 rounded-2xl cursor-pointer transition-all relative border ${
@@ -153,7 +145,7 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSel
                   }`}
                 >
                   <div className="flex items-center justify-between text-[10px] font-mono mb-2">
-                    <span className="text-director-cyan">{stage.tier}</span>
+                    <span className="text-director-cyan font-semibold">{stage.tier}</span>
                     <span className="text-slate-400">{stage.model}</span>
                   </div>
 
@@ -169,16 +161,16 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSel
                   </p>
 
                   <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-slate-500">Tasks:</span>
+                    <span className="text-slate-500">Задач:</span>
                     <span className={`px-1.5 py-0.5 rounded ${
-                      stageTasks.length > 0 ? 'bg-white/10 text-white' : 'text-slate-600'
+                      stageTasks.length > 0 ? 'bg-white/10 text-white font-bold' : 'text-slate-600'
                     }`}>
                       {stageTasks.length}
                     </span>
                   </div>
                 </div>
 
-                {/* Connector Arrow */}
+                {/* Стрелка-коннектор */}
                 {idx < stages.length - 1 && (
                   <div className="flex items-center justify-center shrink-0 text-slate-600">
                     <ArrowRight className="w-5 h-5 hidden lg:block" />
@@ -190,12 +182,12 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSel
           })}
         </div>
 
-        {/* Escalation Branches (Senior Architect & Gemini 4 Argon) */}
+        {/* Ветви эскалации (Senior Architect & Gemini 4 Argon) */}
         <div className="pt-6 border-t border-white/[0.08] space-y-4">
           <div className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-director-argon animate-pulse" />
             <h4 className="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono">
-              Escalation Pathways (Failure & Impasse Handling)
+              Маршруты эскалации (Преодоление тупиков и повторяющихся ошибок)
             </h4>
           </div>
 
@@ -229,7 +221,7 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSel
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
                     {esc.title}
                     {isArgon && (
-                      <span className="badge-argon text-[9px] py-0 px-1.5">MANUAL SWITCH</span>
+                      <span className="badge-argon text-[9px] py-0 px-1.5">РУЧНОЙ ПЕРЕХОД</span>
                     )}
                   </h3>
 
@@ -238,7 +230,7 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSel
                   </p>
 
                   <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-500">Active Escalations:</span>
+                    <span className="text-slate-500">Активных эскалаций:</span>
                     <span className={`px-2 py-0.5 rounded font-bold ${
                       escTasks.length > 0 ? 'bg-pink-500/20 text-pink-300' : 'text-slate-600'
                     }`}>
@@ -252,7 +244,7 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSel
         </div>
       </div>
 
-      {/* Selected Stage Detail Panel */}
+      {/* Панель деталей выбранного этапа */}
       <div className="glass-panel p-5 space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -272,21 +264,21 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSel
           <div className="p-3 rounded-xl bg-white/[0.04] border border-white/5 max-w-sm text-xs space-y-1">
             <span className="text-[10px] uppercase font-mono text-slate-500 flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              Quality Gate Standard:
+              Требование шлюза качества:
             </span>
             <p className="text-slate-300">{activeStageInfo.gateRequirement}</p>
           </div>
         </div>
 
-        {/* Tasks in this Stage */}
+        {/* Задачи на этом этапе */}
         <div className="pt-3 border-t border-white/[0.08]">
           <h4 className="text-xs font-semibold text-slate-400 mb-2.5">
-            Tasks currently in this stage ({activeStageTasks.length}):
+            Задачи на данном этапе ({activeStageTasks.length}):
           </h4>
 
           {activeStageTasks.length === 0 ? (
             <p className="text-xs text-slate-500 py-3 font-mono">
-              No tasks currently queued in {activeStageInfo.title}.
+              В настоящее время на этапе «{activeStageInfo.title}» нет активных задач.
             </p>
           ) : (
             <div className="space-y-2">
@@ -306,7 +298,7 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, events, onSel
 
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-[11px] text-slate-500">
-                      Retries: {task.retryCount}/{task.maxRetries}
+                      Попытки: {task.retryCount}/{task.maxRetries}
                     </span>
                     <ArrowRight className="w-4 h-4 text-slate-500" />
                   </div>
