@@ -103,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Mobile Drawer Header */}
           <div className="lg:hidden flex items-center justify-between pb-2 border-b border-hairline">
             <span className="text-xs font-semibold text-obsidian tracking-tight uppercase">
-              AI Command Center
+              Antigravity Apex
             </span>
             <button
               type="button"

@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 ![Antigravity Apex Banner](.github/assets/hero-banner.svg)
 
@@ -379,3 +379,10 @@ antigravity-apex/
 ## 📄 Лицензия
 
 Проект распространяется под открытой лицензией **MIT License**. Подробности в файле [`LICENSE`](LICENSE).
+
+
+---
+
+## ⚖️ Оговорка о товарных знаках (Trademark Disclaimer)
+
+Google, Google Antigravity и Gemini являются товарными знаками или зарегистрированными товарными знаками компании Google LLC. Antigravity Apex — независимый проект с открытым исходным кодом и не аффилирован, не спонсируется и не одобрен компанией Google LLC или Alphabet Inc.

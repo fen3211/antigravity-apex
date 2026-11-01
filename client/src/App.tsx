@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header.js';
 import { Sidebar, NavTab } from './components/Sidebar.js';
 import { Overview } from './components/Overview.js';
@@ -111,7 +111,7 @@ export function AppContent() {
       if (fetchedEscStats) setEscalationStats(fetchedEscStats);
       if (fetchedEscSettings?.sensitivity) setEscalationSensitivity(fetchedEscSettings.sensitivity);
     } catch (err) {
-      console.error('Ошибка инициализации данных Command Center:', err);
+      console.error('Ошибка инициализации данных Antigravity Apex:', err);
     }
   }, []);
 
@@ -155,7 +155,7 @@ export function AppContent() {
         if (fetchedEscStats) setEscalationStats(fetchedEscStats);
         if (fetchedEscSettings?.sensitivity) setEscalationSensitivity(fetchedEscSettings.sensitivity);
       } catch (err) {
-        console.error('Ошибка инициализации данных Command Center:', err);
+        console.error('Ошибка инициализации данных Antigravity Apex:', err);
       }
     })();
 
@@ -345,7 +345,7 @@ export function AppContent() {
       type,
       source: 'DEMO',
       data: {
-        note: 'Запущено вручную через тестовую панель Command Center',
+        note: 'Запущено вручную через тестовую панель Antigravity Apex',
         timestamp: new Date().toISOString()
       }
     });

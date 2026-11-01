@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 ![Antigravity Apex Banner](.github/assets/hero-banner.svg)
 
@@ -394,3 +394,10 @@ If you love what we're building with **Antigravity Apex** and Google Antigravity
 ## 📄 License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
+
+
+---
+
+## ⚖️ Trademark Disclaimer
+
+Google, Google Antigravity, and Gemini are trademarks or registered trademarks of Google LLC. Antigravity Apex is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Google LLC or Alphabet Inc.

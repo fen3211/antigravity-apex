@@ -36,7 +36,9 @@ jobs:
           cache: 'npm'
 
       - name: Install Root Dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm rebuild better-sqlite3
 
       - name: Install Client Dependencies
         run: npm --prefix client ci

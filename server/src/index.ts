@@ -8,6 +8,8 @@ import { initDatabase, db } from './db/database.js';
 import { apiRouter } from './routes/api.js';
 import { eventBus } from './services/event-bus.js';
 import { analyticsService } from './services/analytics.js';
+import { processSupervisor } from './services/process-supervisor.js';
+import { antigravityBridge } from './services/antigravity-bridge.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -34,7 +36,7 @@ app.use(express.json({ limit: '10mb' }));
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    system: 'AI COMMAND CENTER',
+    system: 'ANTIGRAVITY APEX',
     director: 'ONLINE',
     timestamp: new Date().toISOString()
   });
@@ -183,10 +185,10 @@ if (isMainModule) {
   const PORT = CONFIG.PORT;
   server.listen(PORT, CONFIG.HOST, () => {
     console.log('====================================================');
-    console.log(`[AI COMMAND CENTER] Server running on http://${CONFIG.HOST}:${PORT}`);
-    console.log(`[AI COMMAND CENTER] WebSocket stream at ws://${CONFIG.HOST}:${PORT}/ws`);
-    console.log(`[AI COMMAND CENTER] Antigravity dir: ${CONFIG.ANTIGRAVITY_DIR}`);
-    console.log(`[AI COMMAND CENTER] Knowledge dir:   ${CONFIG.KNOWLEDGE_DIR}`);
+    console.log(`[Antigravity Apex] Server running on http://${CONFIG.HOST}:${PORT}`);
+    console.log(`[Antigravity Apex] WebSocket stream at ws://${CONFIG.HOST}:${PORT}/ws`);
+    console.log(`[Antigravity Apex] Antigravity dir: ${CONFIG.ANTIGRAVITY_DIR}`);
+    console.log(`[Antigravity Apex] Knowledge dir:   ${CONFIG.KNOWLEDGE_DIR}`);
     console.log('====================================================');
 
     // Asynchronously scan historical sessions in the background without blocking event loop
@@ -200,12 +202,25 @@ if (isMainModule) {
   });
 }
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\n[AI COMMAND CENTER] Shutting down...');
+// Graceful shutdown with zombie process prevention and clean resource closure
+const handleShutdown = async (signal: string) => {
+  console.log(`\n[Antigravity Apex] Received ${signal}. Shutting down gracefully...`);
   stopHeartbeat();
-  db.close();
+  try {
+    processSupervisor.shutdown();
+  } catch (err) {
+    console.warn('[Supervisor] Error shutting down supervisor:', err);
+  }
+  try {
+    await antigravityBridge.closeWatcher();
+  } catch {}
   server.close(() => {
+    try {
+      db.close();
+    } catch {}
     process.exit(0);
   });
-});
+};
+
+process.on('SIGINT', () => handleShutdown('SIGINT'));
+process.on('SIGTERM', () => handleShutdown('SIGTERM'));

@@ -1,4 +1,4 @@
-# Contributing to Antigravity Apex
+﻿# Contributing to Antigravity Apex
 
 [English](CONTRIBUTING.md) • [Русский](CONTRIBUTING.ru.md)
 
@@ -95,3 +95,8 @@ Never submit `PASS` without verified test execution logs.
    git commit -m "feat(telemetry): add streaming token throughput counter"
    ```
 5. Push to your fork and submit a Pull Request to `main`.
+
+
+## Developer Certificate of Origin (DCO 1.1)
+
+By contributing to Antigravity Apex, you certify that each commit represents your own original work or that you have the right to submit it under the MIT License, and that it does not violate any third-party intellectual property or employment agreements.

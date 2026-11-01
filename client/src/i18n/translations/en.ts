@@ -1,4 +1,4 @@
-import type { TranslationDict } from '../types.js';
+﻿import type { TranslationDict } from '../types.js';
 
 export const en: TranslationDict = {
   nav: {
@@ -141,7 +141,7 @@ export const en: TranslationDict = {
     title: 'Mission Configuration & Escalation Policies',
     subtitle: 'Concurrency thresholds, retry ceilings, specialist whitelist, and Gemini 4 Argon generator',
     languageSection: 'Language & Regional Settings',
-    languageSectionDesc: 'Select your preferred interface language across the command center dashboard',
+    languageSectionDesc: 'Select your preferred interface language across the Antigravity Apex dashboard',
     currentLanguage: 'Current Language',
     orchestratorSection: 'Antigravity Orchestrator Parameters',
     orchestratorSectionDesc: 'Manage concurrency limits, retry attempts, and active specialist roles',
