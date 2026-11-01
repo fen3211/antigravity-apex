@@ -377,6 +377,12 @@ npm run doctor
 
 ---
 
+## 📈 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=fen3211/antigravity-apex&type=Date)](https://star-history.com/#fen3211/antigravity-apex&Date)
+
+---
+
 ## ⭐ Star the Project
 
 If you love what we're building with **Antigravity Apex** and Google Antigravity, **give this repo a star!** ⭐

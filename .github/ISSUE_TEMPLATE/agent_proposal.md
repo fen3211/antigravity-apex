@@ -1,29 +1,24 @@
 ---
-name: Specialist Agent Role Proposal
-about: Propose adding or modifying a specialist agent role in the 17-role pool
-title: "[AGENT] "
-labels: ["enhancement", "agents"]
-assignees: []
+name: Specialist Agent Proposal
+about: Propose a new specialized subagent role for the 17-role pool
+title: '[AGENT] '
+labels: 'agent-proposal, enhancement'
+assignees: ''
 ---
 
-### 1. Proposed Agent Role Name & ID
-- **Role Name**: [e.g. Embedded Firmware Specialist]
-- **Role ID**: [e.g. embedded-firmware]
+**Agent Name & ID**
+- Proposed ID: `my-specialist-agent`
+- Full Role Name: `Domain Specialist`
 
-### 2. Primary Domain & Purpose
-<!-- What specialized problem does this agent solve that existing roles do not cover? -->
+**Primary Model Tier**
+- [ ] Flash Tier (Gemini 3.8 Flash High - fast execution)
+- [ ] Pro Tier (Gemini Pro - deep reasoning)
 
-### 3. Model Tier Recommendation
-- [ ] Gemini 3.8 Flash High (Standard development)
-- [ ] Gemini Pro Tier (Complex architecture / security / DB)
-- [ ] Gemini 4 Argon Escalation Protocol Only
+**Agent Mission & Responsibilities**
+A clear description of what this specialist does and why it deserves a distinct role in the multi-agent hierarchy.
 
-### 4. System Prompt Draft & Responsibilities
-<!-- Outline the core instructions, input schemas, and constraints. -->
+**Mandatory Skills & Tools**
+List the CLI tools, skills, or APIs this agent requires.
 
-### 5. 9-Point Reporting Compliance
-- [ ] Conforms to standard 9-point subagent reporting format.
-- [ ] Integrated with Stage Gate Quality checks.
-
-### 6. Tools & MCP Requirements
-<!-- Which tools or MCP servers should this agent have access to? -->
+**Reporting & Quality Gate**
+How does this agent report its findings? (Must follow standard 9-point subagent report).

@@ -1,37 +1,35 @@
 ---
 name: Bug Report
 about: Create a report to help us improve Antigravity Apex
-title: "[BUG] "
-labels: ["bug", "triage"]
-assignees: []
+title: '[BUG] '
+labels: 'bug'
+assignees: ''
 ---
 
-### 1. Bug Description
-<!-- A clear and concise description of what the bug is. -->
+**Describe the bug**
+A clear and concise description of what the bug is.
 
-### 2. Steps to Reproduce
-1. Start Antigravity Apex (`npm run dev`)
-2. Go to '...'
-3. Click on '....'
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Run command '...'
+2. Open dashboard on 'http://127.0.0.1:3001'
+3. Click on '...'
 4. See error
 
-### 3. Expected Behavior
-<!-- A clear and concise description of what you expected to happen. -->
+**Expected behavior**
+A clear and concise description of what you expected to happen.
 
-### 4. Actual Behavior & Screenshots
-<!-- What happened instead. If applicable, add screenshots or terminal logs. -->
+**Environment (please complete the following information):**
+ - OS: [e.g. Windows 11, Ubuntu 24.04, macOS Sonoma]
+ - Node.js version: [e.g. 22.11.0]
+ - Antigravity CLI version: [e.g. 1.4.7]
+ - Browser: [e.g. Chrome, Firefox, Edge]
 
-### 5. Diagnostic Output (`npm run doctor`)
+**Diagnostics Output**
+Please run `npm run doctor` and paste the output:
 ```text
-<!-- Paste the output of `npm run doctor` here -->
+(paste npm run doctor output here)
 ```
 
-### 6. Environment Information
-- **OS**: [e.g. Windows 11, macOS Sequoia, Ubuntu 24.04]
-- **Node.js Version**: [e.g. 20.18.0, 22.10.0]
-- **npm Version**: [e.g. 10.8.2]
-- **Antigravity CLI Version (`agy --version`)**: [e.g. 1.4.7 or none]
-- **Browser** (if frontend bug): [e.g. Chrome 131, Firefox 133, Edge]
-
-### 7. Additional Context
-<!-- Add any other context about the problem here, such as relevant transcript.jsonl entries or presence locks. -->
+**Additional context**
+Add any other context about the problem here.

@@ -1,32 +1,27 @@
 ---
 name: Feature Request
-about: Suggest an idea or new capability for Antigravity Apex
-title: "[FEAT] "
-labels: ["enhancement"]
-assignees: []
+about: Suggest an idea or enhancement for Antigravity Apex
+title: '[FEAT] '
+labels: 'enhancement'
+assignees: ''
 ---
 
-### 1. Problem Statement / Need
-<!-- Is your feature request related to a problem or limitation? A clear and concise description of what the problem is. Ex. I'm always frustrated when [...] -->
+**Is your feature request related to a problem? Please describe.**
+A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
-### 2. Proposed Solution
-<!-- A clear and concise description of what you want to happen and how it integrates with Antigravity / AI Director. -->
+**Describe the solution you'd like**
+A clear and concise description of what you want to happen.
 
-### 3. Impacted System Areas
-- [ ] Agent Registry & Specs (17 roles)
-- [ ] Orchestration Rules & Quality Gates
-- [ ] Real-time Transcript Ingestion & WebSocket
-- [ ] Process Supervisor & CLI Bridge
-- [ ] Frontend Dashboard & UI/UX
-- [ ] DevOps, CI/CD, or Installer Scripts
+**Describe alternatives you've considered**
+A clear and concise description of any alternative solutions or features you've considered.
 
-### 4. Alternatives Considered
-<!-- A clear and concise description of any alternative solutions or features you've considered. -->
+**Target Component**
+- [ ] Orchestration & Supervisor
+- [ ] Web UI & Dashboard
+- [ ] 17-Role Specialist Pool
+- [ ] 1-Click Installer
+- [ ] Internationalization (i18n)
+- [ ] SQLite & Telemetry
 
-### 5. Acceptance Criteria
-<!-- What specific conditions must be met for this feature to be considered complete? -->
-- [ ] Acceptance criterion 1
-- [ ] Acceptance criterion 2
-
-### 6. Additional Context
-<!-- Add any other context, mockups, or diagrams about the feature request here. -->
+**Additional context**
+Add any other context, screenshots, or mockups about the feature request here.
