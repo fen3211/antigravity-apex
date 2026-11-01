@@ -17,22 +17,30 @@ export class ControlService {
     }
 
     return {
-      maxConcurrentAgents: 3,
+      maxConcurrentAgents: 6,
       maxRetryAttempts: 2,
       defaultModelTier: 'gemini-3.8-flash-high',
       escalationPolicy: 'strict',
       autoQualityGates: true,
       allowedAgents: [
-        'director',
-        'researcher',
-        'frontend-developer',
-        'backend-developer',
-        'ui-ux-designer',
-        'qa-engineer',
-        'code-reviewer',
-        'senior-architect',
-        'legal-compliance'
-      ]
+      'director',
+      'researcher',
+      'frontend-developer',
+      'backend-developer',
+      'ui-ux-designer',
+      'qa-engineer',
+      'code-reviewer',
+      'senior-architect',
+      'legal-compliance',
+      'security-engineer',
+      'devops-engineer',
+      'product-manager',
+      'ai-evaluation-engineer',
+      'performance-engineer',
+      'accessibility-specialist',
+      'database-specialist',
+      'data-engineer'
+    ]
     };
   }
 
@@ -42,7 +50,7 @@ export class ControlService {
       ...current,
       ...settings,
       // Enforce strict Director boundaries:
-      maxConcurrentAgents: Math.min(Math.max(settings.maxConcurrentAgents ?? current.maxConcurrentAgents, 1), 3),
+      maxConcurrentAgents: Math.min(Math.max(settings.maxConcurrentAgents ?? current.maxConcurrentAgents, 1), 6),
       maxRetryAttempts: Math.min(Math.max(settings.maxRetryAttempts ?? current.maxRetryAttempts, 1), 2)
     };
 

@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navItems: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }>; badge?: number | string; badgeColor?: string }[] = [
     { id: 'overview', label: 'Обзор', icon: LayoutDashboard },
-    { id: 'agents', label: 'Агенты', icon: Users, badge: '10' },
+    { id: 'agents', label: 'Агенты', icon: Users, badge: '17' },
     { id: 'workflow', label: 'Карта процессов', icon: GitBranch },
     { id: 'analytics', label: 'Аналитика моделей', icon: BarChart3 },
     { id: 'tasks', label: 'Очередь задач', icon: CheckSquare, badge: pendingTasksCount > 0 ? pendingTasksCount : undefined, badgeColor: 'bg-director-blue text-white' },

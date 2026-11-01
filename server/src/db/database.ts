@@ -113,7 +113,7 @@ export function initDatabase(targetDb: any = db) {
 
   // Default settings
   const defaultSettings: ControlSettings = {
-    maxConcurrentAgents: 3,
+    maxConcurrentAgents: 6,
     maxRetryAttempts: 2,
     defaultModelTier: 'gemini-3.8-flash-high',
     escalationPolicy: 'strict',
@@ -127,15 +127,46 @@ export function initDatabase(targetDb: any = db) {
       'qa-engineer',
       'code-reviewer',
       'senior-architect',
-      'legal-compliance'
+      'legal-compliance',
+      'security-engineer',
+      'devops-engineer',
+      'product-manager',
+      'ai-evaluation-engineer',
+      'performance-engineer',
+      'accessibility-specialist',
+      'database-specialist',
+      'data-engineer'
     ]
   };
 
   const getSetting = targetDb.prepare('SELECT value FROM settings WHERE key = ?');
   const insertSetting = targetDb.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
 
-  if (!getSetting.get('control_settings')) {
+  const existingSetting = getSetting.get('control_settings') as { value: string } | undefined;
+  if (!existingSetting) {
     insertSetting.run('control_settings', JSON.stringify(defaultSettings));
+  } else {
+    try {
+      const parsed = JSON.parse(existingSetting.value);
+      let changed = false;
+      if (parsed.maxConcurrentAgents === 3) {
+        parsed.maxConcurrentAgents = 6;
+        changed = true;
+      }
+      if (Array.isArray(parsed.allowedAgents)) {
+        for (const ag of defaultSettings.allowedAgents) {
+          if (!parsed.allowedAgents.includes(ag)) {
+            parsed.allowedAgents.push(ag);
+            changed = true;
+          }
+        }
+      }
+      if (changed) {
+        insertSetting.run('control_settings', JSON.stringify(parsed));
+      }
+    } catch {
+      insertSetting.run('control_settings', JSON.stringify(defaultSettings));
+    }
   }
 
   // Model usage defaults with provenance='DEMO', is_estimate=1

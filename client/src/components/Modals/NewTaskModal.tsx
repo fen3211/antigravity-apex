@@ -111,10 +111,18 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
                 <option value="researcher">researcher (Исследования и код)</option>
                 <option value="frontend-developer">frontend-developer (React/UI)</option>
                 <option value="backend-developer">backend-developer (Node/DB/API)</option>
-                <option value="ui-ux-designer">ui-ux-designer (Эргономика)</option>
+                <option value="ui-ux-designer">ui-ux-designer (Эргономика и дизайн)</option>
                 <option value="qa-engineer">qa-engineer (Тестирование)</option>
-                <option value="code-reviewer">code-reviewer (Аудит)</option>
-                <option value="legal-compliance">legal-compliance (Юрист и комплаенс)</option>
+                <option value="code-reviewer">code-reviewer (Аудит кода)</option>
+                <option value="legal-compliance">legal-compliance (Юрист и техрайтер)</option>
+                <option value="security-engineer">security-engineer (Безопасность/OWASP)</option>
+                <option value="devops-engineer">devops-engineer (CI/CD и Docker)</option>
+                <option value="product-manager">product-manager (Требования и MVP)</option>
+                <option value="ai-evaluation-engineer">ai-evaluation-engineer (AI эвалы)</option>
+                <option value="performance-engineer">performance-engineer (Оптимизация/CWV)</option>
+                <option value="accessibility-specialist">accessibility-specialist (Доступность WCAG)</option>
+                <option value="database-specialist">database-specialist (Базы данных/SQL)</option>
+                <option value="data-engineer">data-engineer (ETL и потоки данных)</option>
                 <option value="senior-architect">senior-architect (Уровень Pro)</option>
               </select>
             </div>

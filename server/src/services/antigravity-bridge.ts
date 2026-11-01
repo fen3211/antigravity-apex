@@ -145,7 +145,15 @@ export class AntigravityBridge {
       case 'code-reviewer': return 'Независимый аудит безопасности diff-ов и поиск дефектов';
       case 'senior-architect': return 'Сложная архитектура, concurrency-гонки и эскалация L3';
       case 'firestore-rules-author': return 'Правила безопасности Cloud Firestore и аудит';
-      case 'legal-compliance': return 'Юридический анализ, GDPR/AVG, EU AI Act, аудит лицензий и ToS';
+      case 'legal-compliance': return 'Legal Advisor (РФ/ЕС, 152-ФЗ, 243-ФЗ, GDPR) & Technical Writer (README, API docs, регламенты)';
+      case 'security-engineer': return 'Application Security, OWASP Top 10, DevSecOps, аудит секретов и защита от инъекций';
+      case 'devops-engineer': return 'CI/CD, GitHub Actions, Docker, SRE, мониторинг, бекапы и отказоустойчивость';
+      case 'product-manager': return 'Анализ потребностей, формулирование требований, User Stories, Acceptance Criteria и MVP';
+      case 'ai-evaluation-engineer': return 'Оценка качества AI, эвалы промптов, надежность агентов, бенчмаркинг и затраты';
+      case 'performance-engineer': return 'Оптимизация Core Web Vitals (LCP/CLS/INP), утечки памяти, профилирование и тюнинг SQL';
+      case 'accessibility-specialist': return 'Веб-доступность (WCAG 2.1/2.2 AA/AAA), семантический HTML, ARIA, клавиатурная навигация';
+      case 'database-specialist': return 'Архитектура БД, нормализация, миграции, оптимизация SQL, транзакции и блокировки';
+      case 'data-engineer': return 'ETL/ELT пайплайны, потоковая обработка, парсинг JSON/JSONL/CSV и качество данных';
       default: return 'Профильный субагент';
     }
   }
@@ -160,8 +168,15 @@ export class AntigravityBridge {
       { id: 'qa-engineer', name: 'QA Engineer', role: 'ТЕСТИРОВЩИК', model: 'flash' },
       { id: 'code-reviewer', name: 'Code Reviewer', role: 'РЕВЬЮЕР', model: 'flash' },
       { id: 'senior-architect', name: 'Senior Architect', role: 'АРХИТЕКТОР', model: 'pro' },
-      { id: 'firestore-rules-author', name: 'Firestore Rules Author', role: 'БЕЗОПАСНОСТЬ', model: 'flash' },
-      { id: 'legal-compliance', name: 'Legal & Compliance Agent', role: 'ЮРИСТ И КОМПЛАЕНС', model: 'flash' }
+      { id: 'legal-compliance', name: 'Legal Advisor & Tech Writer', role: 'ЮРИСТ И ДОКУМЕНТАЦИЯ', model: 'flash' },
+      { id: 'security-engineer', name: 'Security Engineer', role: 'БЕЗОПАСНОСТЬ', model: 'flash' },
+      { id: 'devops-engineer', name: 'DevOps / SRE Engineer', role: 'DEVOPS / ИНФРА', model: 'flash' },
+      { id: 'product-manager', name: 'Product Manager', role: 'ПРОДУКТ', model: 'flash' },
+      { id: 'ai-evaluation-engineer', name: 'AI Evaluation Engineer', role: 'AI ЭВАЛУАТОР', model: 'flash' },
+      { id: 'performance-engineer', name: 'Performance Engineer', role: 'ОПТИМИЗАЦИЯ', model: 'flash' },
+      { id: 'accessibility-specialist', name: 'Accessibility Specialist', role: 'A11Y ДОСТУПНОСТЬ', model: 'flash' },
+      { id: 'database-specialist', name: 'Database Specialist', role: 'БАЗЫ ДАННЫХ', model: 'flash' },
+      { id: 'data-engineer', name: 'Data Engineer', role: 'DATA ПАЙПЛАЙНЫ', model: 'flash' }
     ];
 
     return list.map(a => ({

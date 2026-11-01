@@ -135,39 +135,49 @@ async function runTests() {
     console.log('  ✓ PASSED: Timeout enforcement and process tree kill verified.\n');
 
     // -------------------------------------------------------------
-    // TEST 4: Concurrency Limit (Max 3 Parallel) & Queueing
+    // TEST 4: Concurrency Limit (Max 6 Parallel) & Queueing
     // -------------------------------------------------------------
-    console.log('  [TEST] 4. Concurrency Limit (Max 3 Parallel) & Automatic Queue Draining ...');
+    console.log('  [TEST] 4. Concurrency Limit (Max 6 Parallel) & Automatic Queue Draining ...');
     // Ensure clean state
     processSupervisor.shutdown();
     assert.strictEqual(processSupervisor.getActiveCount(), 0, 'Active count should be 0');
 
-    const tA = taskManager.createTask({ title: 'Batch Task A' });
-    const tB = taskManager.createTask({ title: 'Batch Task B' });
-    const tC = taskManager.createTask({ title: 'Batch Task C' });
-    const tD = taskManager.createTask({ title: 'Batch Task D' });
+    const tasks = [
+      taskManager.createTask({ title: 'Batch Task 1' }),
+      taskManager.createTask({ title: 'Batch Task 2' }),
+      taskManager.createTask({ title: 'Batch Task 3' }),
+      taskManager.createTask({ title: 'Batch Task 4' }),
+      taskManager.createTask({ title: 'Batch Task 5' }),
+      taskManager.createTask({ title: 'Batch Task 6' }),
+      taskManager.createTask({ title: 'Batch Task 7' }),
+    ];
 
-    // Spawn 3 active processes sleeping 250ms
-    const pA = await processSupervisor.spawnTask(tA.id, '__MOCK_SLEEP_250__', 'director');
-    const pB = await processSupervisor.spawnTask(tB.id, '__MOCK_SLEEP_250__', 'researcher');
-    const pC = await processSupervisor.spawnTask(tC.id, '__MOCK_SLEEP_250__', 'ui-ux-designer');
+    // Spawn 6 active processes sleeping 250ms
+    const procs = await Promise.all([
+      processSupervisor.spawnTask(tasks[0].id, '__MOCK_SLEEP_250__', 'director'),
+      processSupervisor.spawnTask(tasks[1].id, '__MOCK_SLEEP_250__', 'researcher'),
+      processSupervisor.spawnTask(tasks[2].id, '__MOCK_SLEEP_250__', 'ui-ux-designer'),
+      processSupervisor.spawnTask(tasks[3].id, '__MOCK_SLEEP_250__', 'frontend-developer'),
+      processSupervisor.spawnTask(tasks[4].id, '__MOCK_SLEEP_250__', 'backend-developer'),
+      processSupervisor.spawnTask(tasks[5].id, '__MOCK_SLEEP_250__', 'qa-engineer'),
+    ]);
 
-    assert.strictEqual(processSupervisor.getActiveCount(), 3, 'Active processes should equal max limit (3)');
-    assert(['STARTING', 'RUNNING'].includes(pA.state));
-    assert(['STARTING', 'RUNNING'].includes(pB.state));
-    assert(['STARTING', 'RUNNING'].includes(pC.state));
+    assert.strictEqual(processSupervisor.getActiveCount(), 6, 'Active processes should equal max limit (6)');
+    for (const p of procs) {
+      assert(['STARTING', 'RUNNING'].includes(p.state));
+    }
 
-    // Spawn 4th process: must be enqueued into QUEUED state
-    const pD = await processSupervisor.spawnTask(tD.id, 'Task D Prompt', 'code-reviewer');
-    assert.strictEqual(pD.state, 'QUEUED', '4th task must be in QUEUED state');
-    assert.strictEqual(pD.pid, null, 'Queued task must have pid null');
-    assert.strictEqual(processSupervisor.getActiveCount(), 3, 'Active count should remain 3');
+    // Spawn 7th process: must be enqueued into QUEUED state
+    const p7 = await processSupervisor.spawnTask(tasks[6].id, 'Task 7 Prompt', 'code-reviewer');
+    assert.strictEqual(p7.state, 'QUEUED', '7th task must be in QUEUED state');
+    assert.strictEqual(p7.pid, null, 'Queued task must have pid null');
+    assert.strictEqual(processSupervisor.getActiveCount(), 6, 'Active count should remain 6');
 
-    // Await completion of Task D: once one of A/B/C finishes, D must automatically start and complete!
-    const completedD = await processSupervisor.waitForCompletion(tD.id, 6000);
-    assert.strictEqual(completedD.state, 'COMPLETED', 'Queued task should have been dequeued and COMPLETED');
-    assert(completedD.stdout.includes('Task completed successfully'), 'stdout of dequeued task should be captured');
-    console.log('  ✓ PASSED: Concurrency throttling (3 max) and automatic queue drain verified.\n');
+    // Await completion of Task 7: once one of the 6 finishes, Task 7 must automatically start and complete!
+    const completed7 = await processSupervisor.waitForCompletion(tasks[6].id, 6000);
+    assert.strictEqual(completed7.state, 'COMPLETED', 'Queued task should have been dequeued and COMPLETED');
+    assert(completed7.stdout.includes('Task completed successfully'), 'stdout of dequeued task should be captured');
+    console.log('  ✓ PASSED: Concurrency throttling (6 max) and automatic queue drain verified.\n');
 
     // -------------------------------------------------------------
     // TEST 5: Real-time stdout & stderr Streaming via EventBus

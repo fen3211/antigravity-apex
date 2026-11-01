@@ -18,7 +18,15 @@ const AVAILABLE_SPECIALISTS = [
   { id: 'senior-architect', label: 'Senior Architect (Pro-tier)', role: 'Complex concurrency & core architecture' },
   { id: 'researcher', label: 'Researcher (Flash)', role: 'Knowledge base & dependency analysis' },
   { id: 'ui-ux-designer', label: 'UI/UX Designer (Flash)', role: 'UX research & design system' },
-  { id: 'legal-compliance', label: 'Legal & Compliance (Flash)', role: 'GDPR, 152-FZ, EU AI Act, 243-FZ, IP & Licensing' }
+  { id: 'legal-compliance', label: 'Legal Advisor & Tech Writer (Flash)', role: '152-FZ, 243-FZ, GDPR, IP & Tech Docs' },
+  { id: 'security-engineer', label: 'Security Engineer (Flash/Pro)', role: 'OWASP, secrets audit, prompt injection defenses' },
+  { id: 'devops-engineer', label: 'DevOps Engineer (Flash/Pro)', role: 'GitHub Actions, Docker, SRE & resilience' },
+  { id: 'product-manager', label: 'Product Manager (Flash)', role: 'User stories, acceptance criteria & MVP scoping' },
+  { id: 'ai-evaluation-engineer', label: 'AI Evaluation Engineer (Flash/Pro)', role: 'Agent reliability, evals & benchmarks' },
+  { id: 'performance-engineer', label: 'Performance Engineer (Flash/Pro)', role: 'Core Web Vitals, memory leaks & SQL tuning' },
+  { id: 'accessibility-specialist', label: 'Accessibility Specialist (Flash)', role: 'WCAG 2.1/2.2 AA/AAA & semantic a11y' },
+  { id: 'database-specialist', label: 'Database Specialist (Flash/Pro)', role: 'Schema design, migrations, ACID & lock contention' },
+  { id: 'data-engineer', label: 'Data Engineer (Flash/Pro)', role: 'ETL/ELT, streaming, parsing & data quality' }
 ];
 
 export const ArgonVerdictModal: React.FC<ArgonVerdictModalProps> = ({

@@ -25,12 +25,12 @@ export class TaskProcessSupervisor {
   private taskConfigs: Map<string, TaskExecutionConfig> = new Map();
 
   /**
-   * Returns current maximum concurrency limit enforced by Director rules (max 3).
+   * Returns current maximum concurrency limit enforced by Director rules (max 6).
    */
   public getMaxConcurrent(): number {
     try {
       const settings = controlService.getSettings();
-      return Math.min(Math.max(settings.maxConcurrentAgents || 3, 1), 3);
+      return Math.min(Math.max(settings.maxConcurrentAgents || 6, 1), 6);
     } catch {
       return 3;
     }
