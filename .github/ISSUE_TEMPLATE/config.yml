@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 AI Command Center Documentation
+    url: https://github.com/fen3211/ai-command-center/tree/main/docs
+    about: Read full architectural guides, API specs, and orchestration runbooks.
+  - name: 🩺 Diagnostic System Doctor
+    url: https://github.com/fen3211/ai-command-center/blob/main/docs/TROUBLESHOOTING.md
+    about: Run `npm run doctor` to diagnose environment, SQLite, and Antigravity locks.

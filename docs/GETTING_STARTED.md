@@ -1,5 +1,7 @@
 # Getting Started with AI Command Center
 
+[English](GETTING_STARTED.md) • [Русский](GETTING_STARTED.ru.md)
+
 Welcome to **AI Command Center**, the mission-control dashboard for **Google Antigravity** and the **AI Development Director** multi-agent orchestration framework.
 
 This guide walks you through your first 5 minutes with AI Command Center, from launching the local environment to monitoring autonomous subagents, reviewing 9-point reports, and inspecting real-time telemetry.
@@ -28,7 +30,7 @@ cd d:\Projects\ai-command-center
 npm run dev
 ```
 
-Alternatively, on Windows, double-click [`start.cmd`](../start.cmd).
+Alternatively, on Windows, double-click [`start.cmd`](../start.cmd) or run `setup.cmd` for 1-click installation.
 
 The terminal will report:
 ```
@@ -44,7 +46,7 @@ VITE v8.3.5 ready in 250 ms
 Open your web browser and navigate to:
 **[http://127.0.0.1:5173](http://127.0.0.1:5173)**
 
-The interface will display the **Liquid Dark Glass** dashboard with the connection status pill showing **ONLINE**.
+The interface will display the **Refero Vercel** dashboard (supporting both Paper Light and Obsidian Dark themes) with the connection status pill showing **ONLINE**.
 
 ---
 
@@ -52,17 +54,19 @@ The interface will display the **Liquid Dark Glass** dashboard with the connecti
 
 AI Command Center organizes complex multi-agent telemetry into 8 focused views:
 
-### 1. Overview
+### 1. Overview (Mission Control)
 The high-level status cockpit:
 - **Director Status**: Model version (`Gemini 3.8 Flash High`), active sessions, and active file locks.
 - **KPI Metrics**: Active subagents, completed tasks, overall success rate, and total token usage.
 - **Recent Telemetry**: Real-time event ticker broadcasting agent starts, completions, and quality gate results.
+- **1-Click Setup**: Instant button to deploy and synchronize all 17 agents into Antigravity.
 
 ### 2. Agent Management
 The 17-role specialist grid:
 - View status (`idle`, `running`, `blocked`, `escalated`) for all specialists.
 - Inspect system prompt specifications and domain definitions directly from `~/.gemini/config/plugins/ai-director/agents/*.md`.
 - Monitor per-agent success rates and historical execution runs.
+- Trigger 1-click Antigravity synchronization.
 
 ### 3. Live Workflow
 An interactive visual flow graph showing the lifecycle of tasks:
@@ -86,11 +90,12 @@ Online browser and editor for the global AI Director knowledge repository:
 - Edit `DIRECTOR_PROTOCOL.md`, `AGENT_REGISTRY.md`, `QUALITY_GATES.md`, `FAILURE_LOG.md`, and other core policies in place.
 - Updates are written directly to `~/.gemini/antigravity/knowledge/ai-director/` with zero latency.
 
-### 7. Control Center
-Operational command center and safe execution bridge:
-- Configure concurrency boundaries (1–6 parallel agents) and maximum retry thresholds.
-- Execute verified prompts via `agy CLI` with strict argument validation.
-- Synthesize 10-point **Argon Prompt Packs** for Level 4 escalations and route resolved architectural verdicts.
+### 7. Escalation Center (Gemini 4 Argon)
+Level 4 Escalation management cockpit:
+- Autonomous detection of recurring failures, diagnostic deadlocks, and agent contradictions.
+- Sensitivity switcher (`conservative`, `balanced`, `aggressive`).
+- 18-point sanitized prompt packs generation with one-click clipboard copying.
+- Closed-loop verdict analysis and resolution workflow.
 
 ### 8. Unified Event Stream
 High-throughput JSON event inspector:
@@ -100,27 +105,9 @@ High-throughput JSON event inspector:
 
 ---
 
-## 4. Your First Task Lifecycle
+## 4. Next Steps
 
-Let's walk through creating and tracking a task:
-
-1. In the **Task Manager** tab, click **New Task**.
-2. Enter:
-   - **Title**: `Implement Zod validation schema for user profile`
-   - **Assigned Agent**: `backend-developer`
-   - **Priority**: `Medium`
-3. Click **Create Task**.
-4. The task appears in stage `Director_Triage` and transitions to `Specialist`.
-5. Once the backend developer completes the code and local unit tests, it submits a **9-point report**:
-   - Status: `SUCCESS`
-   - Modified Files: `src/schemas/user.ts`, `tests/user-schema.test.ts`
-   - Executed Checks: `npm test` passed 14/14 tests.
-6. The task enters `QualityGate_L1` and advances through `Independent_L2` to `Approved`.
-
----
-
-## 5. Next Steps
-
-- Review the [Architecture Blueprint](ARCHITECTURE.md) to understand the internals.
-- Explore the [17-Role Specialist Registry](AGENTS.md) to see agent responsibilities and model allocations.
-- Read the [Orchestration & Quality Gates Guide](ORCHESTRATION.md) to master triage rules and Argon escalation.
+Now that your command center is running:
+- Check [**AGENTS.md**](AGENTS.md) for full descriptions of all 17 specialist roles.
+- Read [**ORCHESTRATION.md**](ORCHESTRATION.md) for task dispatch, concurrency rules, and Quality Gate policies.
+- Run `npm run doctor` to verify environment diagnostics.

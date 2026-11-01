@@ -1,3 +1,5 @@
+[English](ARCHITECTURE.md) • [Русский](ARCHITECTURE.ru.md)
+
 # System Architecture
 
 This document details the architectural blueprint, internal component interactions, and data storage design of **AI Command Center**.
@@ -96,6 +98,29 @@ Located in [`server/src/services/process-supervisor.ts`](../server/src/services/
 - **Concurrency Limits**: Throttles execution to `maxConcurrentAgents` (default: 3, maximum: 6). Additional tasks wait in the `QUEUED` state and drain automatically as active workers finish.
 - **Real-Time Stream Multiplexing**: Pipes subagent `stdout` and `stderr` directly into WebSocket events (`task.updated`, with live output chunks) for interactive terminal rendering in the browser.
 - **Guaranteed Tree Termination**: When a task times out or is aborted by the user, the supervisor executes a complete process tree kill (`taskkill /pid <PID> /T /F` on Windows) to terminate the parent and all child compiler or test runner sub-processes.
+
+#### Process Supervisor Finite State Machine (FSM)
+
+```mermaid
+stateDiagram-v2
+    [*] --> QUEUED: spawnTask() / Concurrency limit reached
+    [*] --> STARTING: spawnTask() / Worker slot available
+    QUEUED --> STARTING: Worker slot freed (queue drain)
+    STARTING --> RUNNING: Process spawned (PID acquired)
+    STARTING --> FAILED: Spawn failure (invalid agent / OS error)
+    
+    RUNNING --> COMPLETED: Exit code 0
+    RUNNING --> FAILED: Exit code != 0 / runtime error
+    RUNNING --> TIMEOUT: Exceeded timeoutMs (taskkill tree kill)
+    
+    QUEUED --> CANCELLED: User cancellation
+    RUNNING --> CANCELLED: User abort (taskkill tree kill)
+    
+    COMPLETED --> [*]
+    FAILED --> [*]
+    TIMEOUT --> [*]
+    CANCELLED --> [*]
+```
 
 ### 2.4 LegalGateService (Quality Gate 2b)
 Located in [`server/src/services/legal-gate.ts`](../server/src/services/legal-gate.ts).

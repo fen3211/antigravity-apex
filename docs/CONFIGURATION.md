@@ -1,3 +1,5 @@
+[English](CONFIGURATION.md) • [Русский](CONFIGURATION.ru.md)
+
 # Configuration Reference
 
 This document provides a comprehensive reference for all static and runtime configuration options in **AI Command Center**.

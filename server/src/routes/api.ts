@@ -11,6 +11,7 @@ import { controlService } from '../services/control.js';
 import { processSupervisor } from '../services/process-supervisor.js';
 import { legalGateService, OFFICIAL_PRIMARY_SOURCES } from '../services/legal-gate.js';
 import { escalationManager } from '../services/escalation-manager.js';
+import { syncAntigravityConfiguration } from '../services/antigravity-installer.js';
 
 export const apiRouter = Router();
 
@@ -195,6 +196,38 @@ apiRouter.get('/system/doctor', async (_req: Request, res: Response) => {
 });
 
 // ==========================================
+// 1c. 1-Click Antigravity Setup & Agent Sync
+// ==========================================
+apiRouter.post('/system/sync-agents', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const result = await syncAntigravityConfiguration();
+    if (result.success) {
+      res.json(result);
+    } else {
+      res.status(500).json(result);
+    }
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+apiRouter.get('/system/sync-status', (req: Request, res: Response) => {
+  try {
+    const knownAgents = antigravityBridge.getKnownAgents();
+    const allCovered = knownAgents.length >= 17;
+    res.json({
+      synced: allCovered,
+      totalAgents: knownAgents.length,
+      requiredAgents: 17,
+      pluginDir: CONFIG.AI_DIRECTOR_PLUGIN_DIR,
+      agentsDir: CONFIG.AI_DIRECTOR_AGENTS_DIR
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================
 // 2. Agents
 // ==========================================
 apiRouter.get('/agents', (req: Request, res: Response) => {
@@ -207,7 +240,7 @@ apiRouter.get('/agents', (req: Request, res: Response) => {
 });
 
 apiRouter.get('/agents/:id', (req: Request, res: Response) => {
-  const agentId = String(req.params.id);
+  const agentId = String(String(req.params.id));
   const agents = antigravityBridge.getKnownAgents();
   const agent = agents.find(a => a.id === agentId);
   if (!agent) {
@@ -223,7 +256,7 @@ const updateAgentStatusSchema = z.object({
 
 apiRouter.post('/agents/:id/status', requireAuth, (req: Request, res: Response) => {
   try {
-    const agentId = String(req.params.id);
+    const agentId = String(String(req.params.id));
     const agents = antigravityBridge.getKnownAgents();
     if (!agents.some(a => a.id === agentId)) {
       return res.status(404).json({ error: 'Agent not found' });
@@ -283,7 +316,7 @@ apiRouter.post('/tasks', requireAuth, (req: Request, res: Response) => {
 });
 
 apiRouter.get('/tasks/:id', (req: Request, res: Response) => {
-  const taskId = String(req.params.id);
+  const taskId = String(String(req.params.id));
   const task = taskManager.getTaskById(taskId);
   if (!task) return res.status(404).json({ error: 'Task not found' });
   res.json(task);
@@ -315,7 +348,7 @@ const updateTaskSchema = z.object({
 
 apiRouter.patch('/tasks/:id', requireAuth, (req: Request, res: Response) => {
   try {
-    const taskId = String(req.params.id);
+    const taskId = String(String(req.params.id));
     const parsed = updateTaskSchema.parse(req.body);
     const updated = taskManager.updateTask(taskId, parsed);
     if (!updated) return res.status(404).json({ error: 'Task not found' });
@@ -326,7 +359,7 @@ apiRouter.patch('/tasks/:id', requireAuth, (req: Request, res: Response) => {
 });
 
 apiRouter.post('/tasks/:id/restart', requireAuth, (req: Request, res: Response) => {
-  const taskId = String(req.params.id);
+  const taskId = String(String(req.params.id));
   const result = taskManager.restartTask(taskId);
   res.json(result);
 });
@@ -349,7 +382,7 @@ const postReportBodySchema = z.object({
 
 apiRouter.post('/tasks/:id/report', requireAuth, (req: Request, res: Response) => {
   try {
-    const taskId = String(req.params.id);
+    const taskId = String(String(req.params.id));
     const parsed = postReportBodySchema.parse(req.body);
     const reportData = 'report' in parsed ? parsed.report : parsed;
     const updated = taskManager.submitSubagentReport(taskId, reportData);
@@ -368,7 +401,7 @@ const executeTaskSchema = z.object({
 
 apiRouter.post('/tasks/:id/execute', requireAuth, async (req: Request, res: Response) => {
   try {
-    const taskId = z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/).parse(req.params.id);
+    const taskId = z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/).parse(String(req.params.id));
     const parsed = executeTaskSchema.parse(req.body || {});
     const task = taskManager.getTaskById(taskId);
     const prompt = parsed.prompt || task?.description || task?.title || `Execute task ${taskId}`;
@@ -386,7 +419,7 @@ apiRouter.post('/tasks/:id/execute', requireAuth, async (req: Request, res: Resp
 
 apiRouter.post('/tasks/:id/cancel', requireAuth, async (req: Request, res: Response) => {
   try {
-    const taskId = String(req.params.id);
+    const taskId = String(String(req.params.id));
     const success = await processSupervisor.cancelTask(taskId);
     res.json({ success, taskId });
   } catch (err: any) {
@@ -395,7 +428,7 @@ apiRouter.post('/tasks/:id/cancel', requireAuth, async (req: Request, res: Respo
 });
 
 apiRouter.get('/tasks/:id/process-status', (req: Request, res: Response) => {
-  const taskId = String(req.params.id);
+  const taskId = String(String(req.params.id));
   const proc = processSupervisor.getProcess(taskId);
   if (!proc) {
     return res.status(404).json({ error: 'Process not found for task' });
@@ -774,7 +807,7 @@ apiRouter.put('/escalations/settings', requireAuth, (req: Request, res: Response
 
 apiRouter.get('/escalations/:id', (req: Request, res: Response) => {
   try {
-    const escalation = escalationManager.getEscalationById(req.params.id);
+    const escalation = escalationManager.getEscalationById(String(req.params.id));
     if (!escalation) {
       return res.status(404).json({ error: 'Escalation not found' });
     }
@@ -841,7 +874,7 @@ apiRouter.post('/escalations/trigger', requireAuth, (req: Request, res: Response
 
 apiRouter.post('/escalations/:id/copy', (req: Request, res: Response) => {
   try {
-    const updated = escalationManager.markPromptCopied(req.params.id);
+    const updated = escalationManager.markPromptCopied(String(req.params.id));
     res.json(updated);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -850,7 +883,7 @@ apiRouter.post('/escalations/:id/copy', (req: Request, res: Response) => {
 
 apiRouter.post('/escalations/:id/send', (req: Request, res: Response) => {
   try {
-    const updated = escalationManager.markSentToArgon(req.params.id);
+    const updated = escalationManager.markSentToArgon(String(req.params.id));
     res.json(updated);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -864,7 +897,7 @@ const submitResponseSchema = z.object({
 apiRouter.post('/escalations/:id/response', requireAuth, (req: Request, res: Response) => {
   try {
     const parsed = submitResponseSchema.parse(req.body);
-    const result = escalationManager.submitArgonResponse(req.params.id, parsed.responseText);
+    const result = escalationManager.submitArgonResponse(String(String(req.params.id)), parsed.responseText);
     res.json(result);
   } catch (err: any) {
     res.status(400).json({ error: err.errors || err.message });
@@ -878,7 +911,7 @@ const resolveEscalationSchema = z.object({
 apiRouter.post('/escalations/:id/resolve', requireAuth, (req: Request, res: Response) => {
   try {
     const parsed = resolveEscalationSchema.parse(req.body || {});
-    const resolved = escalationManager.resolveEscalation(req.params.id, parsed.note);
+    const resolved = escalationManager.resolveEscalation(String(String(req.params.id)), parsed.note);
     res.json(resolved);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -892,7 +925,7 @@ const rejectEscalationSchema = z.object({
 apiRouter.post('/escalations/:id/reject', requireAuth, (req: Request, res: Response) => {
   try {
     const parsed = rejectEscalationSchema.parse(req.body || {});
-    const rejected = escalationManager.rejectEscalation(req.params.id, parsed.reason);
+    const rejected = escalationManager.rejectEscalation(String(String(req.params.id)), parsed.reason);
     res.json(rejected);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -901,7 +934,7 @@ apiRouter.post('/escalations/:id/reject', requireAuth, (req: Request, res: Respo
 
 apiRouter.post('/escalations/:id/regenerate', requireAuth, (req: Request, res: Response) => {
   try {
-    const regenerated = escalationManager.regeneratePromptPack(req.params.id);
+    const regenerated = escalationManager.regeneratePromptPack(String(req.params.id));
     res.json(regenerated);
   } catch (err: any) {
     res.status(400).json({ error: err.message });

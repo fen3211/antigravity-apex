@@ -88,6 +88,15 @@ export class EventBus {
     return this.clients as Set<WebSocket>;
   }
 
+  public broadcast(event: { type: string; payload?: any }): void {
+    const eventType = (event.type as EventType) || 'SYSTEM_NOTIFICATION';
+    this.publish({
+      type: eventType,
+      source: 'SYSTEM',
+      data: event.payload || {}
+    });
+  }
+
   public publish(event: {
     type: EventType;
     source: EventSource;

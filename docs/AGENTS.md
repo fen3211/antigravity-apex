@@ -1,3 +1,5 @@
+[English](AGENTS.md) • [Русский](AGENTS.ru.md)
+
 # 17-Role Specialist Pool Specification
 
 This document provides the definitive specification of all **17 specialized roles** within the Antigravity **AI Development Director** ecosystem, including their responsibilities, model tier routing, tools, output requirements, and operational constraints.

@@ -1,5 +1,7 @@
 # Troubleshooting & Diagnostics Guide
 
+[English](TROUBLESHOOTING.md) • [Русский](TROUBLESHOOTING.ru.md)
+
 This guide provides diagnostic procedures and actionable solutions for common issues encountered when running **AI Command Center**.
 
 ---
@@ -20,7 +22,7 @@ This guide provides diagnostic procedures and actionable solutions for common is
 ### Remediation
 - **Token Mismatch**: Fetch a fresh token by visiting `http://127.0.0.1:3001/api/auth/token` directly from your browser. The client will automatically store and reuse this token.
 - **Origin Mismatch**: If you are accessing the dashboard from a custom IP or host (e.g., `http://192.168.1.50:5173`), ensure that origin is added to `CONFIG.ALLOWED_ORIGINS` in `server/src/config.ts`.
-- **Restart the Server**: If the backend crashed, check the terminal output for stack traces and restart via `npm run dev`.
+- **Restart the Server**: If the backend crashed, check the terminal output for stack traces and restart via `npm run dev` or `start.cmd`.
 
 ---
 

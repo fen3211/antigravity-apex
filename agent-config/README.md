@@ -1,5 +1,7 @@
 # AI Development Director - Agent Configuration Package
 
+[English](README.md) • [Русский](README.ru.md)
+
 This package bundles the complete, production-tested configuration for the **AI Development Director multi-agent system** in Google Antigravity.
 
 ## Package Contents
@@ -29,6 +31,7 @@ This package bundles the complete, production-tested configuration for the **AI 
 
 - **`skills/`**: Orchestration runbooks:
   - `director-orchestration/SKILL.md`: Master runbook for task sizing, specialist routing, and quality gates.
+  - `argon-escalation/SKILL.md`: Level 4 Argon Escalation operational protocol.
 
 - **`templates/`**: Starter templates:
   - `agent-template.md`: Template for authoring custom agents.
@@ -36,21 +39,18 @@ This package bundles the complete, production-tested configuration for the **AI 
   - `project-rules-template.md`: Project-specific rule extension template.
   - `escalation-pack-template.md`: Argon Level 4 escalation prompt pack.
 
-## Installation
+## ⚡ 1-Click Fast Installation
 
-To automatically install this configuration into your Antigravity environment (`~/.gemini`), run:
-
-### Windows (PowerShell):
+### Windows (1-Click)
+Run `..\setup.cmd` or from PowerShell:
 ```powershell
-.\scripts\install.ps1
+..\scripts\install.ps1 -Force
 ```
 
-### macOS / Linux (Bash):
+### macOS / Linux (1-Click)
 ```bash
-./scripts/install.sh
+../scripts/install.sh --force
 ```
 
-### Verification:
-```bash
-npm run doctor
-```
+### In-App 1-Click Sync
+Inside the AI Command Center web UI, click **`⚡ 1-Click Setup`** in the header or **`1-Click Sync Antigravity`** on the Agents page.

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  Users, 
+  Users,
+  Zap, 
   Cpu, 
   Power, 
   Eye, 
@@ -18,6 +19,8 @@ interface AgentManagementProps {
   onToggleAgent: (agentId: string, currentStatus: boolean) => void;
   onViewPrompt: (agent: AgentInfo) => void;
   onViewReport: (agent: AgentInfo) => void;
+  onSyncAntigravity?: () => void;
+  isSyncing?: boolean;
 }
 
 // 17 канонических ролей пула специалистов Antigravity
@@ -218,7 +221,9 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
   agents,
   onToggleAgent,
   onViewPrompt,
-  onViewReport
+  onViewReport,
+  onSyncAntigravity,
+  isSyncing = false
 }) => {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -304,6 +309,20 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
               обеспечивая изоляцию контекста и строгие шлюзы качества без вымышленных метрик.
             </p>
           </div>
+
+          {/* 1-Click Sync Button */}
+          {onSyncAntigravity && (
+            <button
+              type="button"
+              onClick={onSyncAntigravity}
+              disabled={isSyncing}
+              title="1-Click Развертывание и синхронизация всех 17 агентов в Google Antigravity"
+              className="refero-btn-secondary min-h-[32px] px-3 py-1 text-xs flex items-center gap-1.5 shrink-0"
+            >
+              <Zap className={`w-3.5 h-3.5 text-warning-text ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? 'Синхронизация...' : '1-Click Sync Antigravity'}</span>
+            </button>
+          )}
 
           {/* View mode toggle: Grid vs Table */}
           <div className="flex items-center gap-1 p-0.5 rounded-md border border-hairline bg-surface-subtle self-start md:self-auto shrink-0">

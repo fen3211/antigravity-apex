@@ -1,26 +1,29 @@
 <div align="center">
 
+![AI Command Center Banner](.github/assets/hero-banner.svg)
+
 # AI Command Center
 
-### Multi-Agent Orchestration & Telemetry Dashboard for Google Antigravity
+### Next-Generation Multi-Agent Mission Control & Telemetry Dashboard for Google Antigravity
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-19.3-61dafb.svg)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)](https://www.typescriptlang.org/)
+[![React 19](https://img.shields.io/badge/React-19.3-61dafb.svg)](https://react.dev/)
+[![TypeScript 5.7](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)](https://www.typescriptlang.org/)
 [![SQLite WAL](https://img.shields.io/badge/SQLite-WAL%20Mode-003B57.svg)](https://sqlite.org/wal.html)
-[![Tests](https://img.shields.io/badge/Tests-50%2B%20Passing%20(100%25)-success.svg)](tests/)
-[![Security Hardened](https://img.shields.io/badge/Security-Timing--Safe%20%7C%20Zero--Leak-success.svg)](SECURITY.md)
+[![Tests Passing](https://img.shields.io/badge/Tests-50%2B%20Passing%20(100%25)-10B981.svg)](tests/)
+[![Open in GitHub Codespaces](https://img.shields.io/badge/Codespaces-1--Click%20Launch-06B6D4.svg)](https://codespaces.new/fen3211/ai-command-center)
+[![Refero Dark & Light](https://img.shields.io/badge/Theme-Refero%20Dark%20%26%20Light-171717.svg)](#-refero-vercel-design-system)
 
 <p align="center">
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#key-features">Key Features</a> •
-  <a href="#architecture">Architecture</a> •
-  <a href="#17-specialist-pool">17-Role Specialist Pool</a> •
-  <a href="#configuration">Configuration</a> •
-  <a href="#security">Security</a> •
-  <a href="#docs">Documentation</a> •
-  <a href="README.ru.md">Русская версия</a>
+  <a href="#-one-click-installation">⚡ 1-Click Install</a> •
+  <a href="#-key-features">Key Features</a> •
+  <a href="#-interface-gallery">UI Gallery</a> •
+  <a href="#-17-role-specialist-pool">17-Role Specialist Pool</a> •
+  <a href="#-architecture--concurrency">Architecture</a> •
+  <a href="#-closed-contour-argon-escalation">Argon Escalation</a> •
+  <a href="#-system-diagnostics-doctor">System Doctor</a> •
+  <a href="README.ru.md">🇷🇺 Русская версия</a>
 </p>
 
 </div>
@@ -29,24 +32,86 @@
 
 ## Overview
 
-**AI Command Center** is a high-performance, real-time management dashboard and operational supervisor designed for **Google Antigravity** multi-agent systems and the **AI Development Director** framework.
+**AI Command Center** is a production-grade, real-time mission control dashboard and operational supervisor for **Google Antigravity** multi-agent systems powered by the **AI Development Director** framework.
 
-Crafted in an ultra-modern **Refero / Vercel** engineering aesthetic with native light and dark modes, it gives engineering directors, architects, and developers complete visibility, granular concurrency control, and multi-tier quality governance over autonomous subagents.
+Built strictly in a clean **Refero / Vercel** engineering aesthetic with native light and dark modes, it provides engineering directors, systems architects, and developers with real-time observability, deterministic concurrency control (up to 6 parallel subagents), multi-tier verification gates, and autonomous Level 4 Argon escalation.
 
-## Interface Preview
+---
+
+## ⚡ One-Click Installation
+
+Choose your preferred way to install and launch AI Command Center with **literally a single click or command**:
+
+### Method 1: Windows 1-Click Desktop Launcher (Zero CLI)
+If you cloned or downloaded the repository:
+1. Double-click [`setup.cmd`](setup.cmd) (or [`setup.bat`](setup.bat)).
+2. The launcher automatically:
+   - Verifies **Node.js 18+** and **Git** (guides you if missing).
+   - Installs all dependencies (`npm install` for server and client).
+   - Generates your `.env` from `.env.example` with a secure persistent API token.
+   - Deploys the complete **17-Agent Suite, Orchestration Rules, and Skills** into `~/.gemini/config/plugins/ai-director`.
+   - Runs the diagnostic **Doctor** (`npm run doctor` with 19/19 checks).
+   - Launches the dev servers and **automatically opens your default browser at `http://127.0.0.1:5173/`**!
+
+> **Daily use**: Double-click [`start.cmd`](start.cmd) for instantaneous 1-click startup.
+
+---
+
+### Method 2: Linux & macOS 1-Click Shell Launcher
+```bash
+chmod +x setup.sh && ./setup.sh
+```
+> **Daily use**: Run `./start.sh`.
+
+---
+
+### Method 3: Remote Terminal One-Liner (No Prior Cloning Required)
+Install and run AI Command Center anywhere directly from your terminal:
+
+**Windows (PowerShell)**:
+```powershell
+irm https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.ps1 | iex
+```
+
+**Linux & macOS (Bash)**:
+```bash
+curl -fsSL https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.sh | bash
+```
+
+---
+
+### Method 4: In-App 1-Click Setup & Sync (Web UI)
+Already inside the dashboard? 
+- Click the **`⚡ 1-Click Setup`** button in the top navigation bar or the **`1-Click Sync Antigravity`** button on the **Agents** page.
+- The system automatically creates a timestamped backup in `backups/`, copies all 17 agent definitions, rules (`AGENTS.md`), and skills into `~/.gemini`, streams live progress over WebSocket, and updates your agents roster instantly!
+
+---
+
+### Method 5: 1-Click Cloud Workspace (GitHub Codespaces)
+Run AI Command Center in a dedicated cloud container with zero local setup:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/fen3211/ai-command-center)
+
+---
+
+## 📸 Interface Gallery
 
 <div align="center">
-  <img src="public/screenshots/dark-overview.png" alt="AI Command Center — Dark Theme Mission Control" width="100%" />
-  <p><em>Dark Theme — Mission Control & Concurrency Supervisor (Refero Vercel Style)</em></p>
+  <img src="public/screenshots/dark-overview.png" alt="AI Command Center — Dark Mode Mission Control" width="100%" />
+  <p><em>Dark Theme — Mission Control, Real-Time Concurrency Supervisor &amp; Active Subagents</em></p>
 </div>
 
 <details>
-<summary><b>View Additional Screenshots (Light Mode, Orchestration, New Task Modal)</b></summary>
+<summary><b>🔍 Click to expand full screenshot gallery (Argon Escalation, Workflow, Modals & Light Mode)</b></summary>
 <br>
 
-| Light Theme Overview | Dark Orchestration Workflow |
+| Intelligent Argon Escalation Center | 18-Point Prompt Pack & Verdict Modal |
 | :---: | :---: |
-| ![Light Theme](public/screenshots/overview.png) | ![Orchestration Workflow](public/screenshots/dark-workflow.png) |
+| ![Escalation Center](public/screenshots/escalation-center.png) | ![Escalation Modal](public/screenshots/escalation-modal.png) |
+
+| Live Orchestration Workflow (Dark Mode) | Light Theme Mission Control |
+| :---: | :---: |
+| ![Dark Workflow](public/screenshots/dark-workflow.png) | ![Light Overview](public/screenshots/overview.png) |
 
 | Task Creation Modal (Dark Mode) |
 | :---: |
@@ -54,57 +119,27 @@ Crafted in an ultra-modern **Refero / Vercel** engineering aesthetic with native
 
 </details>
 
-```
-                      ┌──────────────────────────────────────┐
-                      │    AI Development Director (Flash)   │
-                      └──────────────────┬───────────────────┘
-                                         │
-                 ┌───────────────────────┴───────────────────────┐
-                 ▼                                               ▼
-     ┌───────────────────────┐                       ┌───────────────────────┐
-     │  Specialist Subagents │                       │  Gate 2b: Legal Gate  │
-     │  (Up to 6 Concurrent) │                       │  (RF & EU Compliance) │
-     └───────────┬───────────┘                       └───────────────────────┘
-                 │
-                 ▼
-     ┌───────────────────────┐
-     │ Quality Gate 1 & 2    │◄─── Tests, Linters, Code Reviews
-     └───────────┬───────────┘
-                 │
-           (2 Failures)
-                 ▼
-     ┌───────────────────────┐
-     │ Level 3: Architect    │◄─── Gemini Pro Tier
-     └───────────┬───────────┘
-                 │
-          (Blocker Impasse)
-                 ▼
-     ┌────────────────────────────────────────────────────────┐
-     │  Level 4: Gemini 4 Argon Escalation (Closed Contour)   │
-     │  Isolated Prompt Pack -> Manual Switch -> Verdict      │
-     └────────────────────────────────────────────────────────┘
-```
-
 ---
 
-## Key Features
+## 🎯 Key Features
 
-### 1. 17-Role Specialist Pool
-Comprehensive coordination across 17 specialized AI roles, allocating cost-efficient **Gemini 3.8 Flash** models for standard development, reserved **Pro-tier** models for complex architecture and security audits, and closed-contour **Gemini 4 Argon** for critical impasses.
+### 1. 17-Role Canonical Specialist Pool
+Dynamic allocation across 17 specialized AI roles, allocating cost-efficient **Gemini 3.8 Flash** models for standard implementation, reserved **Pro-tier** models for complex architecture and security audits, and closed-contour **Gemini 4 Argon** for critical impasses.
 
-### 2. High-Throughput Concurrency & Process Supervision
-- **Dynamic Concurrency Control**: Execute up to 6 parallel subagents simultaneously (`MAX_CONCURRENT_SUBAGENTS = 6`), with an intelligent queue manager that prevents memory saturation and enforces thread throttling.
-- **Process Tree Supervisor**: Complete execution monitoring with stdout/stderr real-time streaming, timeout enforcement, and guaranteed tree-kill termination (`taskkill /T /F` on Windows) to eliminate orphaned processes.
+### 2. High-Throughput Concurrency & Process Tree Supervision
+- **Dynamic Concurrency Control**: Execute up to 6 parallel subagents simultaneously (`MAX_CONCURRENT_SUBAGENTS = 6`), with an intelligent FIFO queue manager that prevents memory saturation and enforces thread throttling.
+- **Process Tree Supervisor**: Complete execution monitoring with stdout/stderr real-time streaming, timeout enforcement, and guaranteed tree-kill termination (`taskkill /T /F` on Windows, `kill -9` process groups on Unix) to eliminate orphaned zombie processes.
 
-### 3. Closed-Contour Level 4 Argon Escalation
-- Automated detection of two consecutive failed attempts per approach.
-- Synthesizes an isolated 10-point **Argon Prompt Pack** containing minimal reproduction context (20–50 lines), failure proof, and architectural diagnostic questions.
-- Operators review and execute the prompt within a sealed contour, routing the architectural verdict back to Flash specialists for code execution.
+### 3. Intelligent Level 4 Argon Escalation Engine
+- **Autonomous Impasse Detection**: Automatically detects repeated diagnostic failures (2 consecutive failed attempts), agent contradictions, and deadlocks across sensitivity modes (`conservative`, `balanced`, `aggressive`).
+- **18-Point Prompt Pack Generator**: Synthesizes a structured 18-point Markdown prompt pack with automated sanitization of system paths (`C:\Users\username` $\to$ `~`) and sensitive tokens.
+- **Anti-Spam & Rejection Memory**: SHA-256 signature deduplication with a 5-minute cooldown prevents rapid task restarts from flooding the system with redundant escalations.
+- **Closed-Loop Verdict Resolution**: Operator executes the sealed prompt pack in Gemini 4 Argon, pastes the verdict into the modal, and the AI Director parses recommendations and routes execution back to Flash specialists.
 
 ### 4. Multi-Tier Quality & Legal Governance (Gate 2b)
 - **Quality Gate 1 (L1 Self-Check)**: Automated test execution, linting, and mandatory validation of **9-point Subagent Reports**.
 - **Quality Gate 2 (L2 Independent Verification)**: Independent validation by QA Engineers and Code Reviewers.
-- **Quality Gate 2b (Legal Gate)**: Automated compliance evaluation across Russian (`RU`) and European (`EU_NL`) jurisdictions, auditing 152-FZ, 156-FZ, 23-FZ localization, 243-FZ AI regulation, Part IV Civil Code copyright, GDPR/UAVG, and EU AI Act. Operates with a **non-blocking invariant** (blocking risky sub-tasks without stalling safe UI/test development).
+- **Quality Gate 2b (Legal Gate)**: Automated compliance evaluation across Russian (`RU`) and European (`EU_NL`) jurisdictions, auditing 152-FZ, 156-FZ, 23-FZ localization, 243-FZ AI regulation, Part IV Civil Code copyright, GDPR/UAVG, and EU AI Act with a **non-blocking invariant** (blocking risky sub-tasks without stalling safe UI/test development).
 
 ### 5. Zero-Disk-Read Incremental Stream Ingestion
 - `JsonlStreamReader` engine reads live Antigravity transcripts (`~/.gemini/antigravity/brain/**/transcript.jsonl`) incrementally using chunked 64 KB buffers.
@@ -112,212 +147,211 @@ Comprehensive coordination across 17 specialized AI roles, allocating cost-effic
 - Inode and birthtime tracking to identify file rotations, truncations, or replacements instantly.
 - Atomic SQLite transactions guarantee zero duplicate event insertions.
 
-### 6. Live Presence & Telemetry
-- Real-time watcher tracking Antigravity active locks (`~/.gemini/antigravity/presence/*.lock`).
-- Accurate separation of confirmed **LIVE** token consumption and projected **ESTIMATED** metrics.
-- Direct memory explorer and editor for the Director Knowledge Base (`~/.gemini/antigravity/knowledge/ai-director/`).
-
-### 7. Refero Vercel Design System & Dynamic Light/Dark Themes
+### 6. Refero Vercel Design System & Dynamic Light/Dark Themes
 - Dual-mode engineering interface: Paper White (`#FAFAFA`) light theme & Obsidian Black (`#0A0A0A`) dark theme.
 - Persistent theme switching via `localStorage` and system `prefers-color-scheme` detection.
 - Zero-flash-of-unstyled-theme (FOUT) inline head bootstrap.
-- WCAG 2.1 AA accessible contrast ratios, focus-visible keyboard navigation, and micro-interactions.
+- WCAG 2.1 AA accessible contrast ratios, focus-visible keyboard navigation, and responsive mobile drawer.
 
 ---
 
-## Quick Start (3 Commands)
+## 👥 17-Role Specialist Pool
 
-### Prerequisites
-- **Node.js** >= 18.0.0 (tested on Node v20 LTS and v24)
-- **npm** >= 9.0.0
-- Windows 10/11, macOS, or modern Linux distribution
-- *(Optional)* Google Antigravity CLI (`agy.exe`)
-
-```bash
-# 1. Clone repository
-git clone https://github.com/your-org/ai-command-center.git
-cd ai-command-center
-
-# 2. Install dependencies (server + client)
-npm install && npm --prefix client install
-
-# 3. Launch Development Environment
-npm run dev
-```
-
-> **Windows Quick Launch**: Double-click [`start.cmd`](start.cmd) in the project root to start both server and client automatically.
-
-Access points:
-- **Frontend Dashboard**: [http://127.0.0.1:5173](http://127.0.0.1:5173)
-- **Backend API & Health**: [http://127.0.0.1:3001/health](http://127.0.0.1:3001/health)
-- **WebSocket Telemetry Stream**: `ws://127.0.0.1:3001/ws`
+| # | Role ID | Display Name | Tier / Model | Primary Domain & Responsibilities |
+|---|---|---|---|---|
+| 1 | `director` | **Director / Lead Orchestrator** | Gemini 3.8 Flash High | Central coordination, task triage (<15 lines solo, 1-3 files single specialist, complex parallel), quality gates governance |
+| 2 | `senior-architect` | **Senior Architect** | Gemini Pro | Level 3 escalation, subtle concurrency/race conditions, data locks, system scalability |
+| 3 | `researcher` | **Researcher** | Gemini Flash | Codebase exploration, dependencies, API docs analysis (read-only sandbox) |
+| 4 | `frontend-developer` | **Frontend Developer** | Gemini Flash | React, Next.js, TypeScript, Tailwind CSS, UI animations, responsive layouts |
+| 5 | `backend-developer` | **Backend Developer** | Gemini Flash | Node.js, Python, Express, REST APIs, WebSocket streaming, server architecture |
+| 6 | `ui-ux-designer` | **UI/UX Designer** | Gemini Flash | Refero/Vercel design systems, visual hierarchy, ergonomics, anti-AI-slop audit |
+| 7 | `qa-engineer` | **QA Engineer** | Gemini Flash | Unit, integration, E2E automated test suites, edge case validation, regression defense |
+| 8 | `code-reviewer` | **Code Reviewer** | Gemini Flash | Independent diff audits, anti-patterns, architectural compliance, code polish |
+| 9 | `legal-compliance` | **Legal Advisor & Tech Writer** | Gemini Flash | Legal Gate 2b (152-FZ, 243-FZ AI, GDPR, EU AI Act, licenses) and authoritative technical documentation |
+| 10 | `security-engineer` | **Security Engineer** | Gemini Flash / Pro | OWASP Top 10, SQLi, XSS, SSRF, prompt injection protection, token audit |
+| 11 | `devops-engineer` | **DevOps Engineer** | Gemini Flash / Pro | GitHub Actions, CI/CD, Docker, platform resilience, backups, process supervisor |
+| 12 | `product-manager` | **Product Manager** | Gemini Flash | Requirements breakdown, User Stories, Acceptance Criteria, MVP scoping |
+| 13 | `ai-evaluation-engineer` | **AI Evaluation Engineer** | Gemini Flash / Pro | Model outputs, prompt eval suites, latency and token cost optimization |
+| 14 | `performance-engineer` | **Performance Engineer** | Gemini Flash / Pro | Core Web Vitals (LCP, CLS, INP), bundle size profiling, CPU/memory leaks, SQL tuning |
+| 15 | `accessibility-specialist` | **Accessibility Specialist** | Gemini Flash | WCAG 2.1/2.2 AA/AAA compliance, screen readers, semantic HTML, keyboard focus rings |
+| 16 | `database-specialist` | **Database Specialist** | Gemini Flash / Pro | Schemas, normalization, migrations, indexes, transactions, lock contention |
+| 17 | `data-engineer` | **Data Engineer** | Gemini Flash / Pro | ETL/ELT pipelines, JSON/JSONL streaming ingestion, deduplication, telemetry quality |
 
 ---
 
-## Verification & Testing
-
-Verify that your installation satisfies all system invariants:
-
-```bash
-# Run the complete test suite (20 system tests, 9 supervisor tests, 16 legal scenarios)
-npm test
-```
-
-Expected output:
-```
-ALL 20 SYSTEM, SECURITY & INGESTION TESTS PASSED! ✓
-ALL 9 PROCESS SUPERVISOR & EXECUTION BRIDGE TESTS PASSED! ✓
-ALL 16 LEGAL & COMPLIANCE SCENARIOS PASSED WITH 100% SUCCESS RATE ✓
-```
-
----
-
-## Architecture
-
-AI Command Center is built with an event-driven, reactive architecture designed for zero disk churn and near-zero latency:
+## 🏛 Architecture & Concurrency
 
 ```mermaid
 flowchart TD
-    subgraph AntigravityWorkspace["Google Antigravity Workspace"]
-        A1["Transcripts (*.jsonl)"]
-        A2["Presence Locks (*.lock)"]
-        A3["Knowledge Base (*.md)"]
-        A4["Antigravity CLI (agy.exe)"]
+    User["👨‍💻 Developer / User Request"] --> Director["🎯 AI Development Director (Flash High)"]
+
+    subgraph Triage ["Autonomous Task Triage"]
+        Director -->|"< 15 lines / typo"| Solo["⚡ Solo Execution"]
+        Director -->|"1 - 3 files"| Single["👤 1 Specialist"]
+        Director -->|"Cross-cutting / Module"| Multi["👥 Parallel Subagents (Up to 6)"]
     end
 
-    subgraph BackendServer["AI Command Center Backend (Node.js / Express / TS)"]
-        B1["Chokidar FS Watcher"]
-        B2["JsonlStreamReader (Zero-Disk-Read)"]
-        B3["IngestionQueue (Atomic Tx)"]
-        B4[("SQLite Database\n(WAL Mode)")]
-        B5["Process Supervisor (Max 6 Workers)"]
-        B6["Legal Gate Engine (RU / EU)"]
-        B7["EventBus (WebSocket Server)"]
-        B8["REST API Router (Zod Validated)"]
+    subgraph Governance ["Multi-Tier Verification & Gates"]
+        Single & Multi --> Gate1["✅ Quality Gate 1: L1 Self-Check\n(9-point Report, Linters, Tests)"]
+        Gate1 --> Gate2["🔍 Quality Gate 2: Independent Review\n(QA Engineer / Code Reviewer)"]
+        Gate1 -.->|PII, AI APIs, Scraping, IP| Gate2b["⚖️ Gate 2b: Legal Compliance Gate\n(152-FZ, 243-FZ AI, GDPR, EU AI Act)"]
     end
 
-    subgraph FrontendClient["Dashboard Client (React 19 / Vite / Tailwind)"]
-        C1["Overview & Live KPI"]
-        C2["17-Agent Management Grid"]
-        C3["Live Workflow Visualizer"]
-        C4["Token & Model Analytics"]
-        C5["Process & Task Manager"]
-        C6["Director Memory Editor"]
-        C7["Argon Escalation Console"]
-        C8["Unified Event Stream"]
+    subgraph Escalation ["Intelligent Escalation Pipeline"]
+        Gate2 -->|"Pass"| Complete["🏁 Task Completed & Merged"]
+        Gate2 -->|"2 Consecutive Failures"| L3["🚨 Level 3: Senior Architect (Pro Tier)"]
+        L3 -->|"Architectural Impasse"| L4Engine["⚙️ Intelligent Argon Escalation Engine"]
+        L4Engine -->|"18-Point Sanitized Prompt Pack"| Argon["💎 Level 4: Gemini 4 Argon\n(Closed Contour Manual Switch)"]
+        Argon -->|"Verdict Resolution"| Director
     end
 
-    A1 -->|FS Event| B1
-    A2 -->|Lock Change| B1
-    B1 --> B2
-    B2 --> B3
-    B3 --> B4
-    B3 -->|Post-Commit Broadcast| B7
-    B5 <--> A4
-    B5 --> B7
-    B6 --> B7
-    B8 <--> B4
-    B7 <-->|Secure WebSocket| FrontendClient
-    B8 <-->|Authenticated REST| FrontendClient
-    A3 <-->|Read / Write| B8
+    style Director fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+    style Argon fill:#8B5CF6,stroke:#7C3AED,stroke-width:2px,color:#fff
+    style Gate2b fill:#F59E0B,stroke:#D97706,stroke-width:1px,color:#fff
 ```
 
 ---
 
-## 17-Role Specialist Pool
+## 🩺 System Diagnostics (`doctor`)
 
-| # | Role ID | Display Name | Default Model Tier | Primary Domain |
-|---|---------|--------------|--------------------|----------------|
-| 1 | `director` | AI Development Director | Gemini 3.8 Flash High | Master coordinator, task triage, model routing & quality arbiter |
-| 2 | `researcher` | Researcher | Gemini Flash | Codebase analysis, documentation research, dependency investigation |
-| 3 | `frontend-developer` | Frontend Developer | Gemini Flash | React 19, Next.js, TypeScript, UI ergonomics, micro-interactions |
-| 4 | `backend-developer` | Backend Developer | Gemini Flash | Node.js, Express, Python, API endpoints, schema validation, auth |
-| 5 | `ui-ux-designer` | UI/UX Designer | Gemini Flash | Liquid Dark Glass design systems, wireframing, layout hierarchy |
-| 6 | `qa-engineer` | QA Engineer | Gemini Flash | Unit, integration, E2E automation, edge-case and regression testing |
-| 7 | `code-reviewer` | Code Reviewer | Gemini Flash | Independent diff review, security defect detection, anti-patterns |
-| 8 | `senior-architect` | Senior Architect | Gemini Pro | Complex architectural refactoring, race condition resolution, L3 escalation |
-| 9 | `legal-compliance` | Legal Advisor & Tech Writer | Gemini Flash | RF & EU compliance (152-FZ, 243-FZ, GDPR) + comprehensive technical docs |
-| 10 | `security-engineer` | Security Engineer | Gemini Flash / Pro | OWASP Top 10, DevSecOps, secret leak prevention, prompt injection audit |
-| 11 | `devops-engineer` | DevOps & SRE | Gemini Flash / Pro | CI/CD pipelines, Docker containers, monitoring, automated backups |
-| 12 | `product-manager` | Product Manager | Gemini Flash | User stories, Acceptance Criteria, backlog prioritization, MVP scoping |
-| 13 | `ai-evaluation-engineer` | AI Evaluation Engineer | Gemini Flash / Pro | Model benchmarking, hallucination tracking, prompt evals, cost audit |
-| 14 | `performance-engineer` | Performance Engineer | Gemini Flash / Pro | Core Web Vitals (LCP, CLS, INP), memory leak profiling, SQL optimization |
-| 15 | `accessibility-specialist`| Accessibility Specialist | Gemini Flash | WCAG 2.1/2.2 AA/AAA, keyboard navigation, screen readers, semantic HTML |
-| 16 | `database-specialist` | Database Specialist | Gemini Flash / Pro | Schema normalization, indexing, migrations, WAL tuning, locks analysis |
-| 17 | `data-engineer` | Data Engineer | Gemini Flash / Pro | ETL/ELT pipelines, streaming data, JSONL parsing, data deduplication |
+AI Command Center comes equipped with a comprehensive built-in diagnostic doctor. Run it anytime to check system health, Antigravity connections, and database integrity:
 
----
+```bash
+npm run doctor
+```
 
-## Configuration
+```text
+=======================================================================
+       AI COMMAND CENTER - SYSTEM DIAGNOSTICS & HEALTH CHECK           
+=======================================================================
 
-Configuration parameters are loaded from environment variables or `.env`:
+=== 1. Runtime & Environment ===
+  [✓] Node.js v24.20.0 (Required >= 18.0.0)
+  [✓] npm v11.19.0
+  [✓] git version 2.55.0
 
-| Variable | Default Value | Description |
-|----------|---------------|-------------|
-| `PORT` | `3001` | HTTP and WebSocket server port |
-| `HOST` | `127.0.0.1` | Loopback binding address |
-| `NODE_ENV` | `development` | Environment mode (`development` or `production`) |
-| `COMMAND_CENTER_API_KEY` | *(Auto-generated)* | 32-byte cryptographic hex token for API & WS authentication |
-| `ANTIGRAVITY_DIR` | `~/.gemini/antigravity` | Base directory of Google Antigravity |
-| `KNOWLEDGE_DIR` | `~/.gemini/antigravity/knowledge/ai-director` | Director memory & protocol markdown storage |
-| `PRESENCE_DIR` | `~/.gemini/antigravity/presence` | Active agent presence lock files directory |
-| `BRAIN_DIR` | `~/.gemini/antigravity/brain` | Subagent execution transcripts directory |
-| `AGY_CLI_PATH` | `%LOCALAPPDATA%\agy\bin\agy.exe` | Path to Antigravity CLI binary |
-| `DB_PATH` | `./command_center.sqlite` | SQLite database file location |
+=== 2. Project Configuration ===
+  [✓] package.json valid (ai-command-center v1.0.0)
+  [✓] node_modules directory present
+  [✓] .env configured with persistent API key
 
----
+=== 3. AI Director Instructions & Rules ===
+  [✓] GEMINI.md verified
+  [✓] AGENTS.md verified (max 6 concurrency rule)
 
-## Security
+=== 4. 17 Specialized Agent Definitions ===
+  [✓] All 17 agent definitions verified
 
-AI Command Center operates under strict security invariants:
-1. **Loopback Binding**: Bound to `127.0.0.1` by default to prevent external network exposure.
-2. **CORS Origin Whitelist**: Unauthorized web origins cannot invoke dashboard endpoints.
-3. **Timing-Safe Auth**: Token comparisons utilize `crypto.timingSafeEqual` to thwart timing attacks.
-4. **Command Injection Prevention**: Subprocess arguments are validated against strict whitelists with shell metacharacters rejected.
-5. **Path Traversal Protection**: Filename parameters enforce `/^[a-zA-Z0-9_-]+\.md$/`.
-6. **WebSocket Boundaries**: Frame sizes capped at 64 KB with active ping-pong heartbeat.
+=== 5. Orchestration Skills ===
+  [✓] director-orchestration skill verified
+  [✓] argon-escalation skill verified
 
-Read the complete [Security Policy](SECURITY.md) for vulnerability reporting guidelines.
+=== 6. Antigravity Runtime & CLI Bridge ===
+  [✓] Antigravity CLI: 1.4.7
+  [✓] Brain transcripts & presence locks active
+  [✓] Director Knowledge Base connected
+
+=== 7. Database Health & Persistence ===
+  [✓] SQLite database integrity check passed
+  [✓] SQLite WAL journal mode active
+  [✓] All required tables present (tasks, events, settings, model_usage, escalations)
+
+=======================================================================
+Diagnostic Summary: 19 Passed, 0 Warnings, 0 Failures
+Result: EXCELLENT! All system and agent components are fully verified.
+=======================================================================
+```
 
 ---
 
-## Documentation
+## 📂 Project Structure
 
-Explore detailed guides in the [`docs/`](docs/) directory:
-- [Getting Started Guide](docs/GETTING_STARTED.md)
-- [Installation Guide](docs/INSTALLATION.md)
-- [Configuration Reference](docs/CONFIGURATION.md)
-- [System Architecture](docs/ARCHITECTURE.md)
-- [17-Agent Pool Specification](docs/AGENTS.md)
-- [Orchestration & Quality Gates](docs/ORCHESTRATION.md)
-- [Antigravity Integration Guide](docs/ANTIGRAVITY.md)
-- [Troubleshooting & Diagnostics](docs/TROUBLESHOOTING.md)
-- [Frequently Asked Questions (FAQ)](docs/FAQ.md)
+```text
+ai-command-center/
+├── .github/                       # GitHub Actions CI/CD, issue & PR templates
+│   ├── assets/hero-banner.svg     # Official GitHub dark-glass hero banner
+│   ├── workflows/ci.yml           # Cross-platform multi-OS test workflow
+│   └── workflows/release.yml      # Automated GitHub releases
+├── agent-config/                  # Source definitions for Antigravity integration
+│   ├── agents/                    # 17 Specialist Agent markdown definitions
+│   ├── rules/                     # Orchestration rules (AGENTS.md, GEMINI.md)
+│   ├── skills/                    # Skills (director-orchestration, argon-escalation)
+│   └── templates/                 # Prompt pack, agent, and rules templates
+├── client/                        # React 19 + TypeScript + Vite frontend
+│   └── src/
+│       ├── components/            # Refero-styled components (Light & Dark)
+│       │   ├── Modals/            # EscalationDetailModal, ArgonVerdictModal, etc.
+│       │   ├── Header.tsx         # Top bar with 1-Click Sync & theme toggle
+│       │   ├── EscalationCenter.tsx # Level 4 Argon Escalation Center
+│       │   └── Overview.tsx       # Mission Control & active subagents
+│       └── services/api.ts        # REST API & WebSocket client
+├── server/                        # Node.js + Express + WebSocket backend
+│   └── src/
+│       ├── db/database.ts         # SQLite WAL schema & migrations
+│       ├── routes/api.ts          # REST endpoints & token authentication
+│       └── services/
+│           ├── escalation-manager.ts # Intelligent Argon Escalation Engine
+│           ├── process-supervisor.ts # Process tree lifecycle & timeout guard
+│           ├── antigravity-bridge.ts # Live Antigravity session telemetry
+│           └── antigravity-installer.ts # Programmatic 1-click sync service
+├── scripts/                       # Installers & diagnostics
+│   ├── get.ps1                    # Remote one-liner installer (Windows)
+│   ├── get.sh                     # Remote one-liner installer (Unix/macOS)
+│   ├── install.ps1                # PowerShell agent installer
+│   ├── install.sh                 # Bash agent installer
+│   └── doctor.js                  # 19-check diagnostic engine
+├── setup.cmd                      # 1-Click Windows Desktop Setup & Launch
+├── setup.bat                      # 1-Click Windows Desktop Setup & Launch
+├── setup.sh                       # 1-Click Unix/macOS Desktop Setup & Launch
+├── start.cmd                      # 1-Click Quick Launcher (Windows)
+├── start.sh                       # 1-Click Quick Launcher (Unix/macOS)
+└── docs/                          # Comprehensive technical documentation
+```
 
 ---
 
-## Roadmap
+## 📚 Documentation Index
 
-- [x] Initial open-source release v1.0.0
-- [x] 17-agent specialist pool with model routing
-- [x] Process Supervisor with tree-kill lifecycle and 6-agent concurrency
-- [x] Closed-loop Level 4 Argon Escalation with Prompt Pack generator
-- [x] Gate 2b Legal & Compliance engine (RU & EU)
-- [ ] Multi-tenant workspace support
-- [ ] Exportable PDF & HTML executive audit reports
-- [ ] Docker containerized one-click deployment package
-- [ ] Native dark/light mode toggle
+For in-depth guides, see the [`docs/`](docs/) directory:
 
----
-
-## Contributing
-
-We welcome community contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before opening pull requests.
+- [**AGENTS.md**](docs/AGENTS.md) — Detailed specifications of all 17 agent roles, duties, and prompts.
+- [**ARCHITECTURE.md**](docs/ARCHITECTURE.md) — Backend, database, WebSocket event streams, and supervisor internals.
+- [**ORCHESTRATION.md**](docs/ORCHESTRATION.md) — Operational runbook for AI Development Director & Argon escalation.
+- [**INSTALLATION.md**](docs/INSTALLATION.md) — Comprehensive installation, backup, and restore reference.
+- [**GETTING_STARTED.md**](docs/GETTING_STARTED.md) — First steps and quick tutorial.
+- [**CONFIGURATION.md**](docs/CONFIGURATION.md) — Environment variables, paths, and token auth.
+- [**TROUBLESHOOTING.md**](docs/TROUBLESHOOTING.md) — Resolving common errors and diagnostic tips.
+- [**FAQ.md**](docs/FAQ.md) — Frequently asked questions.
 
 ---
 
-## License
+## 🛡 Security & Privacy
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+AI Command Center implements enterprise-grade security controls:
+- **Local Loopback Isolation**: Default binding to `127.0.0.1` prevents unauthorized LAN/WAN access.
+- **Timing-Safe Token Authentication**: Cryptographically secure token verification using `crypto.timingSafeEqual` prevents timing attacks.
+- **Sanitized Escalation Packs**: System paths (`C:\Users\username` $\to$ `~`) and sensitive tokens (`AIza...`, `sk-...`, `ghp-...`) are automatically stripped before prompt pack generation.
+- **Path Traversal Protection**: Strictly validates all knowledge base and transcript access paths against traversal attacks.
+- **Zero Production Deployment**: Agents and scripts are strictly forbidden from executing non-sanctioned production deployments.
 
-Developed by the **AI Development Director** and the Google Antigravity multi-agent community.
+Read our complete [Security Policy](SECURITY.md) for vulnerability reporting.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md) before submitting pull requests.
+
+```bash
+# Run full test suite before submitting PR
+npm test
+
+# Verify system diagnostics
+npm run doctor
+```
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.

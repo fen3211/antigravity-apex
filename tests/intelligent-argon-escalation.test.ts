@@ -427,6 +427,7 @@ MIIEowIBAAKCAQEA0m4w...
   console.log('================================================================\n');
 
   server.close();
+  process.exit(0);
 }
 
 runTests().catch((err) => {

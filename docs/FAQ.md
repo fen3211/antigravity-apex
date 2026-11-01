@@ -1,5 +1,7 @@
 # Frequently Asked Questions (FAQ)
 
+[English](FAQ.md) • [Русский](FAQ.ru.md)
+
 This document answers common technical, architectural, and operational questions about **AI Command Center**.
 
 ---
@@ -54,7 +56,7 @@ The system routes tasks across the Google Gemini family:
 ### Why is Gemini 4 Argon kept in a "Closed Contour"?
 Gemini 4 Argon is an ultra-high-capability model reserved for critical architectural impasses. To prevent runaway token expenditure and accidental production regressions:
 1. It is never triggered on routine errors (requires 2 failed attempts first).
-2. It receives an isolated **10-point Prompt Pack** containing only the minimal 20–50 line reproduction snippet.
+2. It receives an isolated **18-point Prompt Pack** containing only the minimal 20–50 line reproduction snippet and sanitized error traces.
 3. The human operator switches to Argon manually.
 4. Argon produces an architectural diagnosis and resolution strategy, which is then routed back to Flash specialists for code execution.
 
@@ -98,8 +100,4 @@ Yes. To register a custom specialist:
 3. The agent will immediately appear in the **Agent Management** grid and become available for task assignment.
 
 ### How do I deploy AI Command Center on a remote server?
-By default, the server binds to `127.0.0.1` for local loopback security. To deploy remotely:
-1. Set `HOST=0.0.0.0` and configure your `PORT` in `.env`.
-2. Put a secure reverse proxy (Nginx, Caddy, or Traefik) with SSL/TLS in front of the server.
-3. Add your remote domain or IP to `CONFIG.ALLOWED_ORIGINS` in `server/src/config.ts`.
-4. Ensure `COMMAND_CENTER_API_KEY` is set to a strong 32-byte hexadecimal secret.
+Set `HOST=0.0.0.0` in `.env` and specify allowed web domains in `ALLOWED_ORIGINS`. Pass the `COMMAND_CENTER_API_KEY` token in request headers (`Authorization: Bearer <token>`).

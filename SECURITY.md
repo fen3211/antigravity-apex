@@ -1,5 +1,7 @@
 # Security Policy
 
+[English](SECURITY.md) • [Русский](SECURITY.ru.md)
+
 ## Supported Versions
 
 Only the latest major and minor release versions receive security updates and vulnerability patches.
@@ -48,29 +50,16 @@ AI Command Center implements multi-layered defense-in-depth mechanisms designed 
 ### 3. Command Injection & Subprocess Hardening
 - Arbitrary terminal commands are prohibited.
 - Interaction with the Antigravity engine is restricted to a strictly defined whitelist of commands (`agy models`, `agy agents`, `agy plugins list`, `agy -p`).
-- Agent identifiers and input parameters are enforced with regular expressions (`^[a-zA-Z0-9_-]+$`) and validated through Zod schemas.
-- Shell metacharacters (`&`, `|`, `;`, `$`, `>`, `<`, `` ` ``) are explicitly rejected before reaching any process spawning mechanism.
+- Shell metacharacters (`&`, `|`, `;`, `$`, `>`, `<`, `` ` ``) are rejected at the router level.
+- On Windows, subagent processes are killed via explicit tree termination (`taskkill /T /F`) to prevent orphaned zombie processes.
 
-### 4. Path Traversal Defense
-- File operations on knowledge base documents (`/api/knowledge/*`) enforce filename regex constraints (`^[a-zA-Z0-9_-]+\.md$`).
-- Any attempt to provide relative path traversals (e.g., `..`, `../`, `..\`) is intercepted and rejected with HTTP 400.
+### 4. Path Traversal Defenses
+- Reading and writing files in the Director Knowledge Base (`~/.gemini/antigravity/knowledge/ai-director/`) is strictly confined to `.md` files without path traversal sequences (`..`, `/`, `\`).
+- Transcripts ingestion only reads files matching the validated Antigravity path predicate.
 
-### 5. WebSocket DoS & Payload Boundaries
-- WebSocket frames are capped at a maximum payload of 64 KB (`MAX_WS_PAYLOAD`). Any frame exceeding this limit triggers immediate socket disconnection (code `1009`).
-- Heartbeat ping-pong mechanisms monitor stale connections and terminate dead sockets cleanly.
+### 5. Sanitized Level 4 Argon Escalation Packs
+- System paths containing the operator's local username (`C:\Users\<username>` $\to$ `~`) are automatically redacted before prompt packs are generated.
+- Sensitive environment secrets, API keys, and credential formats are masked using regular expression sanitizers.
 
-### 6. Process Supervisor & Resource Quotas
-- Subagent processes spawned by the supervisor are isolated with explicit timeout enforcement.
-- When a task exceeds its maximum execution window or is aborted by the operator, the supervisor executes a complete process tree termination (`taskkill /T /F` on Windows) to prevent runaway or orphan processes.
-
-### 7. Zero-Disk-Read & Ingestion Boundaries
-- The JSONL stream reader maintains strict byte-offset tracking, chunk boundaries (64 KB), UTF-8 continuation safety, and inode verification.
-- Malformed JSON fragments do not crash the engine or trigger infinite loops; atomic SQLite transactions guarantee event deduplication.
-
----
-
-## Best Practices for Operators
-
-1. **Environment Secrets**: Never commit `.env` containing API keys or private tokens to public repositories. Ensure `.env` is listed in your `.gitignore`.
-2. **External AI API Credentials**: Keep Google Cloud and Gemini API tokens in your operating system environment variables or user-level Antigravity configuration files.
-3. **Legal Compliance Auditing**: Always trigger the Legal Gate (`POST /api/legal/evaluate` or `POST /api/legal/assess`) prior to deploying workflows involving personal data collection or commercial external API integration.
+### 6. Production Deployment Restrictions
+- Agents and automated scripts are strictly prohibited from performing non-sanctioned production deployments.

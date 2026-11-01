@@ -1,5 +1,7 @@
 # Changelog
 
+[English](CHANGELOG.md) • [Русский](CHANGELOG.ru.md)
+
 All notable changes to **AI Command Center** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -22,13 +24,14 @@ The initial production-grade release of **AI Command Center**, the premier multi
 - Dynamic concurrency control: configurable up to 6 parallel subagents (`MAX_CONCURRENT_SUBAGENTS = 6`), default concurrency of 3, and a cap of 2 expensive Pro-tier models simultaneously.
 - Automatic queue draining with status tracking across `QUEUED`, `STARTING`, `RUNNING`, `COMPLETED`, `FAILED`, `CANCELLED`, and `TIMEOUT`.
 
-#### 2. Closed-Contour Level 4 Gemini 4 Argon Escalation
+#### 2. Intelligent Level 4 Gemini 4 Argon Escalation Engine
 - Complete implementation of the **Argon Escalation Protocol**:
   - Automated detection of two consecutive failed attempts per approach.
   - Automatic escalation to **Level 3: Senior Architect (Pro Tier)**.
-  - Upon persistent architectural impasse, generation of the isolated 10-point **Argon Prompt Pack** (minimal reproduction context, proof of two failed attempts, exact architectural diagnosis question).
+  - Upon persistent architectural impasse, generation of the isolated 18-point **Argon Prompt Pack** (minimal reproduction context, proof of two failed attempts, exact architectural diagnosis question).
   - Operator manual model-switching directive without leaking unverified output.
-  - Closed-loop de-escalation endpoint (`POST /api/control/argon-verdict`) returning validated architectural solutions back to Flash specialists for code execution.
+  - Closed-loop de-escalation endpoint (`POST /api/escalations/:id/response`) returning validated architectural solutions back to Flash specialists for code execution.
+  - SHA-256 anti-spam cooldown and rejection memory.
 
 #### 3. Multi-Tier Quality Gates & Subagent 9-Point Reporting
 - **Gate 1 (L1 Self-Check)**: Mandatory local unit tests, linter checks, and build validation accompanied by strict 9-point subagent reports (Task Name, Status, Summary, Modified Files, Executed Checks, Check Results, Issues & Risks, Pending Items, Recommended Next Steps).
@@ -48,31 +51,19 @@ The initial production-grade release of **AI Command Center**, the premier multi
 - Deterministic event ID generation via SHA-256 for atomic deduplication.
 
 #### 5. Real-Time Telemetry, Presence & Antigravity Bridge
-- Active presence detection via `chokidar` monitoring `~/.gemini/antigravity/presence/*.lock` in real time.
-- Direct memory integration with `~/.gemini/antigravity/knowledge/ai-director/` allowing live inspection and editing of protocol documents.
-- Antigravity CLI bridge interacting safely with `agy.exe` (`agy models`, `agy agents`, `agy plugins list`, `agy -p`).
-- Token accounting separating verified **LIVE** session tokens from projected **ESTIMATED** metrics.
+- Active lock file monitor (`~/.gemini/antigravity/presence/*.lock`).
+- Strict separation of confirmed **LIVE** transcript tokens and projected **ESTIMATED** tokens.
+- Interactive **Memory Explorer** for reading and editing the Director's persistent knowledge documents (`~/.gemini/antigravity/knowledge/ai-director/`).
 
-#### 6. Liquid Dark Glass Developer Experience (Frontend)
-- Modern UI inspired by Apple Dark Glass and Refero/Vercel developer tools aesthetic.
-- Built on **React 19**, **TypeScript**, **Vite**, **Tailwind CSS v3**, **Framer Motion**, and **Lucide React**.
-- Real-time WebSocket event feed with 14 event types and full-text filtering.
-- Interactive workflow graph displaying task progression across 9 stages (`Director_Triage` to `Approved`).
-- Zero console errors in production build.
+#### 6. Refero Vercel Design System & Dual Light/Dark Themes
+- Production-grade engineering aesthetic inspired by Refero / Vercel design principles.
+- Native Light Theme (Paper White `#FAFAFA`) and Dark Theme (Obsidian Black `#0A0A0A`).
+- Zero-flash-of-unstyled-theme (FOUT) inline head bootstrap script.
+- Accessible contrast ratios (WCAG 2.1 AA), keyboard focus-visible rings, and mobile responsive drawer.
 
-#### 7. Comprehensive Security & Hardening
-- Local loopback binding (`127.0.0.1`) with origin-checked CORS whitelist.
-- Timing-safe 32-byte hex API key authentication (`crypto.timingSafeEqual`).
-- Strict regular expression whitelisting on CLI arguments and agent names to prevent shell injection.
-- Strict path traversal protection on knowledge base endpoints (`/^[a-zA-Z0-9_-]+\.md$/`).
-- WebSocket message size ceiling (64 KB) with active heartbeat and unregister cleanup.
-- Process Supervisor process-tree kill mechanism (`taskkill /T /F` on Windows) preventing runaway child processes.
-
-### Verification & Testing
-- Automated test suite containing:
-  - 20 System, Security & Ingestion tests (`tests/api.test.ts`, `tests/ingestion.test.ts`).
-  - Analytics and Token Aggregation suite (`tests/analytics.test.ts`).
-  - WebSocket resilience and payload boundaries suite (`tests/websocket-resilience.test.ts`).
-  - 9 Process Supervisor lifecycle tests (`tests/process-supervisor.test.ts`).
-  - 16 Legal & Compliance acceptance scenarios covering Russian and European statutory frameworks (`tests/legal-compliance.test.ts`).
-- 100% test pass rate across all suites.
+#### 7. 1-Click Installation Ecosystem
+- Windows 1-Click desktop launcher [`setup.cmd`](setup.cmd) / [`setup.bat`](setup.bat).
+- Linux / macOS 1-Click launcher [`setup.sh`](setup.sh).
+- Remote terminal one-liners `scripts/get.ps1` and `scripts/get.sh`.
+- In-App `⚡ 1-Click Setup` button in the dashboard for instant deployment and synchronization of all 17 agents into Antigravity.
+- Cloud 1-click sandbox via `.devcontainer/devcontainer.json` for GitHub Codespaces.

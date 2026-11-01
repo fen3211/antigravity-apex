@@ -222,11 +222,15 @@ export class EscalationManager {
       '// Minimal reproduction snippet\nfunction repro() {\n  // Problematic execution path\n}'
     );
 
-    const attempt1 = params.evidence.attemptSummaries?.[0] || {
+    const attempt1: { attemptNumber?: number; agent?: string; hypothesis: string; failureReason: string } = params.evidence.attemptSummaries?.[0] || {
+      attemptNumber: 1,
+      agent: task.assignedAgent,
       hypothesis: 'Standard specialist remediation',
       failureReason: 'Verification failure or assertion error'
     };
-    const attempt2 = params.evidence.attemptSummaries?.[1] || {
+    const attempt2: { attemptNumber?: number; agent?: string; hypothesis: string; failureReason: string } = params.evidence.attemptSummaries?.[1] || {
+      attemptNumber: 2,
+      agent: 'senior-architect',
       hypothesis: 'Senior Architect root-cause workaround',
       failureReason: 'Persistent deadlock or secondary race condition'
     };

@@ -240,6 +240,29 @@ export function AppContent() {
     }
   };
 
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSyncAntigravity = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await api.syncAgents();
+      if (res.success) {
+        toast.success(
+          `17 специализированных агентов успешно установлены в ~/.gemini (${res.agentsInstalled.length} файлов)`,
+          '1-Click Setup'
+        );
+        const updatedAgents = await api.getAgents();
+        setAgents(updatedAgents);
+      } else {
+        toast.error(res.error || 'Ошибка синхронизации конфигурации', '1-Click Setup');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Ошибка подключения к серверу', '1-Click Setup');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleCreateTask = async (taskData: Partial<TaskItem>) => {
     const created = await api.createTask(taskData);
     setTasks(prev => [created, ...prev]);
@@ -347,6 +370,8 @@ export function AppContent() {
         status={status}
         connectionStatus={connectionStatus}
         onOpenNewTask={() => setIsNewTaskOpen(true)}
+        onSyncAntigravity={handleSyncAntigravity}
+        isSyncing={isSyncing}
         isMobileMenuOpen={isMobileMenuOpen}
         onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)}
         theme={theme}

@@ -9,6 +9,7 @@ import {
   Menu,
   X,
   Cpu,
+  Zap,
   Sun,
   Moon
 } from 'lucide-react';
@@ -23,6 +24,8 @@ interface HeaderProps {
   onToggleMobileMenu?: () => void;
   theme?: Theme;
   onToggleTheme?: () => void;
+  onSyncAntigravity?: () => void;
+  isSyncing?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -32,7 +35,9 @@ export const Header: React.FC<HeaderProps> = ({
   isMobileMenuOpen = false,
   onToggleMobileMenu,
   theme: controlledTheme,
-  onToggleTheme: controlledToggleTheme
+  onToggleTheme: controlledToggleTheme,
+  onSyncAntigravity,
+  isSyncing = false
 }) => {
   // Автономная поддержка темы, если пропсы не переданы напрямую
   const localThemeHook = useTheme();
@@ -192,6 +197,20 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="w-2 h-2 rounded-full bg-danger-text animate-pulse" title="WS Offline" />
             )}
           </div>
+
+          {/* 1-Click Setup & Sync Button */}
+          {onSyncAntigravity && (
+            <button
+              type="button"
+              onClick={onSyncAntigravity}
+              disabled={isSyncing}
+              title="1-Click Setup: Автоматически развернуть 17 специализированных агентов и правила в ~/.gemini"
+              className="min-h-[34px] px-2.5 py-1 rounded-md border border-hairline bg-surface-subtle text-charcoal hover:text-obsidian hover:bg-surface-hover transition-colors focus-ring shrink-0 flex items-center gap-1.5 text-xs font-mono"
+            >
+              <Zap className={`w-3.5 h-3.5 text-warning-text ${isSyncing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{isSyncing ? 'Синхронизация...' : '1-Click Setup'}</span>
+            </button>
+          )}
 
           {/* Theme Toggle Button (Sun / Moon) */}
           <button

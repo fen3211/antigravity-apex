@@ -254,6 +254,27 @@ export const api = {
     }),
   regenerateEscalationPrompt: (id: string) =>
     fetchJson<EscalationItem>(`/escalations/${id}/regenerate`, { method: 'POST' }),
+
+  // 1-Click Antigravity Setup & Agent Sync
+  syncAgents: () =>
+    fetchJson<{
+      success: boolean;
+      backupPath: string | null;
+      agentsInstalled: string[];
+      rulesInstalled: string[];
+      skillsInstalled: string[];
+      targetDir: string;
+      timestamp: string;
+      error?: string;
+    }>('/system/sync-agents', { method: 'POST' }),
+  getSyncStatus: () =>
+    fetchJson<{
+      synced: boolean;
+      totalAgents: number;
+      requiredAgents: number;
+      pluginDir: string;
+      agentsDir: string;
+    }>('/system/sync-status'),
 };
 
 export type ConnectionStatus = 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED' | 'ERROR';

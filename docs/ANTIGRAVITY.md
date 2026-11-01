@@ -1,5 +1,7 @@
 # Google Antigravity Integration Guide
 
+[English](ANTIGRAVITY.md) • [Русский](ANTIGRAVITY.ru.md)
+
 This guide details the integration mechanisms between **AI Command Center** and the local **Google Antigravity** multi-agent runtime.
 
 ---
@@ -98,22 +100,17 @@ AI Command Center provides an integrated Markdown explorer and editor for the Di
 ### REST API Integration
 - `GET /api/knowledge`: Returns the list of all available knowledge documents.
 - `GET /api/knowledge/:filename`: Retrieves the raw markdown content of a document.
-- `POST /api/knowledge/:filename`: Saves updated markdown content directly to disk.
-- **Security**: The filename is validated against `^[a-zA-Z0-9_-]+\.md$`. Path traversal attempts (`..`, `/`) are strictly rejected.
+- `POST /api/knowledge/:filename`: Atomically updates document contents on disk.
 
 ---
 
-## 5. Antigravity CLI Bridge (`agy.exe`)
+## 5. Executable CLI Bridge (`agy.exe`)
 
-AI Command Center interacts with the Antigravity CLI binary (`agy.exe`):
+Command Center tests for the presence of the `agy.exe` (or `agy` on Unix) binary across standard paths:
+- Windows: `%LOCALAPPDATA%\agy\bin\agy.exe` or system `PATH`.
+- Linux/macOS: `~/.local/bin/agy`, `/usr/local/bin/agy`, or `/opt/homebrew/bin/agy`.
 
-### Supported Commands
-- `agy models`: Lists models available in the current Antigravity environment.
-- `agy agents`: Lists configured agents and subagents.
-- `agy plugins list`: Displays installed plugins and active extensions.
-- `agy -p <prompt>`: Executes a task prompt under the supervision of the Process Supervisor.
-
-### Security & Hardening Safeguards
-1. **Argument Whitelisting**: Commands must match a strict allowed list.
-2. **Metacharacter Injection Prevention**: Inputs containing shell operators (`&`, `|`, `;`, `$`, `>`, `<`, `` ` ``) are rejected immediately.
-3. **Operator Confirmation Checkbox**: Mutating CLI executions require an explicit `confirm: true` payload in the REST request to prevent accidental triggerings.
+When the CLI is detected, the bridge supports executing verified operations:
+- Query available models: `agy models`
+- Query active plugins: `agy plugins list`
+- Execute prompts safely with strict whitelist arguments and shell injection defenses.
