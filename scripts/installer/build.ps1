@@ -25,7 +25,12 @@ Write-Host "Output: $outFile" -ForegroundColor Gray
 & $csc /target:exe /out:$outFile /optimize+ $sourceFile
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "[SUCCESS] Compiled Antigravity-Apex-Setup.exe successfully!" -ForegroundColor Green
+    $binDir = Join-Path $projectRoot "bin"
+    if (-not (Test-Path $binDir)) {
+        New-Item -ItemType Directory -Path $binDir | Out-Null
+    }
+    Copy-Item -Path $outFile -Destination (Join-Path $binDir "Antigravity-Apex-Setup.exe") -Force
+    Write-Host "[SUCCESS] Compiled Antigravity-Apex-Setup.exe successfully (root & bin/)!" -ForegroundColor Green
 } else {
     Write-Host "[ERROR] Compilation failed with code $LASTEXITCODE" -ForegroundColor Red
     exit $LASTEXITCODE
