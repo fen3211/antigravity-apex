@@ -22,7 +22,7 @@ Write-Host "Using C# Compiler: $csc" -ForegroundColor Gray
 Write-Host "Source: $sourceFile" -ForegroundColor Gray
 Write-Host "Output: $outFile" -ForegroundColor Gray
 
-& $csc /target:exe /out:$outFile /optimize+ $sourceFile
+& $csc /target:exe /out:$outFile /optimize+ /r:System.Windows.Forms.dll /r:System.Drawing.dll $sourceFile
 
 if ($LASTEXITCODE -eq 0) {
     $binDir = Join-Path $projectRoot "bin"

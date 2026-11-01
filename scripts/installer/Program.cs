@@ -2,11 +2,13 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace AICommandCenter.Installer
 {
     class Program
     {
+        [STAThread]
         static int Main(string[] args)
         {
             Console.Title = "Antigravity Apex - 1-Click Windows Setup";
@@ -56,30 +58,117 @@ namespace AICommandCenter.Installer
                     Console.ResetColor();
                 }
 
-                // 3. Resolve Project Directory
-                string projectDir = AppDomain.CurrentDomain.BaseDirectory;
+                // 3. Resolve Project Directory (Interactive Folder Selection)
+                string defaultBase = AppDomain.CurrentDomain.BaseDirectory;
                 string tempDir = Path.GetTempPath();
-                bool isInsideTemp = projectDir.IndexOf(tempDir, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool isInsideTemp = defaultBase.IndexOf(tempDir, StringComparison.OrdinalIgnoreCase) >= 0;
+                string userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                string defaultTarget = Path.Combine(userHome, "antigravity-apex");
 
-                // If not in a project root or executed from a temp folder, use permanent user profile folder
-                if (!File.Exists(Path.Combine(projectDir, "package.json")) || isInsideTemp)
+                string projectDir = "";
+
+                // If already inside an existing repo (and not in a temp folder)
+                if (File.Exists(Path.Combine(defaultBase, "package.json")) && !isInsideTemp)
                 {
-                    string userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                    string targetFolder = Path.Combine(userHome, "antigravity-apex");
-
-                    if (!File.Exists(Path.Combine(targetFolder, "package.json")))
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("  [3/6] Existing project detected in current folder:");
+                    Console.WriteLine("        " + defaultBase);
+                    Console.ResetColor();
+                    Console.Write("        Use this directory? [Y/n]: ");
+                    string reply = Console.ReadLine();
+                    if (string.IsNullOrEmpty(reply) || reply.Trim().ToLower().StartsWith("y"))
                     {
-                        Console.WriteLine("  [i] Installing to user folder: " + targetFolder);
-                        if (!Directory.Exists(targetFolder))
+                        projectDir = defaultBase;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(projectDir))
+                {
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine("=======================================================================");
+                    Console.WriteLine("  [3/6] ВЫБОР ПАПКИ ДЛЯ УСТАНОВКИ");
+                    Console.WriteLine("=======================================================================");
+                    Console.ResetColor();
+                    Console.WriteLine("  Папка по умолчанию: " + defaultTarget);
+                    Console.WriteLine();
+                    Console.WriteLine("  Варианты:");
+                    Console.WriteLine("  [Enter]  Установить в папку по умолчанию");
+                    Console.WriteLine("  [b]      Открыть окно проводника Windows для выбора папки");
+                    Console.WriteLine("  [путь]   Ввести или вставить свой путь (например: D:\\Projects\\antigravity-apex)");
+                    Console.WriteLine();
+                    Console.Write("  Ваш выбор: ");
+
+                    string choice = Console.ReadLine();
+                    if (choice != null) choice = choice.Trim().Trim('\"', '\'');
+
+                    if (string.IsNullOrEmpty(choice) || choice == "1")
+                    {
+                        projectDir = defaultTarget;
+                    }
+                    else if (choice.ToLower() == "b" || choice.ToLower() == "browse" || choice == "2")
+                    {
+                        Console.WriteLine("  Открытие окна выбора папки...");
+                        using (FolderBrowserDialog fbd = new FolderBrowserDialog())
                         {
-                            RunCommandLive("git", "clone https://github.com/fen3211/antigravity-apex.git \"" + targetFolder + "\"");
+                            fbd.Description = "Выберите папку для установки Antigravity Apex";
+                            fbd.SelectedPath = userHome;
+                            fbd.ShowNewFolderButton = true;
+                            DialogResult res = fbd.ShowDialog();
+                            if (res == DialogResult.OK && !string.IsNullOrEmpty(fbd.SelectedPath))
+                            {
+                                string picked = fbd.SelectedPath;
+                                if (!picked.EndsWith("antigravity-apex", StringComparison.OrdinalIgnoreCase) && !File.Exists(Path.Combine(picked, "package.json")))
+                                {
+                                    picked = Path.Combine(picked, "antigravity-apex");
+                                }
+                                projectDir = picked;
+                            }
+                            else
+                            {
+                                Console.WriteLine("  Выбор отменен, используется папка по умолчанию.");
+                                projectDir = defaultTarget;
+                            }
                         }
                     }
-                    projectDir = targetFolder;
+                    else
+                    {
+                        string customPath = choice;
+                        if (!customPath.EndsWith("antigravity-apex", StringComparison.OrdinalIgnoreCase) && !File.Exists(Path.Combine(customPath, "package.json")))
+                        {
+                            customPath = Path.Combine(customPath, "antigravity-apex");
+                        }
+                        projectDir = Path.GetFullPath(customPath);
+                    }
+                }
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("  [OK] Папка установки: " + projectDir);
+                Console.ResetColor();
+                Console.WriteLine();
+
+                // Clone repository if not present
+                if (!File.Exists(Path.Combine(projectDir, "package.json")))
+                {
+                    Console.WriteLine("  [i] Cloning repository to: " + projectDir);
+                    string parent = Path.GetDirectoryName(projectDir);
+                    if (!string.IsNullOrEmpty(parent) && !Directory.Exists(parent))
+                    {
+                        Directory.CreateDirectory(parent);
+                    }
+                    int cloneExit = RunCommandLive("git", "clone https://github.com/fen3211/antigravity-apex.git \"" + projectDir + "\"");
+                    if (cloneExit != 0 && !File.Exists(Path.Combine(projectDir, "package.json")))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("  [ERROR] Failed to clone repository into " + projectDir);
+                        Console.ResetColor();
+                        PromptExit(1);
+                        return 1;
+                    }
                 }
 
                 Directory.SetCurrentDirectory(projectDir);
-                Console.WriteLine("  [3/6] Working directory: " + projectDir);
 
                 // Auto-update if repository exists
                 string gitDir = Path.Combine(projectDir, ".git");
