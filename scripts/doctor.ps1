@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Runs the AI Command Center diagnostic health checks on Windows.
+    Runs the Antigravity Apex diagnostic health checks on Windows.
 
 .DESCRIPTION
     Executes scripts/doctor.js using Node.js, validating prerequisites,

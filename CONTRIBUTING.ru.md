@@ -1,10 +1,10 @@
-# Участие в разработке AI Command Center
+# Участие в разработке Antigravity Apex
 
 [English](CONTRIBUTING.md) • [Русский](CONTRIBUTING.ru.md)
 
-Спасибо за интерес к проекту **AI Command Center**! Мы приветствуем исправления ошибок, улучшения документации, оптимизации архитектуры и новые функции от сообщества.
+Спасибо за интерес к проекту **Antigravity Apex**! Мы приветствуем исправления ошибок, улучшения документации, оптимизации архитектуры и новые функции от сообщества.
 
-AI Command Center построен на инженерных стандартах **Antigravity AI Development Director**: нулевые выдумки, строгая проверяемость фактов, строгая типизация TypeScript и многоступенчатый контроль качества.
+Antigravity Apex построен на инженерных стандартах **Antigravity AI Development Director**: нулевые выдумки, строгая проверяемость фактов, строгая типизация TypeScript и многоступенчатый контроль качества.
 
 ---
 
@@ -25,8 +25,8 @@ AI Command Center построен на инженерных стандарта�
 ### 2. Клонирование и установка
 ```bash
 # 1. Клонируйте форк репозитория
-git clone https://github.com/<ваш-логин>/ai-command-center.git
-cd ai-command-center
+git clone https://github.com/<ваш-логин>/antigravity-apex.git
+cd antigravity-apex
 
 # 2. Установите зависимости бэкенда и фронтенда
 npm install

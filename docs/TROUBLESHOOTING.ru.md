@@ -2,7 +2,7 @@
 
 [English](TROUBLESHOOTING.md) • [Русский](TROUBLESHOOTING.ru.md)
 
-В этом руководстве собраны диагностические шаги и практические решения для типичных проблем, возникающих при работе с **AI Command Center**.
+В этом руководстве собраны диагностические шаги и практические решения для типичных проблем, возникающих при работе с **Antigravity Apex**.
 
 ---
 
@@ -34,8 +34,8 @@
 ### Диагностика
 1. Проверьте базовые пути Antigravity в логах запуска бэкенда:
    ```text
-   [AI COMMAND CENTER] Antigravity dir: C:\Users\<user>\.gemini\antigravity
-   [AI COMMAND CENTER] Knowledge dir:   C:\Users\<user>\.gemini\antigravity\knowledge\ai-director
+   [ANTIGRAVITY APEX] Antigravity dir: C:\Users\<user>\.gemini\antigravity
+   [ANTIGRAVITY APEX] Knowledge dir:   C:\Users\<user>\.gemini\antigravity\knowledge\ai-director
    ```
 2. Убедитесь, что файлы присутствуют на диске:
    - Блокировки присутствия: `~/.gemini/antigravity/presence/`
@@ -89,7 +89,7 @@
 
 ### Решение
 - **Закройте внешние просмотрщики**: Закройте сторонние GUI-клиенты, удерживающие монопольный доступ.
-- **Прагма WAL**: AI Command Center по умолчанию использует режим WAL и `busy_timeout = 5000` мс.
+- **Прагма WAL**: Antigravity Apex по умолчанию использует режим WAL и `busy_timeout = 5000` мс.
 - **Сброс базы**: При фатальном повреждении удалите файлы `command_center.sqlite*`. Сервер автоматически создаст свежие таблицы при следующем старте.
 
 ---

@@ -2,7 +2,7 @@
 
 [English](INSTALLATION.md) • [Русский](INSTALLATION.ru.md)
 
-This guide provides detailed, step-by-step instructions for installing and setting up **AI Command Center** across **Windows**, **macOS**, and **Linux** environments, including 1-click launchers, terminal one-liners, and manual setups.
+This guide provides detailed, step-by-step instructions for installing and setting up **Antigravity Apex** across **Windows**, **macOS**, and **Linux** environments, including 1-click launchers, terminal one-liners, and manual setups.
 
 ---
 
@@ -21,11 +21,11 @@ chmod +x setup.sh && ./setup.sh
 ### Remote One-Liner (No Clone Required)
 - **Windows (PowerShell)**:
   ```powershell
-  irm https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.ps1 | iex
+  irm https://raw.githubusercontent.com/fen3211/antigravity-apex/main/scripts/get.ps1 | iex
   ```
 - **Linux & macOS (Bash)**:
   ```bash
-  curl -fsSL https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/fen3211/antigravity-apex/main/scripts/get.sh | bash
   ```
 
 ---
@@ -49,7 +49,7 @@ For live session and telemetry monitoring:
 - Antigravity CLI binary `agy.exe` (on Windows typically at `%LOCALAPPDATA%\agy\bin\agy.exe`).
 
 > [!NOTE]
-> AI Command Center works seamlessly even without Antigravity running. When Antigravity is absent, the dashboard operates with offline task tracking, local database storage, and simulated telemetry.
+> Antigravity Apex works seamlessly even without Antigravity running. When Antigravity is absent, the dashboard operates with offline task tracking, local database storage, and simulated telemetry.
 
 ---
 
@@ -57,8 +57,8 @@ For live session and telemetry monitoring:
 
 ### Step 1: Clone Repository
 ```bash
-git clone https://github.com/fen3211/ai-command-center.git
-cd ai-command-center
+git clone https://github.com/fen3211/antigravity-apex.git
+cd antigravity-apex
 ```
 
 ### Step 2: Install Backend Dependencies

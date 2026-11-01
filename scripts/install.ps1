@@ -55,7 +55,7 @@ function Write-SectionHeader($title) {
 }
 
 Write-Host "=======================================================================" -ForegroundColor DarkCyan
-Write-Host "    AI COMMAND CENTER - AGENT INFRASTRUCTURE INSTALLER                " -ForegroundColor White
+Write-Host "    ANTIGRAVITY APEX - AGENT INFRASTRUCTURE INSTALLER                " -ForegroundColor White
 Write-Host "    Target: Google Antigravity & AI Development Director Suite         " -ForegroundColor Gray
 Write-Host "=======================================================================" -ForegroundColor DarkCyan
 
@@ -336,7 +336,7 @@ Summary:
 Next Steps:
   1. Run diagnostic self-check:
      npm run doctor
-  2. Launch AI Command Center:
+  2. Launch Antigravity Apex:
      npm run dev
      or double-click start.cmd
   3. Open Dashboard in browser:

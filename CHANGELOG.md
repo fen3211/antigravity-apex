@@ -2,7 +2,7 @@
 
 [English](CHANGELOG.md) • [Русский](CHANGELOG.ru.md)
 
-All notable changes to **AI Command Center** are documented in this file.
+All notable changes to **Antigravity Apex** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Initial Open Source Release
 
-The initial production-grade release of **AI Command Center**, the premier multi-agent orchestration dashboard for Google Antigravity and the **AI Development Director** framework.
+The initial production-grade release of **Antigravity Apex**, the premier multi-agent orchestration dashboard for Google Antigravity and the **AI Development Director** framework.
 
 ### Added
 

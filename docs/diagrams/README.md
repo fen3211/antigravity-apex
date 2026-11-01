@@ -1,6 +1,6 @@
-# Архитектурная документация и диаграммы AI Command Center
+# Архитектурная документация и диаграммы Antigravity Apex
 
-Данный каталог содержит официальную архитектурную спецификацию и Mermaid-диаграммы для Open Source релиза **AI Command Center** — панели управления и телеметрии мультиагентной системы Google Antigravity и глобального AI Development Director.
+Данный каталог содержит официальную архитектурную спецификацию и Mermaid-диаграммы для Open Source релиза **Antigravity Apex** — панели управления и телеметрии мультиагентной системы Google Antigravity и глобального AI Development Director.
 
 ---
 
@@ -8,18 +8,18 @@
 
 | Файл диаграммы | Название и назначение | Основные узлы и концепции |
 | :--- | :--- | :--- |
-| [`system-architecture.mmd`](file:///d:/Projects/ai-command-center/docs/diagrams/system-architecture.mmd) | **System Architecture**<br>Общая компонентная архитектура системы | User, React 19 SPA, Express Ingress Guards, SQLite WAL, Process Supervisor, Ingestion Pipeline, Antigravity Bridge, WebSocket, Antigravity Brain |
-| [`agent-orchestration.mmd`](file:///d:/Projects/ai-command-center/docs/diagrams/agent-orchestration.mmd) | **Agent Orchestration Workflow**<br>Жизненный цикл задачи и оркестрация | Director Triage, 17 специалистов в 5 дивизионах, Concurrency Slot Pool (до 6), Quality Gates L1/L2, Gate 2b (Legal), Senior Architect L3, Argon L4 и De-escalation loop |
-| [`installation-flow.mmd`](file:///d:/Projects/ai-command-center/docs/diagrams/installation-flow.mmd) | **Installation & Onboarding Flow**<br>Развертывание, диагностика и запуск | Clone, Health Doctor, Discovery конфигурации, автогенерация API-ключа, деплой правил агентов, миграции SQLite, запуск валидации, Ready |
-| [`security-architecture.mmd`](file:///d:/Projects/ai-command-center/docs/diagrams/security-architecture.mmd) | **Security Architecture & Trust Boundaries**<br>Модель угроз и эшелонированная защита | 4 границы доверия, Localhost binding (127.0.0.1), Timing-safe API Key Auth, CORS, Path Traversal Shield, Process Tree Isolation, подтверждение опасных команд |
-| [`data-flow.mmd`](file:///d:/Projects/ai-command-center/docs/diagrams/data-flow.mmd) | **Event & Telemetry Data Flow**<br>Потоковая обработка событий телеметрии | `transcript.jsonl` -> Chokidar -> `JsonlStreamReader` (кванты 64KB, UTF-8 StringDecoder) -> `IngestionQueue` -> Atomic SQLite WAL -> `EventBus` -> WebSocket -> Client React FSM |
+| [`system-architecture.mmd`](file:///d:/Projects/antigravity-apex/docs/diagrams/system-architecture.mmd) | **System Architecture**<br>Общая компонентная архитектура системы | User, React 19 SPA, Express Ingress Guards, SQLite WAL, Process Supervisor, Ingestion Pipeline, Antigravity Bridge, WebSocket, Antigravity Brain |
+| [`agent-orchestration.mmd`](file:///d:/Projects/antigravity-apex/docs/diagrams/agent-orchestration.mmd) | **Agent Orchestration Workflow**<br>Жизненный цикл задачи и оркестрация | Director Triage, 17 специалистов в 5 дивизионах, Concurrency Slot Pool (до 6), Quality Gates L1/L2, Gate 2b (Legal), Senior Architect L3, Argon L4 и De-escalation loop |
+| [`installation-flow.mmd`](file:///d:/Projects/antigravity-apex/docs/diagrams/installation-flow.mmd) | **Installation & Onboarding Flow**<br>Развертывание, диагностика и запуск | Clone, Health Doctor, Discovery конфигурации, автогенерация API-ключа, деплой правил агентов, миграции SQLite, запуск валидации, Ready |
+| [`security-architecture.mmd`](file:///d:/Projects/antigravity-apex/docs/diagrams/security-architecture.mmd) | **Security Architecture & Trust Boundaries**<br>Модель угроз и эшелонированная защита | 4 границы доверия, Localhost binding (127.0.0.1), Timing-safe API Key Auth, CORS, Path Traversal Shield, Process Tree Isolation, подтверждение опасных команд |
+| [`data-flow.mmd`](file:///d:/Projects/antigravity-apex/docs/diagrams/data-flow.mmd) | **Event & Telemetry Data Flow**<br>Потоковая обработка событий телеметрии | `transcript.jsonl` -> Chokidar -> `JsonlStreamReader` (кванты 64KB, UTF-8 StringDecoder) -> `IngestionQueue` -> Atomic SQLite WAL -> `EventBus` -> WebSocket -> Client React FSM |
 
 ---
 
 ## 2. Подробное описание архитектурных подсистем
 
 ### 2.1. Системная архитектура (`system-architecture.mmd`)
-Архитектура AI Command Center построена по принципу модульного разделения ответственности:
+Архитектура Antigravity Apex построена по принципу модульного разделения ответственности:
 - **Presentation Layer (Клиентский уровень)**: React 19 SPA на базе Vite и Tailwind CSS (тема Premium Dark Glass). Включает модули аналитики моделей, канбан задач, инспектор базы знаний Director Memory и интерактивную карту жизненного цикла. Клиент использует двухканальную связь: типизированный REST-клиент (`fetchJson`) с автоматическим получением токена и реактивный клиент веб-сокетов (`EventStreamClient`).
 - **Backend Application Gateway (Сервер Express + WS @ 127.0.0.1:3001)**:
   - *Ingress Guards*: строгая проверка CORS по белому списку доверенных локальных источников, аутентификация через middleware `requireAuth` с защитой от атак по времени (`crypto.timingSafeEqual`), лимитер размера фреймов WS (максимум 64 КБ).

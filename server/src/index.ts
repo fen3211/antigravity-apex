@@ -113,7 +113,7 @@ wss.on('connection', (ws, req) => {
   // Send initial handshake
   ws.send(JSON.stringify({
     channel: 'system',
-    message: 'Connected to AI Command Center Event Stream',
+    message: 'Connected to Antigravity Apex Event Stream',
     timestamp: new Date().toISOString()
   }));
 

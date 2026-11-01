@@ -43,7 +43,7 @@ jobs:
       - name: Generate Release Notes & Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: AI Command Center ${{ github.ref_name }}
+          name: Antigravity Apex ${{ github.ref_name }}
           body_path: CHANGELOG.md
           draft: false
           prerelease: false

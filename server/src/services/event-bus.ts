@@ -108,7 +108,7 @@ export class EventBus {
     const fullEvent: EventPayload = {
       id: 'evt-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
       timestamp: new Date().toISOString(),
-      project_id: event.project_id || 'ai-command-center',
+      project_id: event.project_id || 'antigravity-apex',
       task_id: event.task_id,
       agent_id: event.agent_id,
       type: event.type,

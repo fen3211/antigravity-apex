@@ -79,19 +79,19 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Logo & Product Title */}
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="flex items-center justify-center w-8 h-8 rounded-md bg-obsidian text-pure font-mono font-bold text-xs shrink-0">
-              <Cpu className="w-4 h-4" />
+              <span className="font-bold tracking-tighter text-[13px] text-terminal-green">▲</span>
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold tracking-tight text-obsidian font-sans truncate">
-                  AI COMMAND CENTER
+                  ANTIGRAVITY APEX
                 </span>
                 <span className="text-[11px] font-mono px-1.5 py-0.2 rounded bg-surface-subtle text-slate border border-hairline shrink-0 hidden xs:inline-block">
                   v1.0.0
                 </span>
               </div>
               <p className="text-[11px] text-stone hidden sm:flex items-center gap-1.5 truncate">
-                <span>Antigravity Orchestration</span>
+                <span>Mission Control</span>
                 <span className="text-ash">•</span>
                 <span className="font-mono text-charcoal">Director Protocol 3.8</span>
               </p>

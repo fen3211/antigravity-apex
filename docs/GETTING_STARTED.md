@@ -1,18 +1,18 @@
-# Getting Started with AI Command Center
+# Getting Started with Antigravity Apex
 
 [English](GETTING_STARTED.md) • [Русский](GETTING_STARTED.ru.md)
 
-Welcome to **AI Command Center**, the mission-control dashboard for **Google Antigravity** and the **AI Development Director** multi-agent orchestration framework.
+Welcome to **Antigravity Apex**, the mission-control dashboard for **Google Antigravity** and the **AI Development Director** multi-agent orchestration framework.
 
-This guide walks you through your first 5 minutes with AI Command Center, from launching the local environment to monitoring autonomous subagents, reviewing 9-point reports, and inspecting real-time telemetry.
+This guide walks you through your first 5 minutes with Antigravity Apex, from launching the local environment to monitoring autonomous subagents, reviewing 9-point reports, and inspecting real-time telemetry.
 
 ---
 
-## 1. What is AI Command Center?
+## 1. What is Antigravity Apex?
 
 Google Antigravity enables autonomous AI agents to build software in isolated workspaces. However, as autonomous agents proliferate across frontend, backend, security, testing, and legal tasks, developers need centralized visibility and control.
 
-AI Command Center provides:
+Antigravity Apex provides:
 - **Real-Time Visibility**: Track active agent sessions, running subagents, and token consumption live as they happen.
 - **Dynamic Concurrency Control**: Safely throttle concurrent subagents (up to 6 parallel workers) to prevent memory saturation and API rate limits.
 - **Multi-Tier Quality Gates**: Enforce rigorous verification (Gate 1 unit tests, Gate 2 independent review, Gate 2b legal compliance) before tasks are approved.
@@ -26,7 +26,7 @@ AI Command Center provides:
 Open your terminal and navigate to the project directory:
 
 ```bash
-cd d:\Projects\ai-command-center
+cd d:\Projects\antigravity-apex
 npm run dev
 ```
 
@@ -34,10 +34,10 @@ Alternatively, on Windows, double-click [`start.cmd`](../start.cmd) or run `setu
 
 The terminal will report:
 ```
-[AI COMMAND CENTER] Server running on http://127.0.0.1:3001
-[AI COMMAND CENTER] WebSocket stream at ws://127.0.0.1:3001/ws
-[AI COMMAND CENTER] Antigravity dir: C:\Users\<user>\.gemini\antigravity
-[AI COMMAND CENTER] Knowledge dir:   C:\Users\<user>\.gemini\antigravity\knowledge\ai-director
+[ANTIGRAVITY APEX] Server running on http://127.0.0.1:3001
+[ANTIGRAVITY APEX] WebSocket stream at ws://127.0.0.1:3001/ws
+[ANTIGRAVITY APEX] Antigravity dir: C:\Users\<user>\.gemini\antigravity
+[ANTIGRAVITY APEX] Knowledge dir:   C:\Users\<user>\.gemini\antigravity\knowledge\ai-director
 VITE v8.3.5 ready in 250 ms
 ➜  Local:   http://localhost:5173/
 ```
@@ -52,7 +52,7 @@ The interface will display the **Refero Vercel** dashboard (supporting both Pape
 
 ## 3. Touring the Dashboard Sections
 
-AI Command Center organizes complex multi-agent telemetry into 8 focused views:
+Antigravity Apex organizes complex multi-agent telemetry into 8 focused views:
 
 ### 1. Overview (Mission Control)
 The high-level status cockpit:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# AI COMMAND CENTER - SYSTEM DIAGNOSTICS WRAPPER (POSIX / macOS / Linux)
+# ANTIGRAVITY APEX - SYSTEM DIAGNOSTICS WRAPPER (POSIX / macOS / Linux)
 # =============================================================================
 
 set -euo pipefail

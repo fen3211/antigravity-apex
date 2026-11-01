@@ -1,5 +1,5 @@
 /**
- * AI COMMAND CENTER - PROGRAMMATIC ANTIGRAVITY INSTALLER
+ * ANTIGRAVITY APEX - PROGRAMMATIC ANTIGRAVITY INSTALLER
  * Cross-platform 1-click sync service for deploying 17 specialized agents,
  * orchestration rules, and skills into Antigravity with automated backup.
  */

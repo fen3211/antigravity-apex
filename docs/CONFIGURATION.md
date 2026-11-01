@@ -2,13 +2,13 @@
 
 # Configuration Reference
 
-This document provides a comprehensive reference for all static and runtime configuration options in **AI Command Center**.
+This document provides a comprehensive reference for all static and runtime configuration options in **Antigravity Apex**.
 
 ---
 
 ## 1. Environment Variables (`.env`)
 
-AI Command Center loads configuration from `.env` using `dotenv`. All parameters have sensible production-ready defaults.
+Antigravity Apex loads configuration from `.env` using `dotenv`. All parameters have sensible production-ready defaults.
 
 ### Server Network & Runtime
 
@@ -41,7 +41,7 @@ By default, paths are resolved relative to the user's home directory (`~/.gemini
 
 ## 2. Dynamic Control Settings (Runtime API)
 
-In addition to `.env`, AI Command Center stores dynamic operational settings in the `settings` table of SQLite. These can be adjusted via the UI (**Control Center**) or via REST API:
+In addition to `.env`, Antigravity Apex stores dynamic operational settings in the `settings` table of SQLite. These can be adjusted via the UI (**Control Center**) or via REST API:
 
 - **Endpoint**: `GET /api/control/settings` and `POST /api/control/settings`
 - **Authentication**: Requires `COMMAND_CENTER_API_KEY` header or query token.

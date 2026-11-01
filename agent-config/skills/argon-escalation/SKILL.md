@@ -16,7 +16,7 @@ This skill details the exact protocol for escalating critical architectural impa
 
 ## 2. Autonomous Escalation Detection & Sensitivity Modes
 
-The AI Command Center continuously monitors task execution and subagent reports. When triggered:
+The Antigravity Apex continuously monitors task execution and subagent reports. When triggered:
 - **`[ARGON ESCALATION REQUIRED]`**: The official system message generated when autonomous criteria are met.
 - **Non-Blocking Invariant**: The blocked subtask enters `Argon_L4` stage, while safe parallel subtasks continue uninterrupted.
 - **Sensitivity Thresholds**:
@@ -49,7 +49,7 @@ To ensure maximal reasoning density and eliminate context pollution, the Directo
 
 ## 4. Manual Model Switching Workflow
 
-1. Operator copies the 18-point prompt pack from the AI Command Center Escalation Center.
+1. Operator copies the 18-point prompt pack from the Antigravity Apex Escalation Center.
 2. Operator switches model selector to **Gemini 4 Argon (High)**.
 3. Operator submits the prompt pack and receives the architectural blueprint.
 4. Operator switches model back to **Gemini 3.8 Flash High**.

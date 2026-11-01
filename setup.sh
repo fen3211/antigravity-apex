@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# AI Command Center - 1-Click Setup & Launch for Linux and macOS
+# Antigravity Apex - 1-Click Setup & Launch for Linux and macOS
 # ==============================================================================
 
 set -e
@@ -12,7 +12,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${CYAN}=======================================================================${NC}"
-echo -e "${CYAN}    AI COMMAND CENTER -- ONE-CLICK INSTALLATION & LAUNCHER             ${NC}"
+echo -e "${CYAN}    ANTIGRAVITY APEX -- ONE-CLICK INSTALLATION & LAUNCHER             ${NC}"
 echo -e "${CYAN}    Target: Google Antigravity & AI Development Director Suite         ${NC}"
 echo -e "${CYAN}=======================================================================${NC}\n"
 
@@ -68,7 +68,7 @@ echo -e "\n${CYAN}[6/6] Verifying system health with Diagnostic Doctor...${NC}"
 node ./scripts/doctor.js || true
 
 echo -e "\n${GREEN}=======================================================================${NC}"
-echo -e "${GREEN}  INSTALLATION COMPLETE! Launching AI Command Center Dashboard...      ${NC}"
+echo -e "${GREEN}  INSTALLATION COMPLETE! Launching Antigravity Apex Dashboard...      ${NC}"
 echo -e "${GREEN}  Local Dashboard URL: http://127.0.0.1:5173/                          ${NC}"
 echo -e "${GREEN}=======================================================================${NC}\n"
 

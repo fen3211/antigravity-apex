@@ -53,4 +53,4 @@ Run `..\setup.cmd` or from PowerShell:
 ```
 
 ### In-App 1-Click Sync
-Inside the AI Command Center web UI, click **`⚡ 1-Click Setup`** in the header or **`1-Click Sync Antigravity`** on the Agents page.
+Inside the Antigravity Apex web UI, click **`⚡ 1-Click Setup`** in the header or **`1-Click Sync Antigravity`** on the Agents page.

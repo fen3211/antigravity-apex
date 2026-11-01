@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Create a report to help us improve AI Command Center
+about: Create a report to help us improve Antigravity Apex
 title: "[BUG] "
 labels: ["bug", "triage"]
 assignees: []
@@ -10,7 +10,7 @@ assignees: []
 <!-- A clear and concise description of what the bug is. -->
 
 ### 2. Steps to Reproduce
-1. Start AI Command Center (`npm run dev`)
+1. Start Antigravity Apex (`npm run dev`)
 2. Go to '...'
 3. Click on '....'
 4. See error

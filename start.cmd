@@ -1,11 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
 
-title AI Command Center - Quick Launcher
+title Antigravity Apex - Quick Launcher
 color 0B
 
 echo =======================================================================
-echo     AI COMMAND CENTER -- QUICK LAUNCHER
+echo     ANTIGRAVITY APEX -- QUICK LAUNCHER
 echo     URL: http://127.0.0.1:5173/
 echo =======================================================================
 echo.

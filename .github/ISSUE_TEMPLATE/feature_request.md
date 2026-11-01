@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea or new capability for AI Command Center
+about: Suggest an idea or new capability for Antigravity Apex
 title: "[FEAT] "
 labels: ["enhancement"]
 assignees: []

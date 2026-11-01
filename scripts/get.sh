@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# AI Command Center - One-Line Remote Installer for Linux & macOS
+# Antigravity Apex - One-Line Remote Installer for Linux & macOS
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/fen3211/antigravity-apex/main/scripts/get.sh | bash
 # ==============================================================================
 
 set -e
@@ -14,7 +14,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 echo -e "${CYAN}=======================================================================${NC}"
-echo -e "${CYAN}    AI COMMAND CENTER -- ONE-LINE REMOTE INSTALLER (UNIX/MACOS)        ${NC}"
+echo -e "${CYAN}    ANTIGRAVITY APEX -- ONE-LINE REMOTE INSTALLER (UNIX/MACOS)        ${NC}"
 echo -e "${CYAN}=======================================================================${NC}\n"
 
 # 1. Check Node.js
@@ -34,17 +34,17 @@ fi
 echo -e "${GREEN}  [✓] Git detected${NC}"
 
 # 3. Clone or update repository
-TARGET_DIR="${PWD}/ai-command-center"
+TARGET_DIR="${PWD}/antigravity-apex"
 
-if [ -f "${PWD}/package.json" ] && grep -q '"name": "ai-command-center"' "${PWD}/package.json" 2>/dev/null; then
+if [ -f "${PWD}/package.json" ] && grep -q '"name": "antigravity-apex"' "${PWD}/package.json" 2>/dev/null; then
     TARGET_DIR="${PWD}"
-    echo -e "${GREEN}  [✓] Current directory is already ai-command-center${NC}"
+    echo -e "${GREEN}  [✓] Current directory is already antigravity-apex${NC}"
 fi
 
 if [ "${TARGET_DIR}" != "${PWD}" ]; then
     if [ ! -d "${TARGET_DIR}" ]; then
         echo -e "${CYAN}  [i] Cloning repository to ${TARGET_DIR}...${NC}"
-        git clone https://github.com/fen3211/ai-command-center.git "${TARGET_DIR}"
+        git clone https://github.com/fen3211/antigravity-apex.git "${TARGET_DIR}"
     else
         echo -e "${CYAN}  [i] Existing folder found at ${TARGET_DIR}, updating...${NC}"
         cd "${TARGET_DIR}"

@@ -2,13 +2,13 @@
 
 # System Architecture
 
-This document details the architectural blueprint, internal component interactions, and data storage design of **AI Command Center**.
+This document details the architectural blueprint, internal component interactions, and data storage design of **Antigravity Apex**.
 
 ---
 
 ## 1. High-Level System Architecture
 
-AI Command Center connects the local **Google Antigravity** multi-agent runtime with a real-time management dashboard through an event-driven, zero-disk-churn backend.
+Antigravity Apex connects the local **Google Antigravity** multi-agent runtime with a real-time management dashboard through an event-driven, zero-disk-churn backend.
 
 ```mermaid
 graph TB

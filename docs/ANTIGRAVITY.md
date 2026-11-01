@@ -2,7 +2,7 @@
 
 [English](ANTIGRAVITY.md) • [Русский](ANTIGRAVITY.ru.md)
 
-This guide details the integration mechanisms between **AI Command Center** and the local **Google Antigravity** multi-agent runtime.
+This guide details the integration mechanisms between **Antigravity Apex** and the local **Google Antigravity** multi-agent runtime.
 
 ---
 
@@ -50,7 +50,7 @@ Google Antigravity stores agent state, execution transcripts, and knowledge with
 `~/.gemini/antigravity/brain/<conversation-id>/.system_generated/logs/transcript.jsonl`
 
 ### Ingestion Mechanism
-AI Command Center monitors these files using `chokidar` and streams new entries using `JsonlStreamReader`:
+Antigravity Apex monitors these files using `chokidar` and streams new entries using `JsonlStreamReader`:
 1. **Incremental Offsets**: The reader only processes bytes appended since the last scan (`last_offset`).
 2. **Chunking & Multi-Byte UTF-8**: Data is read in 64 KB buffers. Partial UTF-8 byte sequences at buffer edges are preserved across chunks to prevent decoding errors in Cyrillic characters and emojis.
 3. **Token Usage Extraction**: The reader inspects line objects for step events and extracts:
@@ -82,7 +82,7 @@ AI Command Center monitors these files using `chokidar` and streams new entries 
 ### Directory Path
 `~/.gemini/antigravity/knowledge/ai-director/`
 
-AI Command Center provides an integrated Markdown explorer and editor for the Director's persistent knowledge documents.
+Antigravity Apex provides an integrated Markdown explorer and editor for the Director's persistent knowledge documents.
 
 ### Key Knowledge Documents
 

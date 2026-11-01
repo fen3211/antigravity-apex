@@ -1,11 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
 
-title AI Command Center - 1-Click Setup & Launch
+title Antigravity Apex - 1-Click Setup & Launch
 color 0A
 
 echo =======================================================================
-echo     AI COMMAND CENTER -- ONE-CLICK INSTALLATION ^& LAUNCHER
+echo     ANTIGRAVITY APEX -- ONE-CLICK INSTALLATION ^& LAUNCHER
 echo     Target: Google Antigravity ^& AI Development Director Suite
 echo =======================================================================
 echo.
@@ -72,7 +72,7 @@ node scripts\doctor.js
 echo.
 
 echo =======================================================================
-echo  INSTALLATION COMPLETE! Launching AI Command Center Dashboard...
+echo  INSTALLATION COMPLETE! Launching Antigravity Apex Dashboard...
 echo  Local Dashboard URL: http://127.0.0.1:5173/
 echo =======================================================================
 echo.

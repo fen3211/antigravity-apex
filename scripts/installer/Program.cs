@@ -9,10 +9,10 @@ namespace AICommandCenter.Installer
     {
         static int Main(string[] args)
         {
-            Console.Title = "AI Command Center - 1-Click Windows Setup";
+            Console.Title = "Antigravity Apex - 1-Click Windows Setup";
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("=======================================================================");
-            Console.WriteLine("    AI COMMAND CENTER - AUTOMATED 1-CLICK WINDOWS INSTALLER           ");
+            Console.WriteLine("    ANTIGRAVITY APEX - AUTOMATED 1-CLICK WINDOWS INSTALLER           ");
             Console.WriteLine("    Target: Google Antigravity & AI Development Director Suite         ");
             Console.WriteLine("=======================================================================");
             Console.ResetColor();
@@ -66,10 +66,10 @@ namespace AICommandCenter.Installer
                 if (!File.Exists(Path.Combine(projectDir, "package.json")))
                 {
                     Console.WriteLine("  [i] Repository not detected in current folder. Cloning from GitHub...");
-                    string targetFolder = Path.Combine(projectDir, "ai-command-center");
+                    string targetFolder = Path.Combine(projectDir, "antigravity-apex");
                     if (!Directory.Exists(targetFolder))
                     {
-                        RunCommandLive("git", "clone https://github.com/fen3211/ai-command-center.git \"" + targetFolder + "\"");
+                        RunCommandLive("git", "clone https://github.com/fen3211/antigravity-apex.git \"" + targetFolder + "\"");
                     }
                     projectDir = targetFolder;
                 }
@@ -131,7 +131,7 @@ namespace AICommandCenter.Installer
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("=======================================================================");
-                Console.WriteLine("  SUCCESS! AI Command Center is fully installed and verified.");
+                Console.WriteLine("  SUCCESS! Antigravity Apex is fully installed and verified.");
                 Console.WriteLine("  Launching Web Dashboard: http://127.0.0.1:5173/");
                 Console.WriteLine("=======================================================================");
                 Console.ResetColor();

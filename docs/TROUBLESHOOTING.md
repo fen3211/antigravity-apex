@@ -2,7 +2,7 @@
 
 [English](TROUBLESHOOTING.md) • [Русский](TROUBLESHOOTING.ru.md)
 
-This guide provides diagnostic procedures and actionable solutions for common issues encountered when running **AI Command Center**.
+This guide provides diagnostic procedures and actionable solutions for common issues encountered when running **Antigravity Apex**.
 
 ---
 
@@ -34,8 +34,8 @@ This guide provides diagnostic procedures and actionable solutions for common is
 ### Diagnostic Steps
 1. Verify the Antigravity base paths in the server startup logs:
    ```
-   [AI COMMAND CENTER] Antigravity dir: C:\Users\<user>\.gemini\antigravity
-   [AI COMMAND CENTER] Knowledge dir:   C:\Users\<user>\.gemini\antigravity\knowledge\ai-director
+   [ANTIGRAVITY APEX] Antigravity dir: C:\Users\<user>\.gemini\antigravity
+   [ANTIGRAVITY APEX] Knowledge dir:   C:\Users\<user>\.gemini\antigravity\knowledge\ai-director
    ```
 2. Verify that the files exist on disk:
    - Locks: `~/.gemini/antigravity/presence/`
@@ -89,7 +89,7 @@ This guide provides diagnostic procedures and actionable solutions for common is
 
 ### Remediation
 - **Close External Viewers**: Close any external database GUI tools that maintain exclusive read/write locks.
-- **WAL Pragma**: AI Command Center uses WAL mode and sets `busy_timeout = 5000` by default. If you modified `database.ts`, ensure that `busy_timeout` is set to at least 5000 ms.
+- **WAL Pragma**: Antigravity Apex uses WAL mode and sets `busy_timeout = 5000` by default. If you modified `database.ts`, ensure that `busy_timeout` is set to at least 5000 ms.
 - **Reset DB**: If the database file is permanently corrupted, delete `command_center.sqlite`, `command_center.sqlite-wal`, and `command_center.sqlite-shm`. The server will automatically re-create fresh tables on startup.
 
 ---

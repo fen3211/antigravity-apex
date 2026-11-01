@@ -247,7 +247,7 @@ export class EscalationManager {
 ================================================================================
 
 ### 1. Title & Executive Metadata
-- **Project**: AI Command Center
+- **Project**: Antigravity Apex
 - **Escalated Subsystem**: ${task.stage} (${task.assignedAgent})
 - **Escalation Reason**: ${params.reason}
 - **Attempts Recorded**: ${task.retryCount || 1} of ${task.maxRetries}
@@ -325,7 +325,7 @@ Please structure your response into three clear sections:
 
 ### 16. Closed-Loop Handoff Instructions back to Gemini Flash / Pro
 After Argon returns the verdict:
-1. Copy the Architectural Blueprint into the AI Command Center Escalation modal.
+1. Copy the Architectural Blueprint into the Antigravity Apex Escalation modal.
 2. The AI Director will digest the strategy and assign code implementation to \`${task.assignedAgent}\` on Gemini 3.8 Flash High.
 3. \`qa-engineer\` will execute Level 2 verification.
 

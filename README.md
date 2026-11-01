@@ -1,20 +1,20 @@
 <div align="center">
 
-![AI Command Center Banner](.github/assets/hero-banner.svg)
+![Antigravity Apex Banner](.github/assets/hero-banner.svg)
 
-# AI Command Center
+# Antigravity Apex
 
 ### Next-Generation Multi-Agent Mission Control & Telemetry Dashboard for Google Antigravity
 
-[![GitHub Stars](https://img.shields.io/github/stars/fen3211/ai-command-center?style=social)](https://github.com/fen3211/ai-command-center/stargazers)
-[![Download Standalone EXE](https://img.shields.io/badge/Download-AI--Command--Center--Setup.exe-10B981.svg?logo=windows)](https://github.com/fen3211/ai-command-center/releases/latest/download/AI-Command-Center-Setup.exe)
+[![GitHub Stars](https://img.shields.io/github/stars/fen3211/antigravity-apex?style=social)](https://github.com/fen3211/antigravity-apex/stargazers)
+[![Download Standalone EXE](https://img.shields.io/badge/Download-AI--Command--Center--Setup.exe-10B981.svg?logo=windows)](https://github.com/fen3211/antigravity-apex/releases/latest/download/Antigravity-Apex-Setup.exe)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![React 19](https://img.shields.io/badge/React-19.3-61dafb.svg)](https://react.dev/)
 [![TypeScript 5.7](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)](https://www.typescriptlang.org/)
 [![SQLite WAL](https://img.shields.io/badge/SQLite-WAL%20Mode-003B57.svg)](https://sqlite.org/wal.html)
 [![Tests Passing](https://img.shields.io/badge/Tests-50%2B%20Passing%20(100%25)-10B981.svg)](tests/)
-[![Open in GitHub Codespaces](https://img.shields.io/badge/Codespaces-1--Click%20Launch-06B6D4.svg)](https://codespaces.new/fen3211/ai-command-center)
+[![Open in GitHub Codespaces](https://img.shields.io/badge/Codespaces-1--Click%20Launch-06B6D4.svg)](https://codespaces.new/fen3211/antigravity-apex)
 [![Refero Dark & Light](https://img.shields.io/badge/Theme-Refero%20Dark%20%26%20Light-171717.svg)](#-refero-vercel-design-system)
 
 <p align="center">
@@ -29,7 +29,7 @@
 </p>
 
 > 🌟 **Support Open Source Innovation!**
-> If you find **AI Command Center** useful, please **[give it a star on GitHub!](https://github.com/fen3211/ai-command-center/stargazers)** It takes literally 1 second, keeps active development running, and helps more developers discover autonomous multi-agent orchestration for Google Antigravity.
+> If you find **Antigravity Apex** useful, please **[give it a star on GitHub!](https://github.com/fen3211/antigravity-apex/stargazers)** It takes literally 1 second, keeps active development running, and helps more developers discover autonomous multi-agent orchestration for Google Antigravity.
 
 </div>
 
@@ -37,7 +37,7 @@
 
 ## Overview
 
-**AI Command Center** is a production-grade, real-time mission control dashboard and operational supervisor for **Google Antigravity** multi-agent systems powered by the **AI Development Director** framework.
+**Antigravity Apex** is a production-grade, real-time mission control dashboard and operational supervisor for **Google Antigravity** multi-agent systems powered by the **AI Development Director** framework.
 
 Built strictly in a clean **Refero / Vercel** engineering aesthetic with native light and dark modes, it provides engineering directors, systems architects, and developers with real-time observability, deterministic concurrency control (up to 6 parallel subagents), multi-tier verification gates, and autonomous Level 4 Argon escalation.
 
@@ -45,12 +45,12 @@ Built strictly in a clean **Refero / Vercel** engineering aesthetic with native 
 
 ## ⚡ One-Click Installation
 
-Choose your preferred way to install and launch AI Command Center with **literally a single click or command**:
+Choose your preferred way to install and launch Antigravity Apex with **literally a single click or command**:
 
 ### Method 0: Standalone Windows .EXE Installer (Zero CLI & Zero Git)
 Simply download and run our compiled native Windows installer from GitHub Releases:
 
-👉 **[Download AI-Command-Center-Setup.exe (v1.0.0)](https://github.com/fen3211/ai-command-center/releases/latest/download/AI-Command-Center-Setup.exe)**
+👉 **[Download Antigravity-Apex-Setup.exe (v1.0.0)](https://github.com/fen3211/antigravity-apex/releases/latest/download/Antigravity-Apex-Setup.exe)**
 
 Double-click to install. It automatically verifies Node.js, clones/configures the project, deploys the 17 agents into `~/.gemini`, runs the diagnostic doctor, and pops up the dashboard in your default browser!
 
@@ -80,16 +80,16 @@ chmod +x setup.sh && ./setup.sh
 ---
 
 ### Method 3: Remote Terminal One-Liner (No Prior Cloning Required)
-Install and run AI Command Center anywhere directly from your terminal:
+Install and run Antigravity Apex anywhere directly from your terminal:
 
 **Windows (PowerShell)**:
 ```powershell
-irm https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.ps1 | iex
+irm https://raw.githubusercontent.com/fen3211/antigravity-apex/main/scripts/get.ps1 | iex
 ```
 
 **Linux & macOS (Bash)**:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.sh | bash
+curl -fsSL https://raw.githubusercontent.com/fen3211/antigravity-apex/main/scripts/get.sh | bash
 ```
 
 ---
@@ -102,16 +102,16 @@ Already inside the dashboard?
 ---
 
 ### Method 5: 1-Click Cloud Workspace (GitHub Codespaces)
-Run AI Command Center in a dedicated cloud container with zero local setup:
+Run Antigravity Apex in a dedicated cloud container with zero local setup:
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/fen3211/ai-command-center)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/fen3211/antigravity-apex)
 
 ---
 
 ## 📸 Interface Gallery
 
 <div align="center">
-  <img src="public/screenshots/dark-overview.png" alt="AI Command Center — Dark Mode Mission Control" width="100%" />
+  <img src="public/screenshots/dark-overview.png" alt="Antigravity Apex — Dark Mode Mission Control" width="100%" />
   <p><em>Dark Theme — Mission Control, Real-Time Concurrency Supervisor &amp; Active Subagents</em></p>
 </div>
 
@@ -228,7 +228,7 @@ flowchart TD
 
 ## 🩺 System Diagnostics (`doctor`)
 
-AI Command Center comes equipped with a comprehensive built-in diagnostic doctor. Run it anytime to check system health, Antigravity connections, and database integrity:
+Antigravity Apex comes equipped with a comprehensive built-in diagnostic doctor. Run it anytime to check system health, Antigravity connections, and database integrity:
 
 ```bash
 npm run doctor
@@ -236,7 +236,7 @@ npm run doctor
 
 ```text
 ======================================================================
-       AI COMMAND CENTER - SYSTEM DIAGNOSTICS & HEALTH CHECK           
+       ANTIGRAVITY APEX - SYSTEM DIAGNOSTICS & HEALTH CHECK           
 ======================================================================
 
 === 1. Runtime & Environment ===
@@ -245,7 +245,7 @@ npm run doctor
   [✓] git version 2.55.0
 
 === 2. Project Configuration ===
-  [✓] package.json valid (ai-command-center v1.0.0)
+  [✓] package.json valid (antigravity-apex v1.0.0)
   [✓] node_modules directory present
   [✓] .env configured with persistent API key
 
@@ -281,7 +281,7 @@ Result: EXCELLENT! All system and agent components are fully verified.
 ## 📂 Project Structure
 
 ```text
-ai-command-center/
+antigravity-apex/
 ├── .github/                       # GitHub Actions CI/CD, issue & PR templates
 │   ├── assets/hero-banner.svg     # Official GitHub dark-glass hero banner
 │   ├── workflows/ci.yml           # Cross-platform multi-OS test workflow
@@ -341,7 +341,7 @@ For in-depth guides, see the [`docs/`](docs/) directory:
 
 ## 🛡 Security & Privacy
 
-AI Command Center implements enterprise-grade security controls:
+Antigravity Apex implements enterprise-grade security controls:
 - **Local Loopback Isolation**: Default binding to `127.0.0.1` prevents unauthorized LAN/WAN access.
 - **Timing-Safe Token Authentication**: Cryptographically secure token verification using `crypto.timingSafeEqual` prevents timing attacks.
 - **Sanitized Escalation Packs**: System paths (`C:\Users\username` $\to$ `~`) and sensitive tokens (`AIza...`, `sk-...`, `ghp-...`) are automatically stripped before prompt pack generation.
@@ -368,11 +368,11 @@ npm run doctor
 
 ## ⭐ Star the Project
 
-If you love what we're building with **AI Command Center** and Google Antigravity, **give this repo a star!** ⭐
+If you love what we're building with **Antigravity Apex** and Google Antigravity, **give this repo a star!** ⭐
 
 <div align="center">
 
-[![Star on GitHub](https://img.shields.io/badge/⭐_Star_on_GitHub-yellow?style=for-the-badge&logo=github)](https://github.com/fen3211/ai-command-center/stargazers)
+[![Star on GitHub](https://img.shields.io/badge/⭐_Star_on_GitHub-yellow?style=for-the-badge&logo=github)](https://github.com/fen3211/antigravity-apex/stargazers)
 
 *Every single star helps elevate the Antigravity developer community and motivates us to build more awesome features!*
 

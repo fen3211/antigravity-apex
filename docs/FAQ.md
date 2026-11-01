@@ -2,23 +2,23 @@
 
 [English](FAQ.md) • [Русский](FAQ.ru.md)
 
-This document answers common technical, architectural, and operational questions about **AI Command Center**.
+This document answers common technical, architectural, and operational questions about **Antigravity Apex**.
 
 ---
 
 ## 1. General & Architecture
 
-### What is AI Command Center?
-AI Command Center is a local, real-time management dashboard and operational supervisor for **Google Antigravity** multi-agent workspaces and the **AI Development Director** framework. It provides centralized visibility into autonomous subagents, active sessions, token consumption, and multi-tier quality governance.
+### What is Antigravity Apex?
+Antigravity Apex is a local, real-time management dashboard and operational supervisor for **Google Antigravity** multi-agent workspaces and the **AI Development Director** framework. It provides centralized visibility into autonomous subagents, active sessions, token consumption, and multi-tier quality governance.
 
-### Does AI Command Center replace Antigravity CLI / IDE?
-No. AI Command Center works alongside Antigravity as an operational oversight layer. While Antigravity executes autonomous tasks and tool interactions, AI Command Center monitors execution transcripts, manages concurrency, verifies Quality Gates, and controls Level 4 Argon escalations.
+### Does Antigravity Apex replace Antigravity CLI / IDE?
+No. Antigravity Apex works alongside Antigravity as an operational oversight layer. While Antigravity executes autonomous tasks and tool interactions, Antigravity Apex monitors execution transcripts, manages concurrency, verifies Quality Gates, and controls Level 4 Argon escalations.
 
-### Can I run AI Command Center without Antigravity installed?
-Yes. AI Command Center is fully decoupled. If Antigravity is not installed or running, the dashboard operates with offline task management, memory document editing, and simulated telemetry.
+### Can I run Antigravity Apex without Antigravity installed?
+Yes. Antigravity Apex is fully decoupled. If Antigravity is not installed or running, the dashboard operates with offline task management, memory document editing, and simulated telemetry.
 
 ### What platforms are supported?
-AI Command Center is fully tested and supported on:
+Antigravity Apex is fully tested and supported on:
 - **Windows 10/11** (64-bit)
 - **macOS** 12+ (Intel and Apple Silicon)
 - **Linux** (Ubuntu 22.04+, Debian 11+, Fedora, Arch)
@@ -33,7 +33,7 @@ The system supports up to **6 concurrent subagents** (`MAX_CONCURRENT_SUBAGENTS 
 ### What is the "Zero-Disk-Read" ingestion engine?
 Traditional log monitors re-read entire transcript files from line 0 on every modification. In long Antigravity sessions, transcripts grow to dozens of megabytes, causing CPU and disk spikes.
 
-AI Command Center's `JsonlStreamReader` keeps track of the exact byte offset (`last_offset`) in SQLite. When a transcript updates, it reads only the newly appended 64 KB chunks directly from that offset, preserving multi-byte UTF-8 boundaries and eliminating redundant disk I/O.
+Antigravity Apex's `JsonlStreamReader` keeps track of the exact byte offset (`last_offset`) in SQLite. When a transcript updates, it reads only the newly appended 64 KB chunks directly from that offset, preserving multi-byte UTF-8 boundaries and eliminating redundant disk I/O.
 
 ### Will running the dashboard impact my local build performance?
 Negligible impact. The backend runs on a lightweight Node.js event loop with `better-sqlite3` in WAL mode, consuming less than 1% CPU and ~60 MB RAM at idle.
@@ -99,5 +99,5 @@ Yes. To register a custom specialist:
 2. Add the agent ID to `allowedAgents` in the dashboard **Control Center** or via `POST /api/control/settings`.
 3. The agent will immediately appear in the **Agent Management** grid and become available for task assignment.
 
-### How do I deploy AI Command Center on a remote server?
+### How do I deploy Antigravity Apex on a remote server?
 Set `HOST=0.0.0.0` in `.env` and specify allowed web domains in `ALLOWED_ORIGINS`. Pass the `COMMAND_CENTER_API_KEY` token in request headers (`Authorization: Bearer <token>`).

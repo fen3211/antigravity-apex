@@ -298,7 +298,7 @@ export const AgentManagement: React.FC<AgentManagementProps> = ({
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-obsidian" />
               <h1 className="text-lg font-semibold text-obsidian tracking-tight">
-                Пул специалистов AI Command Center (17 ролей)
+                Пул специалистов Antigravity Apex (17 ролей)
               </h1>
               <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-surface-subtle text-charcoal border border-hairline">
                 Стандарт Antigravity

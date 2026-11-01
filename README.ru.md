@@ -1,20 +1,20 @@
 <div align="center">
 
-![AI Command Center Banner](.github/assets/hero-banner.svg)
+![Antigravity Apex Banner](.github/assets/hero-banner.svg)
 
-# AI Command Center
+# Antigravity Apex
 
 ### Центр управления мультиагентной системой и телеметрии для Google Antigravity
 
-[![GitHub Stars](https://img.shields.io/github/stars/fen3211/ai-command-center?style=social)](https://github.com/fen3211/ai-command-center/stargazers)
-[![Скачать EXE](https://img.shields.io/badge/Скачать-AI--Command--Center--Setup.exe-10B981.svg?logo=windows)](https://github.com/fen3211/ai-command-center/releases/latest/download/AI-Command-Center-Setup.exe)
+[![GitHub Stars](https://img.shields.io/github/stars/fen3211/antigravity-apex?style=social)](https://github.com/fen3211/antigravity-apex/stargazers)
+[![Скачать EXE](https://img.shields.io/badge/Скачать-AI--Command--Center--Setup.exe-10B981.svg?logo=windows)](https://github.com/fen3211/antigravity-apex/releases/latest/download/Antigravity-Apex-Setup.exe)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![React 19](https://img.shields.io/badge/React-19.3-61dafb.svg)](https://react.dev/)
 [![TypeScript 5.7](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)](https://www.typescriptlang.org/)
 [![SQLite WAL](https://img.shields.io/badge/SQLite-WAL%20Mode-003B57.svg)](https://sqlite.org/wal.html)
 [![Tests Passing](https://img.shields.io/badge/Tests-50%2B%20Passing%20(100%25)-10B981.svg)](tests/)
-[![Open in GitHub Codespaces](https://img.shields.io/badge/Codespaces-1--Click%20Launch-06B6D4.svg)](https://codespaces.new/fen3211/ai-command-center)
+[![Open in GitHub Codespaces](https://img.shields.io/badge/Codespaces-1--Click%20Launch-06B6D4.svg)](https://codespaces.new/fen3211/antigravity-apex)
 [![Refero Dark & Light](https://img.shields.io/badge/Тема-Refero%20Dark%20%26%20Light-171717.svg)](#-интерфейс-в-стиле-refero--vercel)
 
 <p align="center">
@@ -29,7 +29,7 @@
 </p>
 
 > 🌟 **Поддержите проект звездой на GitHub!**
-> Если вам полезен **AI Command Center**, пожалуйста, **[поставьте звезду нашему репозиторию](https://github.com/fen3211/ai-command-center/stargazers)**! Это займет ровно одну секунду, мотивирует развивать Antigravity-экосистему и помогает другим разработчикам находить готовые инструменты для мультиагентной оркестрации.
+> Если вам полезен **Antigravity Apex**, пожалуйста, **[поставьте звезду нашему репозиторию](https://github.com/fen3211/antigravity-apex/stargazers)**! Это займет ровно одну секунду, мотивирует развивать Antigravity-экосистему и помогает другим разработчикам находить готовые инструменты для мультиагентной оркестрации.
 
 </div>
 
@@ -37,7 +37,7 @@
 
 ## О проекте
 
-**AI Command Center** — это высокопроизводительный центр управления, диспетчер задач и супервизор процессов реального времени для мультиагентных систем **Google Antigravity** под управлением **AI Development Director**.
+**Antigravity Apex** — это высокопроизводительный центр управления, диспетчер задач и супервизор процессов реального времени для мультиагентных систем **Google Antigravity** под управлением **AI Development Director**.
 
 Интерфейс спроектирован в инженерной эстетике **Refero / Vercel** с нативной поддержкой светлой и тёмной тем. Продукт предоставляет лидам разработки, системным архитекторам и инженерам полную прозрачность исполнения, детерминированный контроль параллелизма (до 6 параллельных субагентов), многоступенчатые шлюзы верификации и автономную эскалацию к Gemini 4 Argon.
 
@@ -50,7 +50,7 @@
 ### Способ 0: Автономный Windows .EXE установщик (Без консоли и без Git)
 Просто скачайте скомпилированный нативный установщик из раздела GitHub Releases:
 
-👉 **[Скачать AI-Command-Center-Setup.exe (v1.0.0)](https://github.com/fen3211/ai-command-center/releases/latest/download/AI-Command-Center-Setup.exe)**
+👉 **[Скачать Antigravity-Apex-Setup.exe (v1.0.0)](https://github.com/fen3211/antigravity-apex/releases/latest/download/Antigravity-Apex-Setup.exe)**
 
 Запустите скачанный файл двойным кликом. Он автоматически проверит Node.js, скачает или подготовит репозиторий, установит 17 специализированных агентов в `~/.gemini`, выполнит диагностику Doctor, запустит сервер и откроет дашборд в вашем браузере!
 
@@ -84,12 +84,12 @@ chmod +x setup.sh && ./setup.sh
 
 **Windows (PowerShell)**:
 ```powershell
-irm https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.ps1 | iex
+irm https://raw.githubusercontent.com/fen3211/antigravity-apex/main/scripts/get.ps1 | iex
 ```
 
 **Linux & macOS (Bash)**:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.sh | bash
+curl -fsSL https://raw.githubusercontent.com/fen3211/antigravity-apex/main/scripts/get.sh | bash
 ```
 
 ---
@@ -102,16 +102,16 @@ curl -fsSL https://raw.githubusercontent.com/fen3211/ai-command-center/main/scri
 ---
 
 ### Способ 5: Облачный запуск в один клик (GitHub Codespaces)
-Запустите AI Command Center в изолированном контейнере без установки на компьютер:
+Запустите Antigravity Apex в изолированном контейнере без установки на компьютер:
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/fen3211/ai-command-center)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/fen3211/antigravity-apex)
 
 ---
 
 ## 📸 Галерея интерфейса
 
 <div align="center">
-  <img src="public/screenshots/dark-overview.png" alt="AI Command Center — Dark Theme Mission Control" width="100%" />
+  <img src="public/screenshots/dark-overview.png" alt="Antigravity Apex — Dark Theme Mission Control" width="100%" />
   <p><em>Тёмная тема — Mission Control, супервизор параллелизма и активные субагенты (стиль Refero / Vercel)</em></p>
 </div>
 
@@ -236,7 +236,7 @@ npm run doctor
 
 ```text
 =======================================================================
-       AI COMMAND CENTER - SYSTEM DIAGNOSTICS & HEALTH CHECK           
+       ANTIGRAVITY APEX - SYSTEM DIAGNOSTICS & HEALTH CHECK           
 ======================================================================
 
 === 1. Runtime & Environment ===
@@ -245,7 +245,7 @@ npm run doctor
   [✓] git version 2.55.0
 
 === 2. Project Configuration ===
-  [✓] package.json корректен (ai-command-center v1.0.0)
+  [✓] package.json корректен (antigravity-apex v1.0.0)
   [✓] Папка node_modules присутствует
   [✓] .env настроен с постоянным ключом API
 
@@ -281,7 +281,7 @@ npm run doctor
 ## 📂 Структура проекта
 
 ```text
-ai-command-center/
+antigravity-apex/
 ├── .github/                       # GitHub Actions CI/CD, шаблоны Issue и PR
 │   ├── assets/hero-banner.svg     # Официальный баннер репозитория
 │   ├── workflows/ci.yml           # Кроссплатформенный CI воркфлоу
@@ -353,11 +353,11 @@ ai-command-center/
 
 ## ⭐ Поддержите проект звездой!
 
-Если вам нравится **AI Command Center** и возможности мультиагентной оркестрации Google Antigravity, **поставьте проекту звезду на GitHub!** ⭐
+Если вам нравится **Antigravity Apex** и возможности мультиагентной оркестрации Google Antigravity, **поставьте проекту звезду на GitHub!** ⭐
 
 <div align="center">
 
-[![Поставить звезду на GitHub](https://img.shields.io/badge/⭐_Поставить_звезду_на_GitHub-yellow?style=for-the-badge&logo=github)](https://github.com/fen3211/ai-command-center/stargazers)
+[![Поставить звезду на GitHub](https://img.shields.io/badge/⭐_Поставить_звезду_на_GitHub-yellow?style=for-the-badge&logo=github)](https://github.com/fen3211/antigravity-apex/stargazers)
 
 *Каждая звезда помогает развивать сообщество Antigravity и ускоряет выход новых фичей!*
 

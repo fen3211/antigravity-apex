@@ -1,14 +1,14 @@
 flowchart TD
     %% ==========================================
-    %% AI COMMAND CENTER - INSTALLATION & ONBOARDING FLOW
+    %% ANTIGRAVITY APEX - INSTALLATION & ONBOARDING FLOW
     %% ==========================================
 
     START(["Start Onboarding"]):::startNode
 
     subgraph PHASE1["Phase 1: Repository Acquisition"]
-        GIT_CLONE["Clone or Extract AI Command Center
-        git clone <repo-url> ai-command-center
-        cd ai-command-center"]
+        GIT_CLONE["Clone or Extract Antigravity Apex
+        git clone <repo-url> antigravity-apex
+        cd antigravity-apex"]
     end
 
     START --> GIT_CLONE
@@ -123,7 +123,7 @@ flowchart TD
         or Double-Click: start.cmd
         Production: npm start"]
         
-        READY(["AI Command Center ONLINE
+        READY(["Antigravity Apex ONLINE
         - Frontend: http://127.0.0.1:5173
         - API Health: http://127.0.0.1:3001/health
         - WS Stream: ws://127.0.0.1:3001/ws"]):::successNode

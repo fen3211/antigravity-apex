@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * AI COMMAND CENTER - DIAGNOSTIC SYSTEM DOCTOR
+ * ANTIGRAVITY APEX - DIAGNOSTIC SYSTEM DOCTOR
  * Comprehensive cross-platform diagnostic tool for Antigravity & AI Director.
  */
 
@@ -65,7 +65,7 @@ const aiDirectorPluginDir = path.join(baseGeminiDir, 'config', 'plugins', 'ai-di
 
 console.log(`${colors.bold}${colors.white}`);
 console.log('=======================================================================');
-console.log('       AI COMMAND CENTER - SYSTEM DIAGNOSTICS & HEALTH CHECK           ');
+console.log('       ANTIGRAVITY APEX - SYSTEM DIAGNOSTICS & HEALTH CHECK           ');
 console.log('=======================================================================');
 console.log(`${colors.reset}`);
 

@@ -53,4 +53,4 @@
 ```
 
 ### Кнопка «1-Click Setup» в интерфейсе
-В веб-интерфейсе AI Command Center нажмите кнопку **`⚡ 1-Click Setup`** в шапке или **`1-Click Sync Antigravity`** на вкладке «Агенты».
+В веб-интерфейсе Antigravity Apex нажмите кнопку **`⚡ 1-Click Setup`** в шапке или **`1-Click Sync Antigravity`** на вкладке «Агенты».

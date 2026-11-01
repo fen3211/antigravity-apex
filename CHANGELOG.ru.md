@@ -2,7 +2,7 @@
 
 [English](CHANGELOG.md) • [Русский](CHANGELOG.ru.md)
 
-Все значимые изменения в проекте **AI Command Center** документируются в этом файле.
+Все значимые изменения в проекте **Antigravity Apex** документируются в этом файле.
 
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/), и проект строго придерживается [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -12,7 +12,7 @@
 
 ### Первый публичный релиз (Open Source)
 
-Первый релиз **AI Command Center** — центра управления мультиагентной системой Google Antigravity под управлением **AI Development Director**.
+Первый релиз **Antigravity Apex** — центра управления мультиагентной системой Google Antigravity под управлением **AI Development Director**.
 
 ### Добавлено
 

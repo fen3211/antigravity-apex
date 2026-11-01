@@ -2,7 +2,7 @@
 
 [English](INSTALLATION.md) • [Русский](INSTALLATION.ru.md)
 
-Это подробное пошаговое руководство по установке и настройке **AI Command Center** в операционных системах **Windows**, **macOS** и **Linux**, включая установку одной кнопкой, однострочники для терминала и ручной запуск.
+Это подробное пошаговое руководство по установке и настройке **Antigravity Apex** в операционных системах **Windows**, **macOS** и **Linux**, включая установку одной кнопкой, однострочники для терминала и ручной запуск.
 
 ---
 
@@ -21,11 +21,11 @@ chmod +x setup.sh && ./setup.sh
 ### Удаленный однострочник (без предварительного клонирования)
 - **Windows (PowerShell)**:
   ```powershell
-  irm https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.ps1 | iex
+  irm https://raw.githubusercontent.com/fen3211/antigravity-apex/main/scripts/get.ps1 | iex
   ```
 - **Linux & macOS (Bash)**:
   ```bash
-  curl -fsSL https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/fen3211/antigravity-apex/main/scripts/get.sh | bash
   ```
 
 ---
@@ -49,7 +49,7 @@ chmod +x setup.sh && ./setup.sh
 - Исполняемый файл CLI `agy.exe` (в Windows обычно `%LOCALAPPDATA%\agy\bin\agy.exe`).
 
 > [!NOTE]
-> AI Command Center отлично работает и без запущенного Antigravity. В этом случае дашборд сохраняет задачи в локальную базу SQLite и отображает телеметрию в автономном режиме.
+> Antigravity Apex отлично работает и без запущенного Antigravity. В этом случае дашборд сохраняет задачи в локальную базу SQLite и отображает телеметрию в автономном режиме.
 
 ---
 
@@ -57,8 +57,8 @@ chmod +x setup.sh && ./setup.sh
 
 ### Шаг 1: Клонирование репозитория
 ```bash
-git clone https://github.com/fen3211/ai-command-center.git
-cd ai-command-center
+git clone https://github.com/fen3211/antigravity-apex.git
+cd antigravity-apex
 ```
 
 ### Шаг 2: Установка зависимостей бэкенда

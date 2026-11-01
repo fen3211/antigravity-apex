@@ -19,7 +19,7 @@ import { CONFIG } from '../server/src/config.js';
 import { app, server } from '../server/src/index.js';
 
 async function runTests() {
-  console.log('--- STARTING AI COMMAND CENTER SYSTEM & SECURITY TESTS ---');
+  console.log('--- STARTING ANTIGRAVITY APEX SYSTEM & SECURITY TESTS ---');
 
   // 1. Database & Tables Test
   console.log('Test 1: Initializing SQLite Schema...');
@@ -375,7 +375,7 @@ async function runTests() {
       });
       ws.on('error', (err) => reject(err));
     });
-    assert(wsHandshake.includes('Connected to AI Command Center Event Stream'), 'Handshake message received');
+    assert(wsHandshake.includes('Connected to Antigravity Apex Event Stream'), 'Handshake message received');
     console.log('✓ WebSocket security verified: Unauthorized token/origin closed with 1008, valid client handshakes.');
 
     // 15d. Diagnostic Doctor Endpoint

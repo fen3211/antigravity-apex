@@ -1,7 +1,7 @@
 {
-  "name": "ai-command-center",
+  "name": "antigravity-apex",
   "version": "1.0.0",
-  "description": "Premium Multi-Agent Management Dashboard for Antigravity AI Development Director",
+  "description": "Autonomous Multi-Agent Mission Control & Telemetry Supervisor for Google Antigravity",
   "main": "server/dist/index.js",
   "type": "module",
   "scripts": {
@@ -23,10 +23,15 @@
   },
   "keywords": [
     "antigravity",
+    "antigravity-apex",
+    "apex",
     "ai-director",
     "multi-agent",
+    "mission-control",
     "dashboard",
-    "command-center"
+    "orchestration",
+    "telemetry",
+    "gemini"
   ],
   "author": "AI Development Director",
   "license": "MIT",

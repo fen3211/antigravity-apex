@@ -1,18 +1,18 @@
-# Начало работы с AI Command Center
+# Начало работы с Antigravity Apex
 
 [English](GETTING_STARTED.md) • [Русский](GETTING_STARTED.ru.md)
 
-Добро пожаловать в **AI Command Center** — центр управления и телеметрии для мультиагентных систем **Google Antigravity** под управлением **AI Development Director**.
+Добро пожаловать в **Antigravity Apex** — центр управления и телеметрии для мультиагентных систем **Google Antigravity** под управлением **AI Development Director**.
 
 В этом руководстве описаны первые 5 минут работы с системой: от запуска локального окружения до мониторинга автономных субагентов, проверки 9-пунктных отчётов и анализа телеметрии в реальном времени.
 
 ---
 
-## 1. Что такое AI Command Center?
+## 1. Что такое Antigravity Apex?
 
 Google Antigravity позволяет автономным ИИ-агентам разрабатывать программное обеспечение в изолированных воркспейсах. Однако по мере роста числа агентов (фронтенд, бэкенд, тестирование, безопасность, юридический комплаенс) разработчикам необходим единый пульт управления.
 
-AI Command Center предоставляет:
+Antigravity Apex предоставляет:
 - **Наблюдаемость в реальном времени**: Отслеживание сессий агентов, работающих субагентов и расхода токенов по мере их выполнения.
 - **Динамический контроль параллелизма**: Безопасное ограничение числа параллельных субагентов (до 6 потоков) для предотвращения переполнения памяти и лимитов API.
 - **Многоступенчатые шлюзы качества**: Контроль приёмки задач (Gate 1 — тесты и линтеры, Gate 2 — независимое ревью, Gate 2b — юридический комплаенс РФ и ЕС).
@@ -26,7 +26,7 @@ AI Command Center предоставляет:
 Откройте терминал и перейдите в папку проекта:
 
 ```bash
-cd d:\Projects\ai-command-center
+cd d:\Projects\antigravity-apex
 npm run dev
 ```
 
@@ -34,10 +34,10 @@ npm run dev
 
 В терминале отобразится:
 ```text
-[AI COMMAND CENTER] Server running on http://127.0.0.1:3001
-[AI COMMAND CENTER] WebSocket stream at ws://127.0.0.1:3001/ws
-[AI COMMAND CENTER] Antigravity dir: C:\Users\<user>\.gemini\antigravity
-[AI COMMAND CENTER] Knowledge dir:   C:\Users\<user>\.gemini\antigravity\knowledge\ai-director
+[ANTIGRAVITY APEX] Server running on http://127.0.0.1:3001
+[ANTIGRAVITY APEX] WebSocket stream at ws://127.0.0.1:3001/ws
+[ANTIGRAVITY APEX] Antigravity dir: C:\Users\<user>\.gemini\antigravity
+[ANTIGRAVITY APEX] Knowledge dir:   C:\Users\<user>\.gemini\antigravity\knowledge\ai-director
 VITE v8.3.5 ready in 250 ms
 ➜  Local:   http://localhost:5173/
 ```

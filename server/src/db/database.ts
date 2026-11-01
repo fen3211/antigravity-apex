@@ -259,17 +259,17 @@ function seedInitialTasks(targetDb: any = db) {
         taskName: 'Предварительный аудит архитектуры',
         status: 'SUCCESS',
         summary: 'Прямая проверка всех каталогов Antigravity и базы знаний Директора.',
-        modifiedFiles: ['d:/Projects/ai-command-center/shared/types.ts'],
+        modifiedFiles: ['d:/Projects/antigravity-apex/shared/types.ts'],
         executedChecks: ['agy agents', 'agy models', 'agy plugins list', 'проверка transcript.jsonl'],
         checkResults: 'Все ключевые подсистемы Antigravity проверены и доступны на локальной машине.',
         issuesAndRisks: 'Antigravity не предоставляет открытый HTTP сервер из коробки; необходим файловый наблюдатель и CLI мост.',
         pendingItems: 'Разработка пользовательского интерфейса и синхронизация по WebSocket.',
-        nextSteps: 'Перейти к созданию визуальной панели AI Command Center.'
+        nextSteps: 'Перейти к созданию визуальной панели Antigravity Apex.'
       }
     },
     {
       id: 'task-live-dashboard-ui',
-      title: 'Разработка интерфейса AI Command Center (Liquid Dark Glass)',
+      title: 'Разработка интерфейса Antigravity Apex (Liquid Dark Glass)',
       description: 'Создание визуальной панели с вкладками Обзор, Карта процессов, Управление агентами и Память.',
       status: 'in_progress',
       priority: 'critical',

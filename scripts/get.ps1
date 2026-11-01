@@ -1,15 +1,15 @@
 <#
 .SYNOPSIS
-    One-line remote installer for AI Command Center on Windows.
+    One-line remote installer for Antigravity Apex on Windows.
 .DESCRIPTION
     Usage:
-        irm https://raw.githubusercontent.com/fen3211/ai-command-center/main/scripts/get.ps1 | iex
+        irm https://raw.githubusercontent.com/fen3211/antigravity-apex/main/scripts/get.ps1 | iex
 #>
 
 $ErrorActionPreference = "Stop"
 
 Write-Host "=======================================================================" -ForegroundColor Cyan
-Write-Host "    AI COMMAND CENTER -- ONE-LINE REMOTE INSTALLER (WINDOWS)           " -ForegroundColor White
+Write-Host "    ANTIGRAVITY APEX -- ONE-LINE REMOTE INSTALLER (WINDOWS)           " -ForegroundColor White
 Write-Host "=======================================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -35,20 +35,20 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 Write-Host "  [✓] Git detected" -ForegroundColor Green
 
 # 3. Clone or update repository
-$TargetDir = Join-Path $PWD "ai-command-center"
+$TargetDir = Join-Path $PWD "antigravity-apex"
 
 if (Test-Path (Join-Path $PWD "package.json")) {
     $pkgJson = Get-Content (Join-Path $PWD "package.json") -Raw
-    if ($pkgJson -match '"name":\s*"ai-command-center"') {
+    if ($pkgJson -match '"name":\s*"antigravity-apex"') {
         $TargetDir = $PWD
-        Write-Host "  [✓] Current directory is already ai-command-center: $TargetDir" -ForegroundColor Green
+        Write-Host "  [✓] Current directory is already antigravity-apex: $TargetDir" -ForegroundColor Green
     }
 }
 
 if ($TargetDir -ne $PWD) {
     if (-not (Test-Path $TargetDir)) {
         Write-Host "  [i] Cloning repository to $TargetDir..." -ForegroundColor Cyan
-        git clone https://github.com/fen3211/ai-command-center.git $TargetDir
+        git clone https://github.com/fen3211/antigravity-apex.git $TargetDir
     } else {
         Write-Host "  [i] Existing folder found at $TargetDir, updating..." -ForegroundColor Cyan
         Set-Location $TargetDir

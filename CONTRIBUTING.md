@@ -1,10 +1,10 @@
-# Contributing to AI Command Center
+# Contributing to Antigravity Apex
 
 [English](CONTRIBUTING.md) • [Русский](CONTRIBUTING.ru.md)
 
-Thank you for your interest in contributing to **AI Command Center**! We welcome bug fixes, documentation improvements, architectural optimizations, and new features from the community.
+Thank you for your interest in contributing to **Antigravity Apex**! We welcome bug fixes, documentation improvements, architectural optimizations, and new features from the community.
 
-AI Command Center is built around the engineering standards of the **Antigravity AI Development Director**: zero-fabrication, rigorous verification, strict type safety, and multi-tier quality gates.
+Antigravity Apex is built around the engineering standards of the **Antigravity AI Development Director**: zero-fabrication, rigorous verification, strict type safety, and multi-tier quality gates.
 
 ---
 
@@ -25,8 +25,8 @@ All contributors and participants are expected to adhere to our [Code of Conduct
 ### 2. Local Repository Setup
 ```bash
 # 1. Clone your fork
-git clone https://github.com/<your-username>/ai-command-center.git
-cd ai-command-center
+git clone https://github.com/<your-username>/antigravity-apex.git
+cd antigravity-apex
 
 # 2. Install root and client dependencies
 npm install

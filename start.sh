@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# AI Command Center - Quick Launcher for Linux and macOS
+# Antigravity Apex - Quick Launcher for Linux and macOS
 # ==============================================================================
 
 set -e
@@ -10,7 +10,7 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 
 echo -e "${CYAN}=======================================================================${NC}"
-echo -e "${CYAN}    AI COMMAND CENTER -- QUICK LAUNCHER                                ${NC}"
+echo -e "${CYAN}    ANTIGRAVITY APEX -- QUICK LAUNCHER                                ${NC}"
 echo -e "${CYAN}    URL: http://127.0.0.1:5173/                                        ${NC}"
 echo -e "${CYAN}=======================================================================${NC}\n"
 

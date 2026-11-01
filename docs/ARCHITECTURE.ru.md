@@ -2,13 +2,13 @@
 
 # Архитектура системы
 
-В данном документе подробно описаны архитектурный проект, внутреннее взаимодействие компонентов и структура хранения данных **AI Command Center**.
+В данном документе подробно описаны архитектурный проект, внутреннее взаимодействие компонентов и структура хранения данных **Antigravity Apex**.
 
 ---
 
 ## 1. Высокоуровневая архитектура системы
 
-AI Command Center связывает локальную среду выполнения мультиагентной системы **Google Antigravity** с интерактивным дашбордом управления реального времени через событийно-ориентированный (event-driven) бэкенд с нулевой паразитной нагрузкой на диск (zero-disk-churn).
+Antigravity Apex связывает локальную среду выполнения мультиагентной системы **Google Antigravity** с интерактивным дашбордом управления реального времени через событийно-ориентированный (event-driven) бэкенд с нулевой паразитной нагрузкой на диск (zero-disk-churn).
 
 ```mermaid
 graph TB
@@ -200,7 +200,7 @@ stateDiagram-v2
     ```json
     {
       "channel": "system",
-      "message": "Connected to AI Command Center Event Stream",
+      "message": "Connected to Antigravity Apex Event Stream",
       "timestamp": "2026-11-01T18:00:00.000Z"
     }
     ```
@@ -211,7 +211,7 @@ stateDiagram-v2
       "event": {
         "id": "evt-1730485000000-abc12",
         "timestamp": "2026-11-01T18:00:00.000Z",
-        "project_id": "ai-command-center",
+        "project_id": "antigravity-apex",
         "task_id": "task-001",
         "agent_id": "backend-developer",
         "type": "task.updated",

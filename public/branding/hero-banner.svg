@@ -75,7 +75,7 @@
     <line x1="22" y1="27" x2="22" y2="32" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/>
 
     <!-- Title & Metadata -->
-    <text x="60" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="#FFFFFF" letter-spacing="0.04em">AI COMMAND CENTER</text>
+    <text x="60" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="#FFFFFF" letter-spacing="0.04em">ANTIGRAVITY APEX</text>
     <text x="60" y="40" font-family="'JetBrains Mono', 'Fira Code', monospace" font-size="11" font-weight="500" fill="#737373">FOR GOOGLE ANTIGRAVITY &amp; AI DEVELOPMENT DIRECTOR</text>
 
     <!-- Version & Status Pills -->

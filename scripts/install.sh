@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# AI COMMAND CENTER - AGENT INFRASTRUCTURE INSTALLER (POSIX / macOS / Linux)
+# ANTIGRAVITY APEX - AGENT INFRASTRUCTURE INSTALLER (POSIX / macOS / Linux)
 # Target: Google Antigravity & AI Development Director Suite
 # =============================================================================
 
@@ -82,7 +82,7 @@ print_header() {
 }
 
 echo -e "${CYAN}=======================================================================${NC}"
-echo -e "${WHITE}    AI COMMAND CENTER - AGENT INFRASTRUCTURE INSTALLER                ${NC}"
+echo -e "${WHITE}    ANTIGRAVITY APEX - AGENT INFRASTRUCTURE INSTALLER                ${NC}"
 echo -e "${GRAY}    Target: Google Antigravity & AI Development Director Suite         ${NC}"
 echo -e "${CYAN}=======================================================================${NC}"
 
@@ -336,7 +336,7 @@ Summary:
 Next Steps:
   1. Run diagnostic self-check:
      npm run doctor
-  2. Launch AI Command Center:
+  2. Launch Antigravity Apex:
      npm run dev
   3. Open Dashboard in browser:
      http://127.0.0.1:5173/

@@ -15,11 +15,11 @@ Only the latest major and minor release versions receive security updates and vu
 
 ## Reporting a Vulnerability
 
-We take the security of AI Command Center and connected Google Antigravity workspaces seriously. If you discover a vulnerability or potential security flaw, please follow our responsible disclosure protocol:
+We take the security of Antigravity Apex and connected Google Antigravity workspaces seriously. If you discover a vulnerability or potential security flaw, please follow our responsible disclosure protocol:
 
 1. **Do NOT open public GitHub issues or public discussions** for security vulnerabilities.
 2. Submit a report privately via **GitHub Private Security Advisories** or send an email to:
-   `security@ai-command-center.local` (or the repository maintainers via GitHub profile contacts).
+   `security@antigravity-apex.local` (or the repository maintainers via GitHub profile contacts).
 3. **Information to include in your report**:
    - Detailed description of the vulnerability and attack vector.
    - Proof of Concept (PoC) code or step-by-step reproduction instructions.
@@ -36,7 +36,7 @@ We take the security of AI Command Center and connected Google Antigravity works
 
 ## Security Architecture & Built-in Safeguards
 
-AI Command Center implements multi-layered defense-in-depth mechanisms designed specifically for local AI orchestration dashboards:
+Antigravity Apex implements multi-layered defense-in-depth mechanisms designed specifically for local AI orchestration dashboards:
 
 ### 1. Loopback Binding & CORS Whitelist
 - By default, the server binds strictly to the local loopback interface (`127.0.0.1`).

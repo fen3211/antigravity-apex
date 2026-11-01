@@ -198,7 +198,7 @@ export const Overview: React.FC<OverviewProps> = ({
             </div>
 
             <h1 className="text-lg sm:text-xl font-semibold text-obsidian tracking-tight">
-              AI Command Center • Mission Control
+              Antigravity Apex • Mission Control
             </h1>
             <p className="text-[13px] text-charcoal leading-relaxed">
               Оперативный контроль мультиагентной системы Antigravity. Многоступенчатые шлюзы качества (L1–L4), 
