@@ -25,7 +25,18 @@
   <a href="#-architecture--concurrency">Architecture</a> •
   <a href="#-closed-contour-argon-escalation">Argon Escalation</a> •
   <a href="#-system-diagnostics-doctor">System Doctor</a> •
-  <a href="README.ru.md">🇷🇺 Русская версия</a>
+</p>
+
+<p align="center">
+  🌐 <b>Languages:</b>
+  <a href="README.md">English</a> •
+  <a href="README.ru.md">Русский</a> •
+  <a href="README.es.md">Español</a> •
+  <a href="README.fr.md">Français</a> •
+  <a href="README.pt.md">Português</a> •
+  <a href="README.zh.md">简体中文</a> •
+  <a href="README.ja.md">日本語</a> •
+  <a href="README.de.md">Deutsch</a>
 </p>
 
 > 🌟 **Support Open Source Innovation!**

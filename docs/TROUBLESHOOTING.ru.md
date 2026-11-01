@@ -1,6 +1,6 @@
 # Руководство по устранению неполадок и диагностике
 
-[English](TROUBLESHOOTING.md) • [Русский](TROUBLESHOOTING.ru.md)
+[English](TROUBLESHOOTING.md) • [Русский](TROUBLESHOOTING.ru.md) • [Español](TROUBLESHOOTING.es.md) • [Français](TROUBLESHOOTING.fr.md) • [Português](TROUBLESHOOTING.pt.md)
 
 В этом руководстве собраны диагностические шаги и практические решения для типичных проблем, возникающих при работе с **Antigravity Apex**.
 

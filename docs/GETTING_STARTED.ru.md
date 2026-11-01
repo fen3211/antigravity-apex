@@ -1,6 +1,6 @@
 # Начало работы с Antigravity Apex
 
-[English](GETTING_STARTED.md) • [Русский](GETTING_STARTED.ru.md)
+[English](GETTING_STARTED.md) • [Русский](GETTING_STARTED.ru.md) • [Español](GETTING_STARTED.es.md) • [Français](GETTING_STARTED.fr.md) • [Português](GETTING_STARTED.pt.md)
 
 Добро пожаловать в **Antigravity Apex** — центр управления и телеметрии для мультиагентных систем **Google Antigravity** под управлением **AI Development Director**.
 

@@ -21,6 +21,7 @@ import type {
   DataProvenance
 } from '../types.js';
 import type { NavTab } from './Sidebar.js';
+import { useLanguage } from '../i18n/LanguageContext.js';
 
 interface OverviewProps {
   status: DirectorStatus | null;
@@ -57,6 +58,8 @@ export const Overview: React.FC<OverviewProps> = ({
   onOpenEscalationModal,
   onCopyEscalationPrompt
 }) => {
+  const { t } = useLanguage();
+
   const pendingTasks = tasks.filter(t => t.status === 'pending' || t.status === 'in_progress');
   const completedTasks = tasks.filter(t => t.status === 'completed');
   const escalatedTasks = tasks.filter(t => t.status === 'escalated');
@@ -68,27 +71,27 @@ export const Overview: React.FC<OverviewProps> = ({
 
   const translateStatus = (s: string) => {
     switch (s) {
-      case 'completed': return 'ЗАВЕРШЕНО';
-      case 'in_progress': return 'В РАБОТЕ';
-      case 'escalated': return 'ЭСКАЛАЦИЯ L4';
-      case 'failed': return 'СБОЙ';
-      case 'verification': return 'ВЕРИФИКАЦИЯ';
-      case 'pending': return 'В ОЧЕРЕДИ';
+      case 'completed': return t('overview.status.completed');
+      case 'in_progress': return t('overview.status.in_progress');
+      case 'escalated': return t('overview.status.escalated');
+      case 'failed': return t('overview.status.failed');
+      case 'verification': return t('overview.status.verification');
+      case 'pending': return t('overview.status.pending');
       default: return s.toUpperCase();
     }
   };
 
   const translateStage = (stage: string) => {
     switch (stage) {
-      case 'Director_Triage': return 'Триаж Директора';
-      case 'Solo': return 'Соло-выполнение';
-      case 'Specialist': return 'Специалист';
-      case 'QualityGate_L1': return 'Шлюз качества L1';
-      case 'Independent_L2': return 'Независимый аудит L2';
-      case 'LegalGate': return 'Шлюз 2b: Юрист & комплаенс';
-      case 'Architect_L3': return 'Senior Architect (L3)';
-      case 'Argon_L4': return 'Gemini 4 Argon (L4)';
-      case 'Approved': return 'Утверждено';
+      case 'Director_Triage': return t('overview.pipelineStages.triage');
+      case 'Solo': return t('overview.pipelineStages.solo');
+      case 'Specialist': return t('overview.pipelineStages.specialist');
+      case 'QualityGate_L1': return t('overview.pipelineStages.qualityGateL1');
+      case 'Independent_L2': return t('overview.pipelineStages.independentL2');
+      case 'LegalGate': return t('overview.pipelineStages.legalGate');
+      case 'Architect_L3': return t('overview.pipelineStages.architectL3');
+      case 'Argon_L4': return t('overview.pipelineStages.argonL4');
+      case 'Approved': return t('overview.pipelineStages.approved');
       default: return stage;
     }
   };
@@ -119,10 +122,10 @@ export const Overview: React.FC<OverviewProps> = ({
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono font-bold bg-danger text-pure animate-pulse">
                 <Flame className="w-4 h-4" />
-                [ARGON ESCALATION REQUIRED]
+                {t('overview.urgentEscalationTitle')}
               </span>
               <span className="text-xs font-mono font-semibold text-danger-text uppercase">
-                Обнаружен архитектурный тупик ({activeEscalations.length})
+                {t('overview.urgentEscalationDetected')} ({activeEscalations.length})
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -130,7 +133,7 @@ export const Overview: React.FC<OverviewProps> = ({
                 onClick={() => onNavigate('escalations')}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono font-medium bg-obsidian text-pure hover:bg-graphite transition-colors shadow-xs"
               >
-                <span>Перейти в центр эскалаций</span>
+                <span>{t('overview.goToEscalations')}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -165,7 +168,7 @@ export const Overview: React.FC<OverviewProps> = ({
                       }
                     }}
                     className="p-1.5 rounded text-xs font-mono bg-surface border border-hairline hover:bg-surface-subtle"
-                    title="Скопировать 18-пунктный пакет"
+                    title={t('escalations.copyPrompt')}
                   >
                     <Flame className="w-3.5 h-3.5 text-danger" />
                   </button>
@@ -183,26 +186,25 @@ export const Overview: React.FC<OverviewProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <span className="badge-live">
                 <span className="w-1.5 h-1.5 rounded-full bg-terminal-green animate-pulse" />
-                ОРКЕСТРАТОР В СЕТИ
+                {t('header.statusOnline')}
               </span>
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium bg-surface-subtle text-stone border border-hairline">
                 <Cpu className="w-3 h-3 text-graphite" />
-                Gemini 3.8 Flash High
+                {status?.model || 'Gemini 3.8 Flash High'}
               </span>
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium bg-surface-subtle text-stone border border-hairline">
-                Макс. параллелизм: 6 subagents
+                {t('nav.concurrency')}: {t('nav.concurrencySubagents')}
               </span>
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium bg-surface-subtle text-terminal-green border border-hairline">
-                Localhost Boundary
+                {t('nav.boundaryLocal')}
               </span>
             </div>
 
             <h1 className="text-lg sm:text-xl font-semibold text-obsidian tracking-tight">
-              Antigravity Apex • Mission Control
+              Antigravity Apex • {t('nav.overview')}
             </h1>
             <p className="text-[13px] text-charcoal leading-relaxed">
-              Оперативный контроль мультиагентной системы Antigravity. Многоступенчатые шлюзы качества (L1–L4), 
-              автономный триаж Директора, предпусковой Legal Gate (Gate 2b) и протокол ручной эскалации к Gemini 4 Argon.
+              {t('overview.concurrencyLimitDesc')} • {t('overview.retryPolicyDesc')}
             </p>
           </div>
 
@@ -213,7 +215,7 @@ export const Overview: React.FC<OverviewProps> = ({
               className="refero-btn-secondary"
             >
               <Activity className="w-3.5 h-3.5 text-graphite" />
-              <span>Схема процессов</span>
+              <span>{t('nav.workflow')}</span>
             </button>
             <button
               type="button"
@@ -221,33 +223,33 @@ export const Overview: React.FC<OverviewProps> = ({
               className="refero-btn-primary"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Создать задачу</span>
+              <span>{t('tasks.newTask')}</span>
             </button>
           </div>
         </div>
 
-        {/* Полоса активной сессии и подтверждённых токенов */}
+        {/* Live Session Strip & Verified Tokens */}
         {liveSession && (
           <div className="mt-5 pt-4 border-t border-hairline flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
             <div className="flex flex-wrap items-center gap-2 font-mono text-charcoal">
-              <span className="text-slate">ID активной сессии:</span>
+              <span className="text-slate">Session ID:</span>
               <code className="text-obsidian font-semibold bg-surface-subtle px-2 py-0.5 rounded border border-hairline text-[11px]">
                 {liveSession.conversationId}
               </code>
               <span className="inline-flex items-center gap-1 text-terminal-green font-medium text-[11px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-terminal-green" />
-                Сессионный лок активен
+                {t('header.active')}
               </span>
             </div>
 
             {liveSession.tokenUsage && (
               <div className="flex flex-wrap items-center gap-3 font-mono text-charcoal text-[11px]">
-                <span className="text-slate">Подтверждённые токены:</span>
-                <span>Вход: <strong className="text-obsidian font-semibold">{liveSession.tokenUsage.input.toLocaleString()}</strong></span>
+                <span className="text-slate">{t('overview.tokenUsage')}:</span>
+                <span>{t('header.inTokens')}: <strong className="text-obsidian font-semibold">{liveSession.tokenUsage.input.toLocaleString()}</strong></span>
                 <span className="text-hairline">•</span>
-                <span>Выход: <strong className="text-obsidian font-semibold">{liveSession.tokenUsage.output.toLocaleString()}</strong></span>
+                <span>{t('header.outTokens')}: <strong className="text-obsidian font-semibold">{liveSession.tokenUsage.output.toLocaleString()}</strong></span>
                 <span className="text-hairline">•</span>
-                <span>Кэш: <strong className="text-obsidian font-semibold">{liveSession.tokenUsage.cacheRead.toLocaleString()}</strong></span>
+                <span>{t('overview.cacheRead')}: <strong className="text-obsidian font-semibold">{liveSession.tokenUsage.cacheRead.toLocaleString()}</strong></span>
                 <span className="badge-live text-[10px] py-0 px-1.5">TRANSCRIPT.JSONL</span>
               </div>
             )}
@@ -255,9 +257,9 @@ export const Overview: React.FC<OverviewProps> = ({
         )}
       </section>
 
-      {/* 2. KPI Cards Grid: Pure White, Hairline Borders, Geist Mono Values */}
+      {/* 2. KPI Cards Grid */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Карточка 1: Активные агенты */}
+        {/* Card 1: Active Agents */}
         <div 
           onClick={() => onNavigate('agents')}
           role="button"
@@ -266,7 +268,7 @@ export const Overview: React.FC<OverviewProps> = ({
           className="bg-pure border border-hairline hover:border-ash rounded-md p-4 shadow-subtle cursor-pointer transition-colors group focus-ring"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-stone">Специалисты команды</span>
+            <span className="text-xs font-medium text-stone">{t('overview.activeAgentsTitle')}</span>
             <div className="w-7 h-7 rounded-md bg-surface-subtle border border-hairline flex items-center justify-center text-charcoal group-hover:text-obsidian transition-colors">
               <Users className="w-3.5 h-3.5" />
             </div>
@@ -276,16 +278,16 @@ export const Overview: React.FC<OverviewProps> = ({
               {activeAgents.length}
             </span>
             <span className="text-xs text-slate font-mono">
-              / {agents.length} зарегистрировано
+              / {agents.length}
             </span>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-charcoal pt-3 border-t border-hairline">
-            <span>В пуле: {agents.filter(a => a.enabled).length} активно</span>
+            <span>{t('overview.activeAgentsDesc')}</span>
             <ArrowRight className="w-3.5 h-3.5 text-graphite group-hover:text-obsidian transition-colors" />
           </div>
         </div>
 
-        {/* Карточка 2: Задачи в работе */}
+        {/* Card 2: Tasks Queue */}
         <div 
           onClick={() => onNavigate('tasks')}
           role="button"
@@ -294,7 +296,7 @@ export const Overview: React.FC<OverviewProps> = ({
           className="bg-pure border border-hairline hover:border-ash rounded-md p-4 shadow-subtle cursor-pointer transition-colors group focus-ring"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-stone">Задачи в работе</span>
+            <span className="text-xs font-medium text-stone">{t('overview.pendingTasksTitle')}</span>
             <div className="w-7 h-7 rounded-md bg-surface-subtle border border-hairline flex items-center justify-center text-charcoal group-hover:text-obsidian transition-colors">
               <Clock className="w-3.5 h-3.5" />
             </div>
@@ -304,16 +306,16 @@ export const Overview: React.FC<OverviewProps> = ({
               {pendingTasks.length}
             </span>
             <span className="text-xs text-slate font-mono">
-              активных ({tasks.length} всего)
+              / {tasks.length}
             </span>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-charcoal pt-3 border-t border-hairline">
-            <span>Завершено: {completedTasks.length}</span>
+            <span>{t('overview.completedTasksTitle')}: {completedTasks.length}</span>
             <ArrowRight className="w-3.5 h-3.5 text-graphite group-hover:text-obsidian transition-colors" />
           </div>
         </div>
 
-        {/* Карточка 3: Шлюзы качества */}
+        {/* Card 3: Quality Gates */}
         <div 
           onClick={() => onNavigate('analytics')}
           role="button"
@@ -322,7 +324,7 @@ export const Overview: React.FC<OverviewProps> = ({
           className="bg-pure border border-hairline hover:border-ash rounded-md p-4 shadow-subtle cursor-pointer transition-colors group focus-ring"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-stone">Шлюзы качества</span>
+            <span className="text-xs font-medium text-stone">{t('overview.successRate')}</span>
             <div className="flex items-center gap-1.5">
               {analytics?.provenance === 'LIVE' || (analytics?.verifiedRealSessionsCount ?? 0) > 0 ? (
                 <span className="badge-live text-[10px] py-0 px-1.5">LIVE</span>
@@ -343,16 +345,16 @@ export const Overview: React.FC<OverviewProps> = ({
                     : '100%')}
             </span>
             <span className="text-xs text-slate font-mono">
-              ({analytics?.totalRuns ?? tasks.length} запусков)
+              ({analytics?.totalRuns ?? tasks.length} {t('overview.totalRuns').toLowerCase()})
             </span>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-charcoal pt-3 border-t border-hairline">
-            <span className="text-terminal-green font-medium">9-п. протокол верифицирован</span>
+            <span className="text-terminal-green font-medium">L1 / L2 Quality Gate</span>
             <ArrowRight className="w-3.5 h-3.5 text-graphite group-hover:text-obsidian transition-colors" />
           </div>
         </div>
 
-        {/* Карточка 4: Эскалации к Argon */}
+        {/* Card 4: Argon Escalations */}
         <div 
           onClick={() => onNavigate('control')}
           role="button"
@@ -361,7 +363,7 @@ export const Overview: React.FC<OverviewProps> = ({
           className="bg-pure border border-hairline hover:border-ash rounded-md p-4 shadow-subtle cursor-pointer transition-colors group focus-ring"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-stone">Эскалации (L3 / L4)</span>
+            <span className="text-xs font-medium text-stone">{t('overview.escalatedTasksTitle')}</span>
             <div className="w-7 h-7 rounded-md bg-argon-bg border border-argon-border flex items-center justify-center text-argon-text group-hover:scale-105 transition-transform">
               <Flame className="w-3.5 h-3.5" />
             </div>
@@ -371,12 +373,12 @@ export const Overview: React.FC<OverviewProps> = ({
               {escalatedTasks.length}
             </span>
             <span className="text-xs text-slate font-mono">
-              доля: {analytics?.escalationRate || 0}%
+              {analytics?.escalationRate || 0}%
             </span>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-charcoal pt-3 border-t border-hairline">
-            <span>Argon L4 готов</span>
-            <span className="badge-argon text-[10px] py-0 px-1.5">ПРОТОКОЛ L4</span>
+            <span>{t('nav.argonProtocol')}</span>
+            <span className="badge-argon text-[10px] py-0 px-1.5">{t('nav.argonProtocolBadge')}</span>
           </div>
         </div>
       </section>
@@ -390,7 +392,7 @@ export const Overview: React.FC<OverviewProps> = ({
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-obsidian" />
                 <h2 className="text-sm font-semibold text-obsidian tracking-tight">
-                  Недавние задачи и пайплайн
+                  {t('tasks.title')}
                 </h2>
               </div>
               <button
@@ -398,7 +400,7 @@ export const Overview: React.FC<OverviewProps> = ({
                 onClick={() => onNavigate('tasks')}
                 className="text-xs text-charcoal hover:text-obsidian font-medium flex items-center gap-1 transition-colors"
               >
-                <span>Все задачи ({tasks.length})</span>
+                <span>{t('tasks.filterAll')} ({tasks.length})</span>
                 <ArrowRight className="w-3 h-3 text-graphite" />
               </button>
             </div>
@@ -406,7 +408,7 @@ export const Overview: React.FC<OverviewProps> = ({
             {tasks.length === 0 ? (
               <div className="py-12 text-center text-slate space-y-2">
                 <Clock className="w-8 h-8 mx-auto text-ash" />
-                <p className="text-xs">Очередь задач пуста. Создайте новую задачу для запуска.</p>
+                <p className="text-xs">No tasks currently queued.</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -448,7 +450,7 @@ export const Overview: React.FC<OverviewProps> = ({
                       {task.report && (
                         <span className="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded bg-terminal-bg text-terminal-green border border-terminal-border">
                           <ShieldCheck className="w-3 h-3" />
-                          9-п. отчёт ✓
+                          {t('tasks.viewReport')} ✓
                         </span>
                       )}
                     </div>
@@ -459,14 +461,14 @@ export const Overview: React.FC<OverviewProps> = ({
           </div>
 
           <div className="mt-4 pt-3 border-t border-hairline flex items-center justify-between text-xs text-slate">
-            <span>Отображаются последние 5 задач</span>
+            <span>Recent 5 tasks</span>
             <button
               type="button"
               onClick={onOpenNewTask}
               className="refero-btn-secondary text-xs py-1 px-2.5"
             >
               <Plus className="w-3 h-3" />
-              <span>Добавить задачу</span>
+              <span>{t('tasks.newTask')}</span>
             </button>
           </div>
         </div>
@@ -481,7 +483,7 @@ export const Overview: React.FC<OverviewProps> = ({
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-terminal-green" />
                 </span>
                 <h2 className="text-sm font-semibold text-obsidian tracking-tight">
-                  Поток телеметрии
+                  {t('overview.liveEventFeed')}
                 </h2>
               </div>
               <button
@@ -489,7 +491,7 @@ export const Overview: React.FC<OverviewProps> = ({
                 onClick={() => onNavigate('events')}
                 className="text-xs text-charcoal hover:text-obsidian font-medium flex items-center gap-1 transition-colors"
               >
-                <span>Журнал</span>
+                <span>{t('overview.viewAllEvents')}</span>
                 <ArrowRight className="w-3 h-3 text-graphite" />
               </button>
             </div>
@@ -498,7 +500,7 @@ export const Overview: React.FC<OverviewProps> = ({
               {events.length === 0 ? (
                 <div className="py-12 text-center text-slate space-y-2">
                   <Terminal className="w-8 h-8 mx-auto text-ash" />
-                  <p className="text-xs font-mono">Ожидание входящих событий шины...</p>
+                  <p className="text-xs font-mono">Waiting for telemetry events...</p>
                 </div>
               ) : (
                 events.slice(0, 8).map(evt => (
@@ -521,7 +523,7 @@ export const Overview: React.FC<OverviewProps> = ({
 
                     {evt.agent_id && (
                       <div className="text-[11px] text-charcoal">
-                        Агент: <strong className="text-obsidian font-medium font-mono">@{evt.agent_id}</strong>
+                        Agent: <strong className="text-obsidian font-medium font-mono">@{evt.agent_id}</strong>
                       </div>
                     )}
 
@@ -536,8 +538,8 @@ export const Overview: React.FC<OverviewProps> = ({
           </div>
 
           <div className="mt-3 pt-3 border-t border-hairline text-[11px] font-mono text-slate flex justify-between items-center">
-            <span>Шина: WebSocket Online</span>
-            <span>{events.length} событий в буфере</span>
+            <span>Bus: WebSocket Online</span>
+            <span>{events.length} buffered</span>
           </div>
         </div>
       </section>

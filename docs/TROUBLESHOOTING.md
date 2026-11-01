@@ -1,6 +1,6 @@
 # Troubleshooting & Diagnostics Guide
 
-[English](TROUBLESHOOTING.md) • [Русский](TROUBLESHOOTING.ru.md)
+[English](TROUBLESHOOTING.md) • [Русский](TROUBLESHOOTING.ru.md) • [Español](TROUBLESHOOTING.es.md) • [Français](TROUBLESHOOTING.fr.md) • [Português](TROUBLESHOOTING.pt.md)
 
 This guide provides diagnostic procedures and actionable solutions for common issues encountered when running **Antigravity Apex**.
 

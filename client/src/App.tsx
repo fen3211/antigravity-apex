@@ -12,6 +12,7 @@ import { EventLog } from './components/EventLog.js';
 import { EscalationCenter } from './components/EscalationCenter.js';
 import { EscalationDetailModal } from './components/Modals/EscalationDetailModal.js';
 import { ToastProvider, toast } from './components/Toast.js';
+import { LanguageProvider } from './i18n/LanguageContext.js';
 
 import { PromptModal } from './components/Modals/PromptModal.js';
 import { ReportModal } from './components/Modals/ReportModal.js';
@@ -533,9 +534,11 @@ export function AppContent() {
 
 export function App() {
   return (
-    <ToastProvider>
+    <LanguageProvider>
+      <ToastProvider>
       <AppContent />
-    </ToastProvider>
+      </ToastProvider>
+    </LanguageProvider>
   );
 }
 

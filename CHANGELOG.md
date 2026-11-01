@@ -1,6 +1,6 @@
 # Changelog
 
-[English](CHANGELOG.md) • [Русский](CHANGELOG.ru.md)
+[English](CHANGELOG.md) • [Русский](CHANGELOG.ru.md) • [Español](CHANGELOG.es.md) • [Français](CHANGELOG.fr.md) • [Português](CHANGELOG.pt.md) • [简体中文](CHANGELOG.zh.md) • [日本語](CHANGELOG.ja.md) • [Deutsch](CHANGELOG.de.md)
 
 All notable changes to **Antigravity Apex** are documented in this file.
 
@@ -62,8 +62,26 @@ The initial production-grade release of **Antigravity Apex**, the premier multi-
 - Accessible contrast ratios (WCAG 2.1 AA), keyboard focus-visible rings, and mobile responsive drawer.
 
 #### 7. 1-Click Installation Ecosystem
-- Windows 1-Click desktop launcher [`setup.cmd`](setup.cmd) / [`setup.bat`](setup.bat).
-- Linux / macOS 1-Click launcher [`setup.sh`](setup.sh).
-- Remote terminal one-liners `scripts/get.ps1` and `scripts/get.sh`.
-- In-App `⚡ 1-Click Setup` button in the dashboard for instant deployment and synchronization of all 17 agents into Antigravity.
-- Cloud 1-click sandbox via `.devcontainer/devcontainer.json` for GitHub Codespaces.
+- **Standalone Windows .EXE Installer**: [`Antigravity-Apex-Setup.exe`](https://github.com/fen3211/antigravity-apex/releases/latest/download/Antigravity-Apex-Setup.exe) (v1.0.0) — fully automated 1-click native setup requiring zero CLI and zero Git (verifies Node.js, fetches repository, deploys 17 agents, executes Doctor, and launches browser).
+- **Installer Build Automation**: [`scripts/installer/build.ps1`](scripts/installer/build.ps1) and C# source [`scripts/installer/Program.cs`](scripts/installer/Program.cs).
+- **Desktop Launchers**: [`setup.cmd`](setup.cmd) / [`setup.bat`](setup.bat) (Windows) and [`setup.sh`](setup.sh) (Linux/macOS).
+- **Quick Daily Launchers**: [`start.cmd`](start.cmd) / [`start.bat`](start.bat) and [`start.sh`](start.sh).
+- **Specialist Suite Installers**: [`scripts/install.ps1`](scripts/install.ps1) (PowerShell) and [`scripts/install.sh`](scripts/install.sh) (Bash) deploying agents, rules, and skills into `~/.gemini/config/plugins/ai-director`.
+- **System Doctor Engine**: [`scripts/doctor.js`](scripts/doctor.js) (`npm run doctor`) — 19 automated subsystem diagnostic checks.
+- **Remote Terminal One-Liners**: [`scripts/get.ps1`](scripts/get.ps1) (`irm ... | iex`) and [`scripts/get.sh`](scripts/get.sh) (`curl ... | bash`).
+- **In-App 1-Click Sync**: **`⚡ 1-Click Setup`** button in the header and **`1-Click Sync Antigravity`** on the Agents page.
+- **Cloud 1-Click Sandbox**: [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) for GitHub Codespaces.
+
+#### 8. Multilingual Internationalization (8 Languages)
+- Native support for 8 languages in web dashboard and technical documentation:
+  - 🇬🇧 English (Primary / Default)
+  - 🇷🇺 Russian
+  - 🇪🇸 Spanish
+  - 🇫🇷 French
+  - 🇵🇹 Portuguese
+  - 🇨🇳 Simplified Chinese
+  - 🇯🇵 Japanese
+  - 🇩🇪 German
+- Header language switcher dropdown with emoji flags and active language indicator.
+- Interactive language card selector in Settings (`ControlCenter`) with persistent `localStorage` synchronization.
+- Complete parallel documentation suite across all 8 languages.

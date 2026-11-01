@@ -1,4 +1,4 @@
-[English](AGENTS.md) • [Русский](AGENTS.ru.md)
+[English](AGENTS.md) • [Русский](AGENTS.ru.md) • [Español](AGENTS.es.md) • [Français](AGENTS.fr.md) • [Português](AGENTS.pt.md)
 
 # Спецификация пула специалистов из 17 ролей
 

@@ -1,6 +1,6 @@
 # Руководство по установке и настройке
 
-[English](INSTALLATION.md) • [Русский](INSTALLATION.ru.md)
+[English](INSTALLATION.md) • [Русский](INSTALLATION.ru.md) • [Español](INSTALLATION.es.md) • [Français](INSTALLATION.fr.md) • [Português](INSTALLATION.pt.md)
 
 Это подробное пошаговое руководство по установке и настройке **Antigravity Apex** в операционных системах **Windows**, **macOS** и **Linux**, включая установку одной кнопкой, однострочники для терминала и ручной запуск.
 

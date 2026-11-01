@@ -1,6 +1,6 @@
 # Installation & Setup Guide
 
-[English](INSTALLATION.md) • [Русский](INSTALLATION.ru.md)
+[English](INSTALLATION.md) • [Русский](INSTALLATION.ru.md) • [Español](INSTALLATION.es.md) • [Français](INSTALLATION.fr.md) • [Português](INSTALLATION.pt.md)
 
 This guide provides detailed, step-by-step instructions for installing and setting up **Antigravity Apex** across **Windows**, **macOS**, and **Linux** environments, including 1-click launchers, terminal one-liners, and manual setups.
 

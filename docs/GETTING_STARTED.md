@@ -1,6 +1,6 @@
 # Getting Started with Antigravity Apex
 
-[English](GETTING_STARTED.md) • [Русский](GETTING_STARTED.ru.md)
+[English](GETTING_STARTED.md) • [Русский](GETTING_STARTED.ru.md) • [Español](GETTING_STARTED.es.md) • [Français](GETTING_STARTED.fr.md) • [Português](GETTING_STARTED.pt.md)
 
 Welcome to **Antigravity Apex**, the mission-control dashboard for **Google Antigravity** and the **AI Development Director** multi-agent orchestration framework.
 

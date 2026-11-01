@@ -1,6 +1,6 @@
 # Журнал изменений (Changelog)
 
-[English](CHANGELOG.md) • [Русский](CHANGELOG.ru.md)
+[English](CHANGELOG.md) • [Русский](CHANGELOG.ru.md) • [Español](CHANGELOG.es.md) • [Français](CHANGELOG.fr.md) • [Português](CHANGELOG.pt.md) • [简体中文](CHANGELOG.zh.md) • [日本語](CHANGELOG.ja.md) • [Deutsch](CHANGELOG.de.md)
 
 Все значимые изменения в проекте **Antigravity Apex** документируются в этом файле.
 
@@ -54,8 +54,27 @@
 - Нативная поддержка светлой темы Paper White и тёмной темы Obsidian Black.
 - Доступность по WCAG 2.1 AA и мобильное адаптивное меню.
 
-#### 7. Установка одной кнопкой (1-Click Ecosystem)
-- Лаунчеры рабочего стола `setup.cmd` / `setup.bat` (Windows) и `setup.sh` (Linux/macOS).
-- Удаленные однострочники `scripts/get.ps1` и `scripts/get.sh`.
-- Кнопка **`⚡ 1-Click Setup`** прямо в веб-интерфейсе для автоматического развертывания и синхронизации всех 17 агентов в Antigravity.
-- Готовый контейнер `.devcontainer/devcontainer.json` для мгновенного запуска в GitHub Codespaces.
+#### 7. Экосистема установки одной кнопкой (1-Click Installation)
+- **Автономный Windows .EXE установщик**: [`Antigravity-Apex-Setup.exe`](https://github.com/fen3211/antigravity-apex/releases/latest/download/Antigravity-Apex-Setup.exe) (v1.0.0) — полная автоматическая установка в один клик без консоли и без Git (проверка Node.js, скачивание репозитория, развертывание 17 агентов, запуск Doctor и открытие браузера).
+- **Скрипт сборки инсталлятора**: [`scripts/installer/build.ps1`](scripts/installer/build.ps1) и исходный код на C# [`scripts/installer/Program.cs`](scripts/installer/Program.cs).
+- **Лаунчеры рабочего стола**: двойной клик по [`setup.cmd`](setup.cmd) / [`setup.bat`](setup.bat) (Windows) или запуск [`setup.sh`](setup.sh) (Linux/macOS).
+- **Быстрые ежедневные лаунчеры**: [`start.cmd`](start.cmd) / [`start.bat`](start.bat) и [`start.sh`](start.sh).
+- **Скрипты развертывания 17 специалистов**: [`scripts/install.ps1`](scripts/install.ps1) (PowerShell) и [`scripts/install.sh`](scripts/install.sh) (Bash) для прямой установки правил и навыков в `~/.gemini/config/plugins/ai-director`.
+- **Встроенная диагностика Doctor (19 проверок)**: [`scripts/doctor.js`](scripts/doctor.js) (`npm run doctor`) для мгновенного аудита готовности окружения и SQLite.
+- **Удаленные однострочники в терминале**: [`scripts/get.ps1`](scripts/get.ps1) (`irm ... | iex`) и [`scripts/get.sh`](scripts/get.sh) (`curl ... | bash`).
+- **Синхронизация из веб-интерфейса**: кнопка **`⚡ 1-Click Setup`** в шапке и кнопка **`1-Click Sync Antigravity`** на странице агентов для мгновенного развертывания конфигураций.
+- **Облачный запуск в один клик**: готовый контейнер [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) для GitHub Codespaces.
+
+#### 8. Интернационализация (i18n) на 8 языков
+- Полноценная поддержка 8 языков в веб-интерфейсе и документации:
+  - 🇬🇧 English (Основной / Primary default)
+  - 🇷🇺 Русский
+  - 🇪🇸 Español
+  - 🇫🇷 Français
+  - 🇵🇹 Português
+  - 🇨🇳 简体中文
+  - 🇯🇵 日本語
+  - 🇩🇪 Deutsch
+- Выпадающий переключатель языков в шапке (`Header`) с флагами стран.
+- Интерактивная панель выбора языка в настройках (`ControlCenter`) с сохранением в `localStorage`.
+- Полная параллельная документация на всех 8 языках.

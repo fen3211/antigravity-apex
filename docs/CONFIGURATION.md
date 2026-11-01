@@ -1,4 +1,4 @@
-[English](CONFIGURATION.md) • [Русский](CONFIGURATION.ru.md)
+[English](CONFIGURATION.md) • [Русский](CONFIGURATION.ru.md) • [Español](CONFIGURATION.es.md) • [Français](CONFIGURATION.fr.md) • [Português](CONFIGURATION.pt.md)
 
 # Configuration Reference
 

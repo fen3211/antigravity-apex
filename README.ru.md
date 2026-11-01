@@ -25,7 +25,18 @@
   <a href="#-архитектура-и-параллелизм">Архитектура</a> •
   <a href="#-эскалация-к-gemini-4-argon">Эскалация Argon</a> •
   <a href="#-диагностика-системы-doctor">Диагностика Doctor</a> •
-  <a href="README.md">🇬🇧 English version</a>
+</p>
+
+<p align="center">
+  🌐 <b>Языки:</b>
+  <a href="README.md">English</a> •
+  <a href="README.ru.md">Русский</a> •
+  <a href="README.es.md">Español</a> •
+  <a href="README.fr.md">Français</a> •
+  <a href="README.pt.md">Português</a> •
+  <a href="README.zh.md">简体中文</a> •
+  <a href="README.ja.md">日本語</a> •
+  <a href="README.de.md">Deutsch</a>
 </p>
 
 > 🌟 **Поддержите проект звездой на GitHub!**

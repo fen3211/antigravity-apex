@@ -1,6 +1,6 @@
 # Frequently Asked Questions (FAQ)
 
-[English](FAQ.md) • [Русский](FAQ.ru.md)
+[English](FAQ.md) • [Русский](FAQ.ru.md) • [Español](FAQ.es.md) • [Français](FAQ.fr.md) • [Português](FAQ.pt.md)
 
 This document answers common technical, architectural, and operational questions about **Antigravity Apex**.
 

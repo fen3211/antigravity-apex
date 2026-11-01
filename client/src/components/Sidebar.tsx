@@ -7,10 +7,11 @@ import {
   CheckSquare, 
   Brain, 
   Sliders, 
-  Radio,
-  Flame,
-  X
+  Radio, 
+  Flame, 
+  X 
 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext.js';
 
 export type NavTab = 
   | 'overview' 
@@ -18,7 +19,7 @@ export type NavTab =
   | 'workflow' 
   | 'analytics' 
   | 'tasks' 
-  | 'escalations'
+  | 'escalations' 
   | 'memory' 
   | 'control' 
   | 'events';
@@ -42,16 +43,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen = false,
   onClose
 }) => {
-  const navItems: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }>; badge?: number | string; badgeColor?: string }[] = [
-    { id: 'overview', label: 'Mission Control', icon: LayoutDashboard },
-    { id: 'agents', label: 'Agents', icon: Users, badge: '17' },
-    { id: 'workflow', label: 'Orchestration', icon: GitBranch },
-    { id: 'tasks', label: 'Task Queue', icon: CheckSquare, badge: pendingTasksCount > 0 ? pendingTasksCount : undefined, badgeColor: 'bg-obsidian text-pure' },
-    { id: 'escalations', label: 'Argon Escalations', icon: Flame, badge: activeEscalationsCount > 0 ? `${activeEscalationsCount}` : undefined, badgeColor: 'bg-danger text-pure animate-pulse' },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'memory', label: 'Memory & Rules', icon: Brain, badge: '8 docs' },
-    { id: 'events', label: 'Events Feed', icon: Radio, badge: liveEventsCount > 0 ? `${liveEventsCount}` : undefined, badgeColor: 'bg-terminal-bg text-terminal-green border border-terminal-border' },
-    { id: 'control', label: 'Configuration', icon: Sliders }
+  const { t } = useLanguage();
+
+  const navItems: { 
+    id: NavTab; 
+    label: string; 
+    icon: React.ComponentType<{ className?: string }>; 
+    badge?: number | string; 
+    badgeColor?: string 
+  }[] = [
+    { id: 'overview', label: t('nav.overview'), icon: LayoutDashboard },
+    { id: 'agents', label: t('nav.agents'), icon: Users, badge: '17' },
+    { id: 'workflow', label: t('nav.workflow'), icon: GitBranch },
+    { id: 'tasks', label: t('nav.tasks'), icon: CheckSquare, badge: pendingTasksCount > 0 ? pendingTasksCount : undefined, badgeColor: 'bg-obsidian text-pure' },
+    { id: 'escalations', label: t('nav.escalations'), icon: Flame, badge: activeEscalationsCount > 0 ? `${activeEscalationsCount}` : undefined, badgeColor: 'bg-danger text-pure animate-pulse' },
+    { id: 'analytics', label: t('nav.analytics'), icon: BarChart3 },
+    { id: 'memory', label: t('nav.memory'), icon: Brain, badge: '8 docs' },
+    { id: 'events', label: t('nav.events'), icon: Radio, badge: liveEventsCount > 0 ? `${liveEventsCount}` : undefined, badgeColor: 'bg-terminal-bg text-terminal-green border border-terminal-border' },
+    { id: 'control', label: t('nav.control'), icon: Sliders }
   ];
 
   // Close on Escape when mobile menu is active
@@ -108,7 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <div>
             <div className="text-[11px] font-mono uppercase tracking-wider text-stone px-2.5 mb-1.5">
-              Workspace
+              {t('nav.workspace')}
             </div>
             <nav className="space-y-0.5">
               {navItems.map((item) => {
@@ -151,14 +160,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center justify-between text-xs font-medium text-obsidian">
               <div className="flex items-center gap-1.5">
                 <Flame className="w-3.5 h-3.5 text-argon-text" />
-                <span>Argon Protocol</span>
+                <span>{t('nav.argonProtocol')}</span>
               </div>
               <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-argon-bg text-argon-text border border-argon-border">
-                L4 Prompt Pack
+                {t('nav.argonProtocolBadge')}
               </span>
             </div>
             <p className="mt-1 text-[11px] text-stone leading-relaxed">
-              Manual verification protocol to Gemini 4 Argon with specialist de-escalation.
+              {t('nav.argonProtocolDesc')}
             </p>
           </div>
         </div>
@@ -166,16 +175,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Minimal Footer System Info */}
         <div className="pt-3 border-t border-hairline text-[11px] text-stone space-y-1 font-mono">
           <div className="flex justify-between items-center">
-            <span>Engine</span>
+            <span>{t('nav.engine')}</span>
             <span className="text-obsidian font-medium">Antigravity 2.0</span>
           </div>
           <div className="flex justify-between items-center">
-            <span>Concurrency</span>
-            <span className="text-obsidian font-medium">6 subagents</span>
+            <span>{t('nav.concurrency')}</span>
+            <span className="text-obsidian font-medium">{t('nav.concurrencySubagents')}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span>Boundary</span>
-            <span className="text-terminal-green font-medium">Localhost Only</span>
+            <span>{t('nav.boundary')}</span>
+            <span className="text-terminal-green font-medium">{t('nav.boundaryLocal')}</span>
           </div>
         </div>
       </aside>

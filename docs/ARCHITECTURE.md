@@ -1,4 +1,4 @@
-[English](ARCHITECTURE.md) • [Русский](ARCHITECTURE.ru.md)
+[English](ARCHITECTURE.md) • [Русский](ARCHITECTURE.ru.md) • [Español](ARCHITECTURE.es.md) • [Français](ARCHITECTURE.fr.md) • [Português](ARCHITECTURE.pt.md)
 
 # System Architecture
 
