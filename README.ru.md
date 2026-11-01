@@ -6,6 +6,8 @@
 
 ### Центр управления мультиагентной системой и телеметрии для Google Antigravity
 
+[![GitHub Stars](https://img.shields.io/github/stars/fen3211/ai-command-center?style=social)](https://github.com/fen3211/ai-command-center/stargazers)
+[![Скачать EXE](https://img.shields.io/badge/Скачать-AI--Command--Center--Setup.exe-10B981.svg?logo=windows)](https://github.com/fen3211/ai-command-center/releases/latest/download/AI-Command-Center-Setup.exe)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![React 19](https://img.shields.io/badge/React-19.3-61dafb.svg)](https://react.dev/)
@@ -26,6 +28,9 @@
   <a href="README.md">🇬🇧 English version</a>
 </p>
 
+> 🌟 **Поддержите проект звездой на GitHub!**
+> Если вам полезен **AI Command Center**, пожалуйста, **[поставьте звезду нашему репозиторию](https://github.com/fen3211/ai-command-center/stargazers)**! Это займет ровно одну секунду, мотивирует развивать Antigravity-экосистему и помогает другим разработчикам находить готовые инструменты для мультиагентной оркестрации.
+
 </div>
 
 ---
@@ -41,6 +46,15 @@
 ## ⚡ Установка одной кнопкой (1-Click)
 
 Выберите наиболее удобный способ установки и запуска — **буквально в один клик или в одну команду**:
+
+### Способ 0: Автономный Windows .EXE установщик (Без консоли и без Git)
+Просто скачайте скомпилированный нативный установщик из раздела GitHub Releases:
+
+👉 **[Скачать AI-Command-Center-Setup.exe (v1.0.0)](https://github.com/fen3211/ai-command-center/releases/latest/download/AI-Command-Center-Setup.exe)**
+
+Запустите скачанный файл двойным кликом. Он автоматически проверит Node.js, скачает или подготовит репозиторий, установит 17 специализированных агентов в `~/.gemini`, выполнит диагностику Doctor, запустит сервер и откроет дашборд в вашем браузере!
+
+---
 
 ### Способ 1: Windows 1-Click лаунчер на рабочем столе (Без консоли)
 Если репозиторий уже скачан или клонирован:
@@ -223,7 +237,7 @@ npm run doctor
 ```text
 =======================================================================
        AI COMMAND CENTER - SYSTEM DIAGNOSTICS & HEALTH CHECK           
-=======================================================================
+======================================================================
 
 === 1. Runtime & Environment ===
   [✓] Node.js v24.20.0 (Требуется >= 18.0.0)
@@ -334,6 +348,20 @@ ai-command-center/
 - **Запрет несанкционированного деплоя**: Агентам и скриптам категорически запрещено выполнять релизы на production-серверы без подтверждения оператора.
 
 Подробнее в документе [SECURITY.md](SECURITY.md).
+
+---
+
+## ⭐ Поддержите проект звездой!
+
+Если вам нравится **AI Command Center** и возможности мультиагентной оркестрации Google Antigravity, **поставьте проекту звезду на GitHub!** ⭐
+
+<div align="center">
+
+[![Поставить звезду на GitHub](https://img.shields.io/badge/⭐_Поставить_звезду_на_GitHub-yellow?style=for-the-badge&logo=github)](https://github.com/fen3211/ai-command-center/stargazers)
+
+*Каждая звезда помогает развивать сообщество Antigravity и ускоряет выход новых фичей!*
+
+</div>
 
 ---
 
