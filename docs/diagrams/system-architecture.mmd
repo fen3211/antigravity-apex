@@ -1,0 +1,164 @@
+flowchart TB
+    %% ==========================================
+    %% AI COMMAND CENTER - SYSTEM ARCHITECTURE
+    %% ==========================================
+
+    subgraph PRESENTATION["Presentation Layer (Client SPA)"]
+        direction TB
+        USER(["User / Lead Architect"]):::userNode
+        
+        subgraph REACT_APP["React 19 Dashboard (Vite + Tailwind Glass)"]
+            direction TB
+            VIEWS["UI Views:
+            - Overview & KPI Dashboard
+            - Agent Management Grid
+            - Live Workflow Canvas
+            - Task Manager (Kanban & Table)
+            - Memory Explorer (Knowledge Docs)
+            - Model Analytics (Tokens & Runs)
+            - Unified Event Log
+            - Control Center & Argon Pack"]
+            
+            subgraph CLIENT_COMM["Client Communication Layer"]
+                REST_CLIENT["REST Client (fetchJson)
+                Auto-Token Ingestion"]
+                WS_CLIENT["EventStreamClient
+                WebSocket FSM (Heartbeat & Reconnect)"]
+            end
+        end
+        
+        USER <-->|"Interactions / Inspection"| VIEWS
+        VIEWS --> REST_CLIENT
+        VIEWS <--> WS_CLIENT
+    end
+
+    subgraph BACKEND_GATEWAY["Backend Server (Node.js + Express @ 127.0.0.1:3001)"]
+        direction TB
+        
+        subgraph GUARDS["Ingress Security Boundary"]
+            CORS_GUARD["CORS Guard
+            (Strict Origin Whitelist)"]
+            AUTH_GUARD["Auth Middleware
+            (Timing-Safe Bearer / x-api-key)"]
+            WS_GUARD["WS Origin & Token Verifier
+            (64KB Payload Limiter)"]
+        end
+
+        subgraph ROUTERS["API & Event Delivery"]
+            API_ROUTER["Express API Router (/api/*)
+            - /tasks, /agents, /events
+            - /analytics, /knowledge
+            - /control/settings, /control/run-prompt
+            - /control/escalate-argon, /control/argon-verdict
+            - /legal/evaluate, /legal/assess, /legal/reconcile"]
+            WSS["WebSocket Server (/ws)
+            (Broadcast & Realtime Telemetry)"]
+        end
+
+        subgraph CORE_SERVICES["Core Services & Supervisors"]
+            CTRL_SVC["ControlService
+            (Settings & Argon Escalation)"]
+            LEGAL_SVC["LegalGateService
+            (Gate 2b: RF/EU Compliance Engine)"]
+            TASK_MGR["TaskManager
+            (Lifecycle, Stage FSM, Retry Policy)"]
+            ANALYTICS_SVC["AnalyticsService
+            (Token Aggregation & Provenance)"]
+            PROC_SUP["TaskProcessSupervisor
+            (Concurrency Pool max 6, Tree Isolation)"]
+            EVENT_BUS["EventBus
+            (In-Memory Pub/Sub & Persistence Hook)"]
+        end
+
+        subgraph INGESTION_ENGINE["Ingestion Pipeline"]
+            AGY_BRIDGE["AntigravityBridge
+            (Chokidar FS Watcher & CLI Bridge)"]
+            INGEST_Q["IngestionQueue
+            (Serialized Async Queue & Deduplication)"]
+            STREAM_RDR["JsonlStreamReader
+            (64KB Quantums, UTF-8 StringDecoder,
+            Rotation & Malformed Recovery)"]
+        end
+    end
+
+    subgraph STORAGE_LAYER["Persistence Engine (SQLite WAL)"]
+        direction TB
+        DB[("better-sqlite3 Database
+        journal_mode = WAL
+        busy_timeout = 5000ms
+        foreign_keys = ON")]:::dbNode
+        
+        TABLES["Relational Schema:
+        - tasks (Lifecycle, Stage, 9-Point Reports)
+        - events (Unified Event Stream, Indexed)
+        - settings (Control Policies, Limits)
+        - model_usage (Tokens, Provenance, Runs)
+        - session_token_usage (Per-session Tokens)
+        - log_parse_state (Offsets, Inodes, Mtime)"]
+        
+        DB --- TABLES
+    end
+
+    subgraph ANTIGRAVITY_SUBSYSTEM["Antigravity Ecosystem (Local Host)"]
+        direction TB
+        AGY_CLI["agy.exe CLI Binary
+        (%LOCALAPPDATA%/agy/bin/agy.exe)"]:::extNode
+        
+        AGY_BRAIN["Antigravity Brain Logs
+        (~/.gemini/antigravity/brain/*/
+        .system_generated/logs/transcript.jsonl)"]:::fileNode
+        
+        AGY_PRESENCE["Presence Locks
+        (~/.gemini/antigravity/presence/*.lock)"]:::fileNode
+        
+        AGY_KNOWLEDGE["Director Knowledge Base
+        (~/.gemini/antigravity/knowledge/ai-director/*.md)"]:::fileNode
+        
+        AGY_PLUGINS["AI Director Plugin
+        (~/.gemini/config/plugins/ai-director/
+        agents/*.md & rules/*.md)"]:::fileNode
+    end
+
+    %% Communication Flow
+    REST_CLIENT -->|"HTTP REST Requests"| CORS_GUARD
+    CORS_GUARD --> AUTH_GUARD
+    AUTH_GUARD --> API_ROUTER
+    
+    WS_CLIENT <-->|"WebSocket Handshake & Frame Stream"| WS_GUARD
+    WS_GUARD <--> WSS
+
+    API_ROUTER --> TASK_MGR
+    API_ROUTER --> CTRL_SVC
+    API_ROUTER --> LEGAL_SVC
+    API_ROUTER --> ANALYTICS_SVC
+    API_ROUTER --> PROC_SUP
+    API_ROUTER --> AGY_BRIDGE
+
+    TASK_MGR <-->|"Atomic Read/Write"| DB
+    CTRL_SVC <-->|"Settings Read/Write"| DB
+    LEGAL_SVC -->|"Audit Events"| EVENT_BUS
+    ANALYTICS_SVC <-->|"Aggregate Metrics"| DB
+    INGEST_Q <-->|"Atomic Batch Insert & Offset Save"| DB
+    EVENT_BUS -->|"Insert Event"| DB
+
+    PROC_SUP -->|"Spawn Managed Task"| AGY_CLI
+    PROC_SUP -->|"Kill Process Tree (taskkill /T /F)"| AGY_CLI
+    PROC_SUP -->|"Status / Output Updates"| EVENT_BUS
+
+    EVENT_BUS -->|"Realtime Publish"| WSS
+    TASK_MGR -->|"Stage / Status Events"| EVENT_BUS
+    INGEST_Q -->|"Transcript Events"| EVENT_BUS
+
+    AGY_BRAIN -.->|"File Modify Event"| AGY_BRIDGE
+    AGY_PRESENCE -.->|"Add/Unlink Event"| AGY_BRIDGE
+    AGY_BRIDGE -->|"Read Specs"| AGY_PLUGINS
+    AGY_BRIDGE <-->|"Read / Write Docs"| AGY_KNOWLEDGE
+    AGY_BRIDGE -->|"Enqueue Transcript Path"| INGEST_Q
+    INGEST_Q -->|"Quantum Read (64KB)"| STREAM_RDR
+    STREAM_RDR -->|"Read Stream Bytes"| AGY_BRAIN
+
+    %% Class styles
+    classDef userNode fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#ffffff;
+    classDef dbNode fill:#10b981,stroke:#047857,stroke-width:2px,color:#ffffff;
+    classDef extNode fill:#8b5cf6,stroke:#6d28d9,stroke-width:2px,color:#ffffff;
+    classDef fileNode fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#ffffff;

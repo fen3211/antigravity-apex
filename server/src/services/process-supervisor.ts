@@ -45,6 +45,20 @@ export class TaskProcessSupervisor {
     agentName: string = 'director',
     timeoutMs: number = 120000
   ): Promise<ManagedProcess> {
+    // Defense-in-depth: Strict input validation
+    if (!taskId || !/^[a-zA-Z0-9_-]{1,100}$/.test(taskId)) {
+      throw new Error(`Invalid taskId format: "${taskId}"`);
+    }
+    if (!agentName || !/^[a-zA-Z0-9_-]{1,64}$/.test(agentName)) {
+      throw new Error(`Invalid agentName format: "${agentName}"`);
+    }
+    const settings = controlService.getSettings();
+    if (!settings.allowedAgents.includes(agentName)) {
+      throw new Error(`Agent "${agentName}" is not in the allowed agents whitelist`);
+    }
+    if (typeof prompt !== 'string' || prompt.trim().length === 0) {
+      throw new Error('Prompt cannot be empty');
+    }
     const existing = this.processes.get(taskId);
     if (existing && (existing.state === 'STARTING' || existing.state === 'RUNNING' || existing.state === 'QUEUED')) {
       return existing;

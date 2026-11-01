@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { CheckCircle2, AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -65,7 +65,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const warning = useCallback((message: string, title?: string) => showToast(message, 'warning', title), [showToast]);
   const info = useCallback((message: string, title?: string) => showToast(message, 'info', title), [showToast]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     globalShowToast = showToast;
     return () => {
       globalShowToast = null;
@@ -88,30 +88,30 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             <div
               key={t.id}
               role="alert"
-              className={`pointer-events-auto rounded-xl p-3.5 backdrop-blur-deep border shadow-glass-card transition-all duration-300 flex items-start gap-3 ${
+              className={`pointer-events-auto bg-pure border rounded-md p-3.5 shadow-modal transition-all duration-200 flex items-start gap-3 border-hairline ${
                 isSuccess
-                  ? 'bg-emerald-950/85 border-emerald-500/30 text-emerald-200'
+                  ? 'border-l-4 border-l-terminal-green'
                   : isError
-                  ? 'bg-rose-950/85 border-rose-500/30 text-rose-200'
+                  ? 'border-l-4 border-l-danger-text'
                   : isWarning
-                  ? 'bg-amber-950/85 border-amber-500/30 text-amber-200'
-                  : 'bg-surface-panel/95 border-white/15 text-slate-200'
+                  ? 'border-l-4 border-l-warning-text'
+                  : 'border-l-4 border-l-info-text'
               }`}
             >
               <div className="shrink-0 mt-0.5">
-                {isSuccess && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                {isError && <AlertCircle className="w-4 h-4 text-rose-400" />}
-                {isWarning && <AlertTriangle className="w-4 h-4 text-amber-400" />}
-                {!isSuccess && !isError && !isWarning && <Info className="w-4 h-4 text-director-cyan" />}
+                {isSuccess && <CheckCircle2 className="w-4 h-4 text-terminal-green" />}
+                {isError && <AlertCircle className="w-4 h-4 text-danger-text" />}
+                {isWarning && <AlertTriangle className="w-4 h-4 text-warning-text" />}
+                {!isSuccess && !isError && !isWarning && <Info className="w-4 h-4 text-info-text" />}
               </div>
 
               <div className="flex-1 min-w-0">
                 {t.title && (
-                  <h4 className="text-xs font-bold tracking-tight text-white mb-0.5">
+                  <h4 className="text-xs font-semibold tracking-tight text-obsidian mb-0.5">
                     {t.title}
                   </h4>
                 )}
-                <p className="text-xs leading-relaxed break-words opacity-95">
+                <p className="text-xs text-charcoal leading-relaxed break-words">
                   {t.message}
                 </p>
               </div>
@@ -120,7 +120,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 type="button"
                 onClick={() => removeToast(t.id)}
                 aria-label="Закрыть уведомление"
-                className="shrink-0 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+                className="shrink-0 text-graphite hover:text-obsidian p-1 rounded hover:bg-surface-subtle transition-colors focus-ring"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

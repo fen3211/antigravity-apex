@@ -7,50 +7,79 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      screens: {
+        xs: '480px',
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
+        '2xl': '1440px',
+      },
       colors: {
-        background: '#090A0F',
+        paper: 'rgb(var(--color-paper) / <alpha-value>)',
+        pure: 'rgb(var(--color-pure) / <alpha-value>)',
         surface: {
-          50: 'rgba(255, 255, 255, 0.03)',
-          100: 'rgba(255, 255, 255, 0.05)',
-          200: 'rgba(255, 255, 255, 0.08)',
-          300: 'rgba(255, 255, 255, 0.12)',
-          card: 'rgba(18, 20, 29, 0.65)',
-          panel: 'rgba(13, 15, 22, 0.8)',
+          subtle: 'rgb(var(--color-surface-subtle) / <alpha-value>)',
+          hover: 'rgb(var(--color-surface-hover) / <alpha-value>)',
+          active: 'rgb(var(--color-surface-active) / <alpha-value>)',
         },
-        director: {
-          blue: '#3b82f6',
-          cyan: '#06b6d4',
-          emerald: '#10b981',
-          amber: '#f59e0b',
-          rose: '#f43f5e',
-          violet: '#8b5cf6',
-          argon: '#ec4899',
+        obsidian: 'rgb(var(--color-obsidian) / <alpha-value>)',
+        charcoal: 'rgb(var(--color-charcoal) / <alpha-value>)',
+        stone: 'rgb(var(--color-stone) / <alpha-value>)',
+        slate: 'rgb(var(--color-slate) / <alpha-value>)',
+        graphite: 'rgb(var(--color-graphite) / <alpha-value>)',
+        smoke: 'rgb(var(--color-smoke) / <alpha-value>)',
+        ash: 'rgb(var(--color-ash) / <alpha-value>)',
+        hairline: 'rgb(var(--color-hairline) / <alpha-value>)',
+        // Refero status tokens
+        terminal: {
+          green: 'rgb(var(--color-terminal-green) / <alpha-value>)',
+          bg: 'rgb(var(--color-terminal-bg) / <alpha-value>)',
+          border: 'rgb(var(--color-terminal-border) / <alpha-value>)',
+        },
+        warning: {
+          text: 'rgb(var(--color-warning-text) / <alpha-value>)',
+          bg: 'rgb(var(--color-warning-bg) / <alpha-value>)',
+          border: 'rgb(var(--color-warning-border) / <alpha-value>)',
+        },
+        danger: {
+          text: 'rgb(var(--color-danger-text) / <alpha-value>)',
+          bg: 'rgb(var(--color-danger-bg) / <alpha-value>)',
+          border: 'rgb(var(--color-danger-border) / <alpha-value>)',
+        },
+        info: {
+          text: 'rgb(var(--color-info-text) / <alpha-value>)',
+          bg: 'rgb(var(--color-info-bg) / <alpha-value>)',
+          border: 'rgb(var(--color-info-border) / <alpha-value>)',
+        },
+        argon: {
+          text: 'rgb(var(--color-argon-text) / <alpha-value>)',
+          bg: 'rgb(var(--color-argon-bg) / <alpha-value>)',
+          border: 'rgb(var(--color-argon-border) / <alpha-value>)',
         }
       },
-      backdropBlur: {
-        xs: '2px',
-        glass: '16px',
-        deep: '24px',
+      borderRadius: {
+        'xs': '4px',
+        'sm': '4px',
+        'md': '6px',
+        'lg': '8px',
       },
       boxShadow: {
-        'glass-subtle': '0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.08)',
-        'glass-card': '0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12)',
-        'glass-active': '0 0 25px rgba(59, 130, 246, 0.25), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2)',
-        'glow-emerald': '0 0 20px -3px rgba(16, 185, 129, 0.4)',
-        'glow-argon': '0 0 25px -2px rgba(236, 72, 153, 0.45)',
-        'glow-amber': '0 0 20px -3px rgba(245, 158, 11, 0.35)',
+        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
+        'dropdown': '0 4px 12px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04)',
+        'modal': '0 12px 32px 0 rgba(0, 0, 0, 0.12), 0 2px 6px 0 rgba(0, 0, 0, 0.06)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
+        sans: ['Geist', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['Geist Mono', 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
       animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'fade-in': 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        'pulse-subtle': 'pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'fade-in': 'fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
       },
       keyframes: {
         fadeIn: {
-          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '0%': { opacity: '0', transform: 'translateY(3px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         }
       }

@@ -7,7 +7,9 @@ import {
   Check, 
   Play, 
   FileCode,
-  Copy
+  Copy,
+  Users,
+  RotateCcw
 } from 'lucide-react';
 import { useToast } from './Toast.js';
 import type { ControlSettings } from '../types.js';
@@ -26,22 +28,49 @@ interface ControlCenterProps {
   onRunPrompt: (prompt: string, agentName: string, confirm: boolean) => Promise<{ success: boolean; output: string; error?: string }>;
 }
 
-export const ControlCenter: React.FC<ControlCenterProps> = ({
+const ALL_AGENT_ROLES = [
+  { id: 'director', label: 'Director (Flash High)' },
+  { id: 'senior-architect', label: 'Senior Architect (Pro-tier)' },
+  { id: 'researcher', label: 'Researcher (Flash)' },
+  { id: 'frontend-developer', label: 'Frontend Developer (Flash)' },
+  { id: 'backend-developer', label: 'Backend Developer (Flash)' },
+  { id: 'ui-ux-designer', label: 'UI/UX Designer (Flash)' },
+  { id: 'qa-engineer', label: 'QA Engineer (Flash)' },
+  { id: 'code-reviewer', label: 'Code Reviewer (Flash)' },
+  { id: 'legal-compliance', label: 'Legal Advisor & Tech Writer (Flash)' },
+  { id: 'security-engineer', label: 'Security Engineer (Flash/Pro)' },
+  { id: 'devops-engineer', label: 'DevOps Engineer (Flash/Pro)' },
+  { id: 'database-specialist', label: 'Database Specialist (Flash/Pro)' },
+  { id: 'data-engineer', label: 'Data Engineer (Flash/Pro)' },
+  { id: 'product-manager', label: 'Product Manager (Flash)' },
+  { id: 'ai-evaluation-engineer', label: 'AI Evaluation Engineer (Flash/Pro)' },
+  { id: 'performance-engineer', label: 'Performance Engineer (Flash/Pro)' },
+  { id: 'accessibility-specialist', label: 'Accessibility Specialist (Flash)' }
+];
+
+const ControlCenterInner: React.FC<ControlCenterProps> = ({
   settings,
   onUpdateSettings,
   onGenerateArgonPack,
   onRunPrompt
 }) => {
-  // Настройки
+  const toast = useToast();
+
+  // Settings State
   const [maxAgents, setMaxAgents] = useState<number>(settings?.maxConcurrentAgents || 3);
   const [maxRetries, setMaxRetries] = useState<number>(settings?.maxRetryAttempts || 2);
   const [escalationPolicy, setEscalationPolicy] = useState<'strict' | 'relaxed'>(
     settings?.escalationPolicy || 'strict'
   );
+  const [allowedAgents, setAllowedAgents] = useState<string[]>(
+    settings?.allowedAgents && settings.allowedAgents.length > 0
+      ? settings.allowedAgents
+      : ALL_AGENT_ROLES.map(r => r.id)
+  );
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
 
-  // Генератор пакета Argon
+  // Argon Prompt Pack Generator State
   const [argonIssue, setArgonIssue] = useState('');
   const [argonHypothesis, setArgonHypothesis] = useState('');
   const [argonAttempt1, setArgonAttempt1] = useState('');
@@ -52,29 +81,31 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
   const [isGeneratingArgon, setIsGeneratingArgon] = useState(false);
   const [copiedPack, setCopiedPack] = useState(false);
 
-  // Запуск CLI
+  // CLI Execution State
   const [cliPrompt, setCliPrompt] = useState('');
   const [cliAgent, setCliAgent] = useState('director');
   const [cliConfirmed, setCliConfirmed] = useState(false);
   const [cliRunning, setCliRunning] = useState(false);
   const [cliOutput, setCliOutput] = useState<{ success: boolean; text: string } | null>(null);
 
-  const toast = useToast();
-
-  React.useEffect(() => {
-    if (settings) {
-      setMaxAgents(settings.maxConcurrentAgents);
-      setMaxRetries(settings.maxRetryAttempts);
-      setEscalationPolicy(settings.escalationPolicy);
-    }
-  }, [settings]);
+  const handleToggleAllowedAgent = (agentId: string) => {
+    setAllowedAgents(prev => {
+      if (prev.includes(agentId)) {
+        // Prevent disabling director
+        if (agentId === 'director') return prev;
+        return prev.filter(id => id !== agentId);
+      }
+      return [...prev, agentId];
+    });
+  };
 
   const handleSaveSettings = async () => {
     setIsSavingSettings(true);
     const ok = await onUpdateSettings({
       maxConcurrentAgents: maxAgents,
       maxRetryAttempts: maxRetries,
-      escalationPolicy
+      escalationPolicy,
+      allowedAgents
     });
     setIsSavingSettings(false);
     if (ok) {
@@ -88,387 +119,451 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
 
   const handleGenerateArgon = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!argonIssue || !argonHypothesis) {
+    if (!argonIssue.trim() || !argonHypothesis.trim()) {
       toast.warning('Пожалуйста, заполните суть проблемы и рабочую гипотезу.', 'Заполните поля');
       return;
     }
     setIsGeneratingArgon(true);
     try {
       const res = await onGenerateArgonPack({
-        issueTitle: argonIssue,
-        rootCauseHypothesis: argonHypothesis,
-        failedAttempt1: argonAttempt1 || 'Попытка 1 провалила проверку тестов.',
-        failedAttempt2: argonAttempt2 || 'Попытка 2 вызвала регрессию архитектуры.',
-        isolatedContextSnippet: argonSnippet || '// Минимальный изолированный фрагмент кода',
-        targetQuestion: argonQuestion || 'Предоставьте архитектурный диагноз и стратегию устранения проблемы.'
+        issueTitle: argonIssue.trim(),
+        rootCauseHypothesis: argonHypothesis.trim(),
+        failedAttempt1: argonAttempt1.trim() || 'Попытка 1 провалила проверку компиляции/тестов.',
+        failedAttempt2: argonAttempt2.trim() || 'Попытка 2 не устранила архитектурный дефект.',
+        isolatedContextSnippet: argonSnippet.trim() || '// Изолированный контекст не предоставлен',
+        targetQuestion: argonQuestion.trim() || 'Какой минимальный архитектурный паттерн гарантирует устранение первопричины дефекта?'
       });
       setGeneratedPack(res.promptPack);
-      toast.success(`Пакет ${res.filename} готов для передачи в Gemini 4 Argon`, 'Пакет эскалации сформирован');
-    } catch (err: any) {
-      toast.error(err.message || 'Ошибка формирования пакета эскалации', 'Сбой формирования');
+      toast.success(`Пакет эскалации сгенерирован и сохранён в файл ${res.filename}`, 'Argon Pack готов');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ошибка генерации пакета Argon';
+      toast.error(msg, 'Сбой');
     } finally {
       setIsGeneratingArgon(false);
     }
   };
 
-  const handleRunCLI = async () => {
-    if (!cliConfirmed) {
-      toast.warning('Перед запуском через CLI agy требуется явное подтверждение оператора.', 'Требуется подтверждение');
-      return;
+  const handleCopyPack = () => {
+    if (generatedPack) {
+      navigator.clipboard.writeText(generatedPack);
+      setCopiedPack(true);
+      toast.info('Пакет эскалации скопирован в буфер обмена');
+      setTimeout(() => setCopiedPack(false), 2000);
     }
-    if (!cliPrompt.trim()) {
-      toast.warning('Промпт не может быть пустым.', 'Пустой промпт');
-      return;
-    }
+  };
 
+  const handleRunCli = async () => {
+    if (!cliPrompt.trim()) return;
+    if (!cliConfirmed) {
+      toast.warning('Подтвердите выполнение команды в локальной рабочей среде', 'Требуется подтверждение');
+      return;
+    }
     setCliRunning(true);
     setCliOutput(null);
     try {
-      const res = await onRunPrompt(cliPrompt, cliAgent, cliConfirmed);
+      const res = await onRunPrompt(cliPrompt.trim(), cliAgent, cliConfirmed);
       setCliOutput({
         success: res.success,
-        text: res.success ? res.output : (res.error || 'Выполнение не удалось')
+        text: res.output || res.error || 'Выполнено без консольного вывода.'
       });
       if (res.success) {
-        toast.success(`Команда выполнена агентом @${cliAgent}`, 'CLI выполнен');
+        toast.success(`Команда агента @${cliAgent} выполнена`, 'Успех CLI');
       } else {
-        toast.error(res.error || 'Команда завершилась с ошибкой', 'Ошибка CLI');
+        toast.error(res.error || 'Ошибка исполнения в CLI', 'Сбой CLI');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Сбой CLI';
       setCliOutput({
         success: false,
-        text: err.message || 'Сбой вызова CLI процесса'
+        text: msg
       });
-      toast.error(err.message || 'Сбой вызова CLI процесса', 'Сбой CLI');
+      toast.error(msg, 'Сбой');
     } finally {
       setCliRunning(false);
     }
   };
 
-  const handleCopyPack = () => {
-    if (!generatedPack) return;
-    navigator.clipboard.writeText(generatedPack);
-    setCopiedPack(true);
-    toast.info('Пакет эскалации скопирован в буфер обмена', 'Скопировано');
-    setTimeout(() => setCopiedPack(false), 2000);
-  };
-
   return (
-    <div className="space-y-8">
-      {/* Заголовок */}
-      <div className="glass-panel p-5">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
-          <Sliders className="w-5 h-5 text-director-blue" />
-          <span>Оперативный надзор и параметры управления</span>
-        </h2>
-        <p className="text-xs text-slate-400 mt-1">
-          Настройка лимитов параллелизма агентов, синтез пакетов эскалации 4-го уровня к Argon и безопасный запуск задач через agy CLI.
-        </p>
-      </div>
+    <div className="space-y-6">
+      {/* 1. Header Surface */}
+      <section className="bg-pure border border-hairline rounded-md p-4 sm:p-5 shadow-subtle">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-obsidian" />
+              <h1 className="text-lg font-semibold text-obsidian tracking-tight">
+                Центр конфигурации и протоколы эскалации
+              </h1>
+            </div>
+            <p className="text-[13px] text-charcoal mt-1 leading-relaxed">
+              Лимиты параллелизма до 6 субагентов, политика повторных попыток, доступный пул специалистов и генератор пакетов L4 для Gemini 4 Argon.
+            </p>
+          </div>
+        </div>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Раздел 1: Оперативные лимиты Director */}
-        <div className="glass-panel p-6 space-y-5">
-          <div className="flex items-center gap-2 pb-3 border-b border-white/[0.08]">
-            <Sliders className="w-4 h-4 text-director-cyan" />
-            <h3 className="text-sm font-bold text-white">Параметры управления Director</h3>
+      {/* 2. Global Orchestrator Settings Card */}
+      <section className="bg-pure border border-hairline rounded-md p-5 shadow-subtle space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b border-hairline">
+          <div>
+            <h2 className="text-sm font-semibold text-obsidian tracking-tight">
+              Параметры оркестратора Antigravity
+            </h2>
+            <p className="text-xs text-stone mt-0.5">
+              Управление параллелизмом, эскалацией и допустимым пулом специалистов.
+            </p>
           </div>
 
-          <div className="space-y-4 text-xs">
-            {/* Лимит параллелизма */}
-            <div className="space-y-1.5">
-              <div className="flex justify-between">
-                <label className="text-slate-300 font-medium">
-                  Макс. параллельных субагентов: <strong className="text-white font-mono">{maxAgents}</strong>
-                </label>
-                <span className="text-[11px] font-mono text-slate-500">Лимит: 3 (Правило Директора)</span>
-              </div>
+          <button
+            type="button"
+            onClick={handleSaveSettings}
+            disabled={isSavingSettings}
+            className={`refero-btn-primary text-xs ${
+              settingsSaved ? 'bg-terminal-green hover:bg-terminal-green' : ''
+            }`}
+          >
+            {isSavingSettings ? (
+              <>
+                <RotateCcw className="w-3.5 h-3.5 animate-spin" />
+                <span>Сохранение...</span>
+              </>
+            ) : settingsSaved ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-pure" />
+                <span>Сохранено ✓</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-3.5 h-3.5" />
+                <span>Сохранить настройки</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+          {/* Max Concurrent Subagents (Up to 6) */}
+          <div className="space-y-1.5">
+            <label className="text-obsidian font-semibold block">
+              Лимит параллелизма (субагентов):
+            </label>
+            <div className="flex items-center gap-3">
               <input
                 type="range"
                 min="1"
-                max="3"
+                max="6"
+                step="1"
                 value={maxAgents}
-                onChange={e => setMaxAgents(parseInt(e.target.value, 10))}
-                className="w-full accent-director-blue cursor-pointer"
+                onChange={e => setMaxAgents(Number(e.target.value))}
+                className="w-full accent-obsidian"
               />
-              <p className="text-[11px] text-slate-500">
-                Правило 5: Разрешено не более 3 параллельных субагентов для экономии токенов и изоляции контекста.
-              </p>
-            </div>
-
-            {/* Лимит повторов */}
-            <div className="space-y-1.5 pt-3 border-t border-white/5">
-              <div className="flex justify-between">
-                <label className="text-slate-300 font-medium">
-                  Макс. попыток до эскалации: <strong className="text-white font-mono">{maxRetries}</strong>
-                </label>
-                <span className="text-[11px] font-mono text-slate-500">Лимит: 2 попытки</span>
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="2"
-                value={maxRetries}
-                onChange={e => setMaxRetries(parseInt(e.target.value, 10))}
-                className="w-full accent-director-blue cursor-pointer"
-              />
-              <p className="text-[11px] text-slate-500">
-                Правило 5: Не повторять провалившийся подход более 2 раз. На 3-й попытке задача автоматически эскалируется к Senior Architect.
-              </p>
-            </div>
-
-            {/* Строгость политики */}
-            <div className="space-y-1.5 pt-3 border-t border-white/5">
-              <label className="text-slate-300 font-medium block">
-                Строгость политики эскалации:
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="policy"
-                    checked={escalationPolicy === 'strict'}
-                    onChange={() => setEscalationPolicy('strict')}
-                    className="accent-director-blue"
-                  />
-                  <span>Строгая (Требует 2 проваленных теста перед L3/L4)</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="policy"
-                    checked={escalationPolicy === 'relaxed'}
-                    onChange={() => setEscalationPolicy('relaxed')}
-                    className="accent-director-blue"
-                  />
-                  <span>Мягкая</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
-            {settingsSaved && (
-              <span className="text-xs text-emerald-400 font-mono flex items-center gap-1">
-                <Check className="w-3.5 h-3.5" />
-                Настройки сохранены в SQLite!
+              <span className="font-mono text-sm font-bold text-obsidian bg-surface-subtle px-2.5 py-1 rounded border border-hairline min-w-[36px] text-center">
+                {maxAgents}
               </span>
-            )}
-            <button
-              onClick={handleSaveSettings}
-              disabled={isSavingSettings}
-              className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-director-blue to-blue-600 text-white text-xs font-semibold shadow-glass-subtle hover:from-blue-500 transition-all"
+            </div>
+            <span className="text-[11px] text-stone block leading-tight">
+              Макс. до 6 параллельных потоков по протоколу AI Director.
+            </span>
+          </div>
+
+          {/* Max Retries (Default 2) */}
+          <div className="space-y-1.5">
+            <label className="text-obsidian font-semibold block">
+              Лимит повторных попыток:
+            </label>
+            <select
+              value={maxRetries}
+              onChange={e => setMaxRetries(Number(e.target.value))}
+              className="w-full px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian focus-ring"
             >
-              <Save className="w-3.5 h-3.5" />
-              <span>{isSavingSettings ? 'Сохранение...' : 'Применить лимиты'}</span>
-            </button>
+              <option value="1">1 попытка (строгий режим)</option>
+              <option value="2">2 попытки (рекомендовано)</option>
+              <option value="3">3 попытки</option>
+            </select>
+            <span className="text-[11px] text-stone block leading-tight">
+              После 2 неудач активируется эскалация к Senior Architect (L3).
+            </span>
+          </div>
+
+          {/* Escalation Policy */}
+          <div className="space-y-1.5">
+            <label className="text-obsidian font-semibold block">
+              Политика эскалации:
+            </label>
+            <select
+              value={escalationPolicy}
+              onChange={e => setEscalationPolicy(e.target.value as 'strict' | 'relaxed')}
+              className="w-full px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian focus-ring"
+            >
+              <option value="strict">Strict (Обязательное L1/L2 подтверждение)</option>
+              <option value="relaxed">Relaxed (Мягкие шлюзы)</option>
+            </select>
+            <span className="text-[11px] text-stone block leading-tight">
+              При Strict автоматическая блокировка не прошедших верификацию задач.
+            </span>
           </div>
         </div>
 
-        {/* Раздел 2: Безопасный запуск agy CLI */}
-        <div className="glass-panel p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-white/[0.08]">
-            <Terminal className="w-4 h-4 text-emerald-400" />
-            <h3 className="text-sm font-bold text-white">Безопасный запуск через CLI Antigravity (`agy -p`)</h3>
+        {/* Allowed Agents Whitelist Grid */}
+        <div className="pt-4 border-t border-hairline space-y-2.5">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold text-obsidian flex items-center gap-1.5">
+              <Users className="w-4 h-4 text-graphite" />
+              <span>Разрешённый пул специалистов ({allowedAgents.length} из 17 доступно):</span>
+            </label>
+            <span className="text-[11px] font-mono text-stone">
+              Director включен всегда
+            </span>
           </div>
 
-          <div className="space-y-3 text-xs">
-            <div>
-              <label className="text-slate-300 block mb-1">Целевой агент:</label>
-              <select
-                value={cliAgent}
-                onChange={e => setCliAgent(e.target.value)}
-                className="glass-input w-full text-xs"
-              >
-                <option value="director">director (Gemini 3.8 Flash High)</option>
-                <option value="researcher">researcher (Gemini Flash)</option>
-                <option value="frontend-developer">frontend-developer (Gemini Flash)</option>
-                <option value="backend-developer">backend-developer (Gemini Flash)</option>
-                <option value="qa-engineer">qa-engineer (Gemini Flash)</option>
-                <option value="senior-architect">senior-architect (Gemini Pro)</option>
-              </select>
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
+            {ALL_AGENT_ROLES.map(role => {
+              const isChecked = allowedAgents.includes(role.id);
+              const isDirector = role.id === 'director';
 
-            <div>
-              <label className="text-slate-300 block mb-1">Промпт выполнения:</label>
-              <textarea
-                value={cliPrompt}
-                onChange={e => setCliPrompt(e.target.value)}
-                placeholder="Введите задачу для выполнения через agy -p..."
-                className="glass-input w-full h-20 text-xs font-mono resize-none"
-              />
-            </div>
-
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 space-y-2">
-              <label className="flex items-start gap-2 cursor-pointer font-semibold">
-                <input
-                  type="checkbox"
-                  checked={cliConfirmed}
-                  onChange={e => setCliConfirmed(e.target.checked)}
-                  className="mt-0.5 accent-amber-500"
-                />
-                <span>Я подтверждаю выполнение этого промпта через локальный процесс agy.exe CLI.</span>
-              </label>
-              <p className="text-slate-400 pl-5 leading-relaxed">
-                Правило 12: Произвольное выполнение bash/cmd из браузера заблокировано. Передаются только проверенные параметры в изолированный CLI.
-              </p>
-            </div>
-
-            <button
-              onClick={handleRunCLI}
-              disabled={cliRunning || !cliConfirmed}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-glass-subtle transition-all ${
-                cliConfirmed && !cliRunning
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white'
-                  : 'bg-white/5 text-slate-500 border border-white/5 cursor-not-allowed'
-              }`}
-            >
-              <Play className="w-3.5 h-3.5" />
-              <span>{cliRunning ? 'Выполнение через agy...' : 'Запустить промпт через agy'}</span>
-            </button>
-
-            {cliOutput && (
-              <div className={`p-3 rounded-xl border text-xs font-mono max-h-40 overflow-y-auto whitespace-pre-wrap ${
-                cliOutput.success 
-                  ? 'bg-black/60 border-emerald-500/30 text-emerald-300' 
-                  : 'bg-black/60 border-rose-500/30 text-rose-300'
-              }`}>
-                {cliOutput.text}
-              </div>
-            )}
+              return (
+                <label
+                  key={role.id}
+                  className={`flex items-center gap-2 p-2 rounded-md border cursor-pointer select-none transition-colors ${
+                    isChecked
+                      ? 'bg-surface-subtle border-hairline text-obsidian'
+                      : 'bg-pure border-hairline text-stone opacity-60'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    disabled={isDirector}
+                    onChange={() => handleToggleAllowedAgent(role.id)}
+                    className="rounded border-hairline text-obsidian accent-obsidian focus-ring"
+                  />
+                  <span className="truncate font-mono text-[11px]">@{role.id}</span>
+                </label>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Раздел 3: Генератор пакета эскалации 4-го уровня к Gemini 4 Argon */}
-      <div className="glass-panel p-6 space-y-5 border-pink-500/20 bg-gradient-to-b from-pink-500/[0.04] to-transparent">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.08]">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-pink-500/20 text-director-argon shadow-glow-argon">
-              <Flame className="w-5 h-5 animate-pulse" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                Генератор пакета эскалации 4-го уровня (Gemini 4 Argon)
-                <span className="badge-argon text-[10px] py-0 px-2 font-mono">ОФИЦИАЛЬНЫЙ РЕГЛАМЕНТ</span>
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Формирует минимальный изолированный пакет контекста при провале двух подходов и архитектурном тупике.
-              </p>
-            </div>
+      {/* 3. Argon L4 Prompt Pack Generator */}
+      <section className="bg-pure border border-hairline rounded-md p-5 shadow-subtle space-y-4">
+        <div className="flex items-center gap-2 pb-3 border-b border-hairline">
+          <Flame className="w-5 h-5 text-argon-text animate-pulse" />
+          <div>
+            <h2 className="text-sm font-semibold text-obsidian tracking-tight">
+              Генератор пакета эскалации Gemini 4 Argon (L4 Prompt Pack)
+            </h2>
+            <p className="text-xs text-stone mt-0.5">
+              Синтез структурированного пакета из 10 пунктов для преодоления тупиков при переключении на флагманскую модель.
+            </p>
           </div>
         </div>
 
         <form onSubmit={handleGenerateArgon} className="space-y-4 text-xs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-slate-300 block mb-1 font-medium">1. Суть проблемы / Заголовок сбоя:</label>
+            <div className="space-y-1">
+              <label className="font-semibold text-obsidian block">
+                1. Суть архитектурного тупика / проблемы:
+              </label>
               <input
                 type="text"
                 value={argonIssue}
                 onChange={e => setArgonIssue(e.target.value)}
-                placeholder="например: Неустранимая гонка данных при синхронизации файлов"
-                className="glass-input w-full text-xs"
+                placeholder="например: Deadlock в обработчике WebSocket при параллельных событиях"
+                className="w-full px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian placeholder-smoke focus-ring"
                 required
               />
             </div>
 
-            <div>
-              <label className="text-slate-300 block mb-1 font-medium">3. Гипотеза Senior Architect о первопричине:</label>
+            <div className="space-y-1">
+              <label className="font-semibold text-obsidian block">
+                2. Рабочая гипотеза первопричины:
+              </label>
               <input
                 type="text"
                 value={argonHypothesis}
                 onChange={e => setArgonHypothesis(e.target.value)}
-                placeholder="например: Конфликт двойной записи между chokidar debounce и блокировкой SQLite WAL"
-                className="glass-input w-full text-xs"
+                placeholder="например: Гонка данных между WAL checkpoint и чтением транскрипта"
+                className="w-full px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian placeholder-smoke focus-ring"
                 required
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-slate-300 block mb-1 font-medium">2a. Провалившийся подход 1 (Факты и логи):</label>
-              <input
-                type="text"
+            <div className="space-y-1">
+              <label className="font-semibold text-obsidian block">
+                3. Неудачная попытка №1 (описание и ошибка):
+              </label>
+              <textarea
                 value={argonAttempt1}
                 onChange={e => setArgonAttempt1(e.target.value)}
-                placeholder="например: Введён мьютекс 150мс; стресс-тест показал зависание потоков"
-                className="glass-input w-full text-xs"
+                placeholder="Что пробовали в первой попытке и почему это провалилось..."
+                className="w-full h-16 p-2.5 bg-pure border border-hairline rounded-md font-mono text-xs text-obsidian resize-none focus-ring"
               />
             </div>
 
-            <div>
-              <label className="text-slate-300 block mb-1 font-medium">2b. Провалившийся подход 2 (Факты и логи):</label>
-              <input
-                type="text"
+            <div className="space-y-1">
+              <label className="font-semibold text-obsidian block">
+                4. Неудачная попытка №2 (описание и ошибка):
+              </label>
+              <textarea
                 value={argonAttempt2}
                 onChange={e => setArgonAttempt2(e.target.value)}
-                placeholder="например: Реализована очередь single-flight промисов; вызвала deadlock при перезапуске"
-                className="glass-input w-full text-xs"
+                placeholder="Альтернативная стратегия второй попытки и лог ошибки..."
+                className="w-full h-16 p-2.5 bg-pure border border-hairline rounded-md font-mono text-xs text-obsidian resize-none focus-ring"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-slate-300 block mb-1 font-medium">4. Минимальный изолированный код (20-50 строк):</label>
-              <textarea
-                value={argonSnippet}
-                onChange={e => setArgonSnippet(e.target.value)}
-                placeholder="// Вставьте минимальный изолированный сниппет, воспроизводящий сбой..."
-                className="glass-input w-full h-24 text-xs font-mono resize-none"
-              />
-            </div>
-
-            <div>
-              <label className="text-slate-300 block mb-1 font-medium">5. Целевой вопрос и директива для Gemini 4 Argon:</label>
-              <textarea
-                value={argonQuestion}
-                onChange={e => setArgonQuestion(e.target.value)}
-                placeholder="например: Предложите неблокирующую архитектуру конвейера событий с математической гарантией отсутствия гонок."
-                className="glass-input w-full h-24 text-xs font-mono resize-none"
-              />
-            </div>
+          <div className="space-y-1">
+            <label className="font-semibold text-obsidian block">
+              5. Изолированный контекст (фрагмент кода / интерфейса):
+            </label>
+            <textarea
+              value={argonSnippet}
+              onChange={e => setArgonSnippet(e.target.value)}
+              placeholder="Компактный код без лишнего шума..."
+              className="w-full h-24 p-2.5 bg-pure border border-hairline rounded-md font-mono text-xs text-obsidian resize-none focus-ring"
+            />
           </div>
 
-          <button
-            type="submit"
-            disabled={isGeneratingArgon}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:from-pink-500 text-white font-semibold shadow-glow-argon transition-all active:scale-[0.98]"
-          >
-            <Flame className="w-4 h-4" />
-            <span>{isGeneratingArgon ? 'Синтез пакета...' : 'Сформировать пакет эскалации к Argon'}</span>
-          </button>
+          <div className="space-y-1">
+            <label className="font-semibold text-obsidian block">
+              6. Точечный вопрос к Gemini 4 Argon:
+            </label>
+            <input
+              type="text"
+              value={argonQuestion}
+              onChange={e => setArgonQuestion(e.target.value)}
+              placeholder="например: Предложите неблокирующую архитектуру очереди с гарантией доставки FIFO"
+              className="w-full px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian placeholder-smoke focus-ring"
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-2">
+            <button
+              type="submit"
+              disabled={isGeneratingArgon}
+              className="refero-btn-primary text-xs"
+            >
+              <Flame className="w-3.5 h-3.5 text-argon-text" />
+              <span>{isGeneratingArgon ? 'Синтез пакета...' : 'Сформировать 10-п. пакет Argon'}</span>
+            </button>
+          </div>
         </form>
 
-        {/* Отображение сгенерированного пакета */}
+        {/* Display Generated Pack */}
         {generatedPack && (
-          <div className="mt-5 p-4 rounded-2xl bg-black/50 border border-pink-500/30 space-y-3">
+          <div className="mt-4 p-4 rounded-md bg-surface-subtle border border-hairline space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-pink-400 flex items-center gap-1.5">
-                <FileCode className="w-4 h-4" />
-                Сформированный пакет эскалации 4-го уровня
+              <span className="font-mono text-xs font-semibold text-obsidian flex items-center gap-1.5">
+                <FileCode className="w-4 h-4 text-argon-text" />
+                Готовый пакет эскалации L4:
               </span>
               <button
+                type="button"
                 onClick={handleCopyPack}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-mono transition-all"
+                className="refero-btn-secondary text-xs py-1 px-2.5"
               >
-                {copiedPack ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedPack ? 'Скопировано!' : 'Скопировать в буфер'}</span>
+                {copiedPack ? <Check className="w-3.5 h-3.5 text-terminal-green" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedPack ? 'Скопировано!' : 'Копировать'}</span>
               </button>
             </div>
-
-            <pre className="p-3 rounded-xl bg-black/80 border border-white/5 text-[11px] font-mono text-slate-300 max-h-60 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+            <pre className="p-3 bg-pure border border-hairline rounded-md font-mono text-xs text-obsidian whitespace-pre-wrap max-h-60 overflow-y-auto leading-relaxed">
               {generatedPack}
             </pre>
-
-            <div className="p-2.5 rounded-xl bg-pink-500/10 border border-pink-500/20 text-[11px] text-pink-300 leading-relaxed">
-              <strong>Инструкция для оператора:</strong> В интерфейсе Antigravity переключите модель на <strong className="text-white">Gemini 4 Argon (High)</strong>, отправьте данный пакет, получите архитектурный диагноз и верните модель на <strong className="text-white">Gemini 3.8 Flash High</strong> для кодинга и проверок.
-            </div>
           </div>
         )}
-      </div>
+      </section>
+
+      {/* 4. Safe Direct CLI Supervisor Execution Console */}
+      <section className="bg-pure border border-hairline rounded-md p-5 shadow-subtle space-y-4">
+        <div className="flex items-center gap-2 pb-3 border-b border-hairline">
+          <Terminal className="w-5 h-5 text-obsidian" />
+          <div>
+            <h2 className="text-sm font-semibold text-obsidian tracking-tight">
+              Прямой запуск команд CLI через супервизор
+            </h2>
+            <p className="text-xs text-stone mt-0.5">
+              Исполнение инструкций агентами с обязательным подтверждением безопасности среды.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3 text-xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <label className="font-semibold text-obsidian block">
+                Исполнитель:
+              </label>
+              <select
+                value={cliAgent}
+                onChange={e => setCliAgent(e.target.value)}
+                className="w-full px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian focus-ring"
+              >
+                {ALL_AGENT_ROLES.map(role => (
+                  <option key={role.id} value={role.id}>
+                    @{role.id} ({role.label})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="md:col-span-2 space-y-1">
+              <label className="font-semibold text-obsidian block">
+                Текст команды / промпта для исполнения:
+              </label>
+              <input
+                type="text"
+                value={cliPrompt}
+                onChange={e => setCliPrompt(e.target.value)}
+                placeholder="например: Проверить целостность базы данных SQLite"
+                className="w-full px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian placeholder-smoke focus-ring"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+            <label className="flex items-center gap-2 cursor-pointer select-none text-charcoal">
+              <input
+                type="checkbox"
+                checked={cliConfirmed}
+                onChange={e => setCliConfirmed(e.target.checked)}
+                className="rounded border-hairline text-obsidian accent-obsidian focus-ring"
+              />
+              <span>Подтверждаю безопасность выполнения команды в локальной среде (Localhost Only)</span>
+            </label>
+
+            <button
+              type="button"
+              onClick={handleRunCli}
+              disabled={cliRunning || !cliPrompt.trim() || !cliConfirmed}
+              className="refero-btn-primary text-xs self-start sm:self-auto"
+            >
+              <Play className="w-3.5 h-3.5" />
+              <span>{cliRunning ? 'Исполнение...' : 'Выполнить в CLI'}</span>
+            </button>
+          </div>
+
+          {cliOutput && (
+            <div className="mt-3 p-3 rounded-md bg-surface-subtle border border-hairline space-y-1.5 font-mono text-xs">
+              <div className="flex items-center justify-between">
+                <span className={`font-semibold ${cliOutput.success ? 'text-terminal-green' : 'text-danger-text'}`}>
+                  {cliOutput.success ? 'Успешный вывод CLI супервизора:' : 'Ошибка выполнения:'}
+                </span>
+              </div>
+              <pre className="p-2.5 rounded bg-pure border border-hairline whitespace-pre-wrap text-obsidian max-h-48 overflow-y-auto">
+                {cliOutput.text}
+              </pre>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
+};
+
+export const ControlCenter: React.FC<ControlCenterProps> = (props) => {
+  return <ControlCenterInner key={props.settings ? 'loaded' : 'initial'} {...props} />;
 };

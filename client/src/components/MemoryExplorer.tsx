@@ -6,7 +6,7 @@ import {
   Check, 
   RotateCw, 
   AlertTriangle,
-  X
+  FileCode
 } from 'lucide-react';
 import { useToast } from './Toast.js';
 import type { KnowledgeDoc } from '../types.js';
@@ -23,41 +23,43 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
   onRefresh
 }) => {
   const toast = useToast();
-  const [selectedFile, setSelectedFile] = useState<string>(docs[0]?.filename || '');
-  const [editorContent, setEditorContent] = useState<string>('');
+  const [selectedFilename, setSelectedFilename] = useState<string>('');
+  const [editedContent, setEditedContent] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [pendingSwitchFile, setPendingSwitchFile] = useState<string | null>(null);
+  const [pendingSwitchFilename, setPendingSwitchFilename] = useState<string | null>(null);
 
-  const currentDoc = docs.find(d => d.filename === selectedFile) || docs[0];
-
-  React.useEffect(() => {
-    if (currentDoc) {
-      setEditorContent(currentDoc.content);
-      setHasUnsavedChanges(false);
-      setSaveSuccess(false);
-    }
-  }, [currentDoc?.filename, currentDoc?.content]);
+  const activeFilename = selectedFilename || docs[0]?.filename || '';
+  const currentDoc = docs.find(d => d.filename === activeFilename) || docs[0];
+  const editorContent = editedContent !== null ? editedContent : (currentDoc?.content || '');
+  const hasUnsavedChanges = editedContent !== null && editedContent !== (currentDoc?.content || '');
 
   const handleSelectDoc = (filename: string) => {
-    if (hasUnsavedChanges && filename !== selectedFile) {
-      setPendingSwitchFile(filename);
+    if (hasUnsavedChanges && filename !== activeFilename) {
+      setPendingSwitchFilename(filename);
       return;
     }
-    setSelectedFile(filename);
+    setSelectedFilename(filename);
+    setEditedContent(null);
+    setSaveSuccess(false);
   };
 
   const confirmSwitch = () => {
-    if (pendingSwitchFile) {
-      setHasUnsavedChanges(false);
-      setSelectedFile(pendingSwitchFile);
-      setPendingSwitchFile(null);
+    if (pendingSwitchFilename) {
+      setSelectedFilename(pendingSwitchFilename);
+      setEditedContent(null);
+      setSaveSuccess(false);
+      setPendingSwitchFilename(null);
     }
   };
 
   const cancelSwitch = () => {
-    setPendingSwitchFile(null);
+    setPendingSwitchFilename(null);
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEditedContent(e.target.value);
+    setSaveSuccess(false);
   };
 
   const handleSave = async () => {
@@ -67,7 +69,7 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
     setIsSaving(false);
     if (ok) {
       setSaveSuccess(true);
-      setHasUnsavedChanges(false);
+      setEditedContent(null);
       toast.success(`Документ ${currentDoc.filename} успешно сохранён и синхронизирован`, 'Память обновлена');
       setTimeout(() => setSaveSuccess(false), 3000);
     } else {
@@ -75,166 +77,208 @@ export const MemoryExplorer: React.FC<MemoryExplorerProps> = ({
     }
   };
 
+  const lineCount = editorContent.split('\n').length;
+  const charCount = editorContent.length;
+
   return (
     <div className="space-y-6">
-      {/* Заголовок */}
-      <div className="glass-panel p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* 1. Header surface */}
+      <section className="bg-pure border border-hairline rounded-md p-4 sm:p-5 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
-            <Brain className="w-5 h-5 text-director-blue" />
-            <span>Постоянная память и регламенты Director</span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Глобальная база знаний Antigravity (~/.gemini/antigravity/knowledge). Редактирование правил оркестратора и регламентов в реальном времени.
+          <div className="flex items-center gap-2">
+            <Brain className="w-5 h-5 text-obsidian" />
+            <h1 className="text-lg font-semibold text-obsidian tracking-tight">
+              База знаний и регламенты оркестратора
+            </h1>
+          </div>
+          <p className="text-[13px] text-charcoal mt-1 leading-relaxed">
+            Постоянная память Director, системные спецификации агентов и регламенты качества Antigravity.
           </p>
         </div>
 
         <button
+          type="button"
           onClick={onRefresh}
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 text-xs font-semibold border border-white/10 transition-all self-start md:self-auto"
+          className="refero-btn-secondary self-start md:self-auto"
         >
-          <RotateCw className="w-3.5 h-3.5" />
-          <span>Синхронизировать</span>
+          <RotateCw className="w-3.5 h-3.5 text-graphite" />
+          <span>Синхронизировать память</span>
         </button>
-      </div>
+      </section>
 
-      {/* Основная рабочая область: Дерево файлов слева, Редактор справа */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Список файлов */}
-        <div className="glass-panel p-4 space-y-2 lg:col-span-1">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 px-2 block">
-            Документы базы знаний ({docs.length})
-          </span>
+      {/* 2. Main Two-Column Document Explorer */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Documents Browser Rail */}
+        <div className="lg:col-span-4 bg-pure border border-hairline rounded-md p-4 shadow-subtle space-y-3 flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-2.5 border-b border-hairline">
+              <span className="text-xs font-mono uppercase tracking-wider text-stone font-medium">
+                Документы базы знаний ({docs.length})
+              </span>
+              <FileCode className="w-3.5 h-3.5 text-graphite" />
+            </div>
 
-          <div className="space-y-1">
-            {docs.map(doc => {
-              const isSelected = (currentDoc?.filename === doc.filename);
-              return (
-                <button
-                  key={doc.filename}
-                  onClick={() => handleSelectDoc(doc.filename)}
-                  className={`w-full text-left p-2.5 rounded-xl text-xs font-medium transition-all flex items-center gap-2.5 ${
-                    isSelected
-                      ? 'bg-director-blue/20 text-director-cyan border border-director-blue/40 shadow-glass-subtle'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]'
-                  }`}
-                >
-                  <FileText className="w-4 h-4 shrink-0" />
-                  <div className="truncate flex-1">
-                    <span className="block truncate">{doc.title || doc.filename}</span>
-                    <span className="text-[10px] font-mono text-slate-500 block truncate">
-                      {doc.filename}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
+            <nav className="space-y-1.5 max-h-[550px] overflow-y-auto pr-1">
+              {docs.length === 0 ? (
+                <div className="py-8 text-center text-slate text-xs font-mono">
+                  Документы не найдены
+                </div>
+              ) : (
+                docs.map((doc) => {
+                  const isSelected = doc.filename === selectedFilename;
+
+                  return (
+                    <button
+                      key={doc.filename}
+                      type="button"
+                      onClick={() => handleSelectDoc(doc.filename)}
+                      className={`w-full text-left p-2.5 rounded-md text-xs transition-colors flex items-start gap-2.5 border focus-ring ${
+                        isSelected
+                          ? 'bg-surface-subtle border-obsidian font-medium text-obsidian shadow-subtle'
+                          : 'bg-pure border-hairline hover:border-ash hover:bg-surface-subtle text-charcoal'
+                      }`}
+                    >
+                      <FileText className={`w-4 h-4 shrink-0 mt-0.5 ${isSelected ? 'text-obsidian' : 'text-graphite'}`} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="font-mono font-medium truncate text-obsidian">
+                            {doc.filename}
+                          </span>
+                          {isSelected && hasUnsavedChanges && (
+                            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Несохранённые изменения" />
+                          )}
+                        </div>
+                        <p className="text-[11px] text-stone truncate mt-0.5">
+                          {doc.title || doc.filename}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1 text-[10px] font-mono text-slate">
+                          <span>{(doc.size / 1024).toFixed(1)} KB</span>
+                          <span>•</span>
+                          <span>{new Date(doc.lastModified).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </nav>
+          </div>
+
+          <div className="pt-3 border-t border-hairline text-[11px] font-mono text-slate flex justify-between items-center">
+            <span>Статус: Локальная синхронизация</span>
+            <span>Маршрут: /knowledge</span>
           </div>
         </div>
 
-        {/* Редактор Markdown */}
-        <div className="glass-panel p-5 space-y-4 lg:col-span-3 flex flex-col">
-          {currentDoc ? (
-            <>
-              {/* Шапка редактора */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/[0.08]">
-                <div>
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <span>{currentDoc.filename}</span>
-                    {hasUnsavedChanges && (
-                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="Есть несохранённые изменения" />
-                    )}
-                  </h3>
-                  <span className="text-[11px] font-mono text-slate-500">
-                    Путь: {currentDoc.path}
-                  </span>
-                </div>
-
+        {/* Right Column: Code & Markdown Editor View */}
+        <div className="lg:col-span-8 bg-pure border border-hairline rounded-md shadow-subtle flex flex-col justify-between overflow-hidden">
+          {/* Editor Header */}
+          <div className="p-4 border-b border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-paper">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <FileCode className="w-4 h-4 text-obsidian shrink-0" />
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  {saveSuccess && (
-                    <span className="text-xs text-emerald-400 flex items-center gap-1 font-mono">
-                      <Check className="w-3.5 h-3.5" />
-                      Сохранено и синхронизировано!
+                  <span className="font-mono font-semibold text-xs text-obsidian truncate">
+                    {currentDoc?.filename || 'Выберите документ'}
+                  </span>
+                  {hasUnsavedChanges && (
+                    <span className="badge-demo text-[10px] py-0 px-1.5 font-mono">
+                      НЕСОХРАНЕНО
                     </span>
                   )}
-
-                  <button
-                    onClick={handleSave}
-                    disabled={isSaving || !hasUnsavedChanges}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold shadow-glass-subtle transition-all ${
-                      hasUnsavedChanges
-                        ? 'bg-gradient-to-r from-director-blue to-blue-600 text-white hover:from-blue-500 active:scale-95'
-                        : 'bg-white/[0.05] text-slate-500 border border-white/5 cursor-not-allowed'
-                    }`}
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    <span>{isSaving ? 'Сохранение...' : 'Сохранить изменения'}</span>
-                  </button>
                 </div>
+                <span className="text-[11px] font-mono text-slate truncate block">
+                  {currentDoc?.path || ''}
+                </span>
               </div>
-
-              {/* Поле ввода редактора */}
-              <div className="flex-1 min-h-[500px] flex flex-col">
-                <textarea
-                  value={editorContent}
-                  onChange={e => {
-                    setEditorContent(e.target.value);
-                    setHasUnsavedChanges(true);
-                  }}
-                  className="w-full flex-1 bg-black/40 border border-white/10 rounded-xl p-4 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-director-blue/50 focus:ring-1 focus:ring-director-blue/30 leading-relaxed resize-none selection:bg-director-blue/30"
-                  spellCheck={false}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="py-20 text-center text-slate-500">
-              Документы памяти не загружены.
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* Диалоговое окно подтверждения сброса несохранённых правок */}
-      {pendingSwitchFile && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="w-full max-w-md glass-panel p-6 space-y-4 border border-amber-500/30 shadow-glass-card animate-in zoom-in-95">
-            <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 shrink-0">
-                <AlertTriangle className="w-5 h-5" />
+            <div className="flex items-center gap-2.5 shrink-0">
+              <div className="text-[11px] font-mono text-stone hidden sm:flex items-center gap-2 pr-2 border-r border-hairline">
+                <span>{lineCount} строк</span>
+                <span>•</span>
+                <span>{charCount} симв.</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-white">Несохранённые изменения</h3>
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                  В текущем документе есть несохранённые правки. Вы уверены, что хотите переключиться на <code className="text-director-cyan">{pendingSwitchFile}</code> без сохранения?
-                </p>
-              </div>
+
               <button
                 type="button"
-                onClick={cancelSwitch}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10"
+                onClick={handleSave}
+                disabled={isSaving || !hasUnsavedChanges}
+                className={`refero-btn-primary text-xs py-1.5 px-3 ${
+                  saveSuccess ? 'bg-terminal-green hover:bg-terminal-green' : ''
+                }`}
               >
-                <X className="w-4 h-4" />
+                {isSaving ? (
+                  <>
+                    <RotateCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Сохранение...</span>
+                  </>
+                ) : saveSuccess ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-pure" />
+                    <span>Сохранено ✓</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Сохранить</span>
+                  </>
+                )}
               </button>
             </div>
+          </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-white/10">
+          {/* Editor Textarea Pane */}
+          <div className="relative flex-1 min-h-[460px] p-4 bg-pure">
+            <textarea
+              value={editorContent}
+              onChange={handleContentChange}
+              placeholder="Содержимое документа..."
+              aria-label="Редактор документа базы знаний"
+              className="w-full h-full min-h-[440px] resize-none font-mono text-xs text-obsidian bg-transparent focus:outline-none leading-relaxed selection:bg-obsidian selection:text-pure"
+              spellCheck={false}
+            />
+          </div>
+
+          {/* Editor Footer Status Bar */}
+          <div className="p-2.5 border-t border-hairline bg-paper flex items-center justify-between text-[11px] font-mono text-slate">
+            <span>Кодировка: UTF-8</span>
+            <span>Режим: Markdown / Spec Editor</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Unsaved Changes Confirmation Modal */}
+      {pendingSwitchFilename && (
+        <div 
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm dark:bg-black/70 animate-fade-in"
+        >
+          <div className="w-full max-w-md bg-pure border border-hairline rounded-lg shadow-modal p-5 space-y-4">
+            <div className="flex items-center gap-3 text-warning-text">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
+              <h3 className="text-sm font-semibold text-obsidian tracking-tight">
+                Несохранённые изменения
+              </h3>
+            </div>
+            <p className="text-xs text-charcoal leading-relaxed">
+              Вы внесли изменения в документ <strong className="font-mono text-obsidian">{selectedFilename}</strong>. Если перейти к другому файлу без сохранения, правки будут потеряны.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-hairline">
               <button
                 type="button"
                 onClick={cancelSwitch}
-                className="px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 text-xs font-semibold transition-all"
+                className="refero-btn-secondary text-xs"
               >
-                Остаться
+                Отмена
               </button>
               <button
                 type="button"
                 onClick={confirmSwitch}
-                className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-all"
+                className="refero-btn-danger text-xs"
               >
-                Сбросить и переключить
+                Перейти без сохранения
               </button>
             </div>
           </div>

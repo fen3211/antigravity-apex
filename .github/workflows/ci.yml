@@ -1,0 +1,62 @@
+name: CI / Automated Verification
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'release/**'
+  pull_request:
+    branches:
+      - main
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & Test (Node ${{ matrix.node-version }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [20.x, 22.x]
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Root Dependencies
+        run: npm ci
+
+      - name: Install Client Dependencies
+        run: npm --prefix client ci
+
+      - name: Run System Diagnostics (Doctor)
+        run: npm run doctor
+        env:
+          COMMAND_CENTER_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          NODE_ENV: test
+
+      - name: Build Server (TypeScript)
+        run: npm run server:build
+
+      - name: Build Client (Vite)
+        run: npm run client:build
+
+      - name: Run All Acceptance, Security & System Tests
+        run: npm test
+        env:
+          COMMAND_CENTER_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          PORT: 3999
+          NODE_ENV: test
+          AGY_MOCK_SPAWN: 'true'

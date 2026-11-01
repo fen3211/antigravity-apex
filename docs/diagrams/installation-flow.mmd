@@ -1,0 +1,138 @@
+flowchart TD
+    %% ==========================================
+    %% AI COMMAND CENTER - INSTALLATION & ONBOARDING FLOW
+    %% ==========================================
+
+    START(["Start Onboarding"]):::startNode
+
+    subgraph PHASE1["Phase 1: Repository Acquisition"]
+        GIT_CLONE["Clone or Extract AI Command Center
+        git clone <repo-url> ai-command-center
+        cd ai-command-center"]
+    end
+
+    START --> GIT_CLONE
+
+    subgraph PHASE2["Phase 2: Health Doctor & Prerequisite Diagnostic"]
+        direction TB
+        NODE_CHK{"Node.js Runtime
+        Version Check (>= 18.x)"}
+        NODE_FAIL["Error: Node.js >= 18 required.
+        Install via nvm-windows or nodejs.org"]:::errNode
+        
+        AGY_CHK{"Antigravity CLI (agy.exe)
+        Check: %LOCALAPPDATA%/agy/bin/agy.exe"}
+        AGY_WARN["Warning: agy.exe not found.
+        Fallback to Mock Spawn simulation mode"]:::warnNode
+        
+        FS_CHK{"Antigravity Directory
+        Check: ~/.gemini/antigravity"}
+        FS_INIT["Initialize default ~/.gemini/
+        antigravity directory hierarchy"]
+        
+        NODE_CHK -->|"Pass (v18 - v24)"| AGY_CHK
+        NODE_CHK -->|"Fail (< 18)"| NODE_FAIL
+        AGY_CHK -->|"Found"| FS_CHK
+        AGY_CHK -->|"Missing"| AGY_WARN --> FS_CHK
+        FS_CHK -->|"Exists"| PHASE3
+        FS_CHK -->|"Missing"| FS_INIT --> PHASE3
+    end
+
+    GIT_CLONE --> NODE_CHK
+
+    subgraph PHASE3["Phase 3: Configuration & Secret Discovery"]
+        direction TB
+        ENV_CHK{".env File Exists?"}
+        COPY_ENV["Copy template:
+        cp .env.example .env"]
+        
+        KEY_CHK{"COMMAND_CENTER_API_KEY
+        Configured in .env?"}
+        GEN_KEY["Generate Cryptographic Token:
+        crypto.randomBytes(32).toString('hex')
+        Persist to .env automatically"]
+        
+        ENV_CHK -->|"Yes"| KEY_CHK
+        ENV_CHK -->|"No"| COPY_ENV --> KEY_CHK
+        KEY_CHK -->|"Configured"| PHASE4
+        KEY_CHK -->|"Missing / Empty"| GEN_KEY --> PHASE4
+    end
+
+    subgraph PHASE4["Phase 4: Dependency Resolution & Build"]
+        direction TB
+        NPM_ROOT["Install Server Dependencies:
+        npm install
+        (Express, better-sqlite3, chokidar, ws, zod)"]
+        NPM_CLIENT["Install Client Dependencies:
+        npm --prefix client install
+        (React 19, Vite, Tailwind CSS, Lucide)"]
+        BUILD_CLIENT["Compile Client Production Bundle:
+        npm --prefix client run build
+        (Outputs to client/dist)"]
+        
+        NPM_ROOT --> NPM_CLIENT --> BUILD_CLIENT
+    end
+
+    subgraph PHASE5["Phase 5: Agent Rules Deploy & Database Seeding"]
+        direction TB
+        RULES_DEPLOY["Deploy / Verify Agent Markdown Rules:
+        ~/.gemini/config/plugins/ai-director/
+        - agents/*.md (17 Specialist Prompts)
+        - rules/AGENTS.md (Director Master Rules)
+        ~/.gemini/antigravity/knowledge/ai-director/*.md"]
+        
+        DB_INIT["Initialize SQLite Engine (better-sqlite3):
+        - Enable WAL mode (journal_mode = WAL)
+        - Set busy_timeout = 5000ms, foreign_keys = ON
+        - Create indexed tables: tasks, events, settings,
+          model_usage, session_token_usage, log_parse_state
+        - Seed default control settings (max 6 agents)"]
+        
+        RULES_DEPLOY --> DB_INIT
+    end
+
+    BUILD_CLIENT --> RULES_DEPLOY
+
+    subgraph PHASE6["Phase 6: Automated Validation Suite"]
+        direction TB
+        RUN_TESTS["Execute Automated Verification:
+        npm test
+        - api.test.ts (20 System & Security checks)
+        - ingestion.test.ts (11 Ingestion checks)
+        - analytics.test.ts (4 Token analytics checks)
+        - websocket-resilience.test.ts (5 WS checks)
+        - process-supervisor.test.ts (9 Supervisor checks)
+        - legal-compliance.test.ts (16 Legal checks)"]
+        
+        TEST_RESULT{"All Test Suites
+        Passed (100%)?"}
+        FIX_DIAG["Review test logs, verify port availability
+        (3001/5173) and permissions"]:::errNode
+        
+        RUN_TESTS --> TEST_RESULT
+        TEST_RESULT -->|"Fail"| FIX_DIAG
+        TEST_RESULT -->|"Pass"| PHASE7
+    end
+
+    DB_INIT --> RUN_TESTS
+
+    subgraph PHASE7["Phase 7: Runtime Ready & Operational"]
+        direction TB
+        LAUNCH["Start Command Center:
+        Development: npm run dev
+        or Double-Click: start.cmd
+        Production: npm start"]
+        
+        READY(["AI Command Center ONLINE
+        - Frontend: http://127.0.0.1:5173
+        - API Health: http://127.0.0.1:3001/health
+        - WS Stream: ws://127.0.0.1:3001/ws"]):::successNode
+        
+        LAUNCH --> READY
+    end
+
+    %% Class styles
+    classDef startNode fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#ffffff;
+    classDef successNode fill:#10b981,stroke:#047857,stroke-width:2px,color:#ffffff;
+    classDef warnNode fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#ffffff;
+    classDef errNode fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#ffffff;

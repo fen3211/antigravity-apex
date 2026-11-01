@@ -1,6 +1,7 @@
+import fs from 'fs';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { CONFIG } from '../config.js';
+import { CONFIG, checkPathExists } from '../config.js';
 import { requireAuth } from '../middleware/auth.js';
 import { antigravityBridge } from '../services/antigravity-bridge.js';
 import { taskManager } from '../services/task-manager.js';
@@ -45,6 +46,150 @@ apiRouter.get('/status', (req: Request, res: Response) => {
     res.json(status);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================
+// 1b. Diagnostic Doctor (/api/system/doctor)
+// ==========================================
+apiRouter.get('/system/doctor', async (_req: Request, res: Response) => {
+  try {
+    const nodeStatus = {
+      version: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      uptimeSeconds: Math.floor(process.uptime()),
+      pid: process.pid,
+      memory: process.memoryUsage()
+    };
+
+    // SQLite checks
+    const dbExists = fs.existsSync(CONFIG.DB_PATH);
+    let sqliteStatus: any = {
+      connected: false,
+      dbPath: CONFIG.DB_PATH,
+      exists: dbExists
+    };
+
+    try {
+      const { db } = await import('../db/database.js');
+      const pragmaJournal = db.pragma('journal_mode', { simple: true });
+      const pragmaBusy = db.pragma('busy_timeout', { simple: true });
+      const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as { name: string }[];
+      const sizeBytes = dbExists ? fs.statSync(CONFIG.DB_PATH).size : 0;
+
+      sqliteStatus = {
+        connected: true,
+        dbPath: CONFIG.DB_PATH,
+        exists: true,
+        sizeBytes,
+        journalMode: pragmaJournal,
+        busyTimeoutMs: pragmaBusy,
+        tablesCount: tables.length,
+        tables: tables.map(t => t.name)
+      };
+    } catch (dbErr: any) {
+      sqliteStatus.error = dbErr.message;
+    }
+
+    // Antigravity paths check
+    const antigravityPaths = {
+      antigravityDir: {
+        path: CONFIG.ANTIGRAVITY_DIR,
+        exists: checkPathExists(CONFIG.ANTIGRAVITY_DIR)
+      },
+      brainDir: {
+        path: CONFIG.BRAIN_DIR,
+        exists: checkPathExists(CONFIG.BRAIN_DIR)
+      },
+      presenceDir: {
+        path: CONFIG.PRESENCE_DIR,
+        exists: checkPathExists(CONFIG.PRESENCE_DIR)
+      },
+      conversationsDir: {
+        path: CONFIG.CONVERSATIONS_DIR,
+        exists: checkPathExists(CONFIG.CONVERSATIONS_DIR)
+      },
+      aiDirectorPluginDir: {
+        path: CONFIG.AI_DIRECTOR_PLUGIN_DIR,
+        exists: checkPathExists(CONFIG.AI_DIRECTOR_PLUGIN_DIR)
+      },
+      aiDirectorAgentsDir: {
+        path: CONFIG.AI_DIRECTOR_AGENTS_DIR,
+        exists: checkPathExists(CONFIG.AI_DIRECTOR_AGENTS_DIR)
+      }
+    };
+
+    // Knowledge base check
+    const knowledgeDocs = antigravityBridge.getKnowledgeDocs();
+    const knowledgeStatus = {
+      dir: CONFIG.KNOWLEDGE_DIR,
+      exists: checkPathExists(CONFIG.KNOWLEDGE_DIR),
+      documentsCount: knowledgeDocs.length,
+      documents: knowledgeDocs.map(d => ({
+        filename: d.filename,
+        title: d.title,
+        size: d.size,
+        lastModified: d.lastModified
+      }))
+    };
+
+    // CLI agy check
+    const agyCliAvailable = checkPathExists(CONFIG.AGY_CLI_PATH);
+    let agyVersion: string | null = null;
+    if (agyCliAvailable) {
+      const cliRes = await antigravityBridge.runAgyCommand(['--version'], 3000);
+      if (cliRes.success && cliRes.stdout) {
+        agyVersion = cliRes.stdout;
+      }
+    }
+
+    const agyStatus = {
+      configuredPath: CONFIG.AGY_CLI_PATH,
+      available: agyCliAvailable,
+      version: agyVersion
+    };
+
+    // Agents check (all 17 roles)
+    const knownAgents = antigravityBridge.getKnownAgents();
+    const agentsStatus = {
+      totalRegistered: knownAgents.length,
+      allRolesCovered: knownAgents.length >= 17,
+      roles: knownAgents.map(a => ({
+        id: a.id,
+        name: a.name,
+        role: a.role,
+        model: a.model,
+        status: a.status
+      }))
+    };
+
+    // Supervisor check
+    const supervisorStatus = {
+      activeProcesses: processSupervisor.getActiveCount(),
+      maxConcurrent: processSupervisor.getMaxConcurrent(),
+      totalProcessesTracked: processSupervisor.getAllProcesses().length
+    };
+
+    const overallOk = sqliteStatus.connected && agentsStatus.allRolesCovered;
+
+    res.json({
+      status: overallOk ? 'ok' : 'degraded',
+      timestamp: new Date().toISOString(),
+      nodejs: nodeStatus,
+      sqlite: sqliteStatus,
+      antigravity: antigravityPaths,
+      knowledgeBase: knowledgeStatus,
+      agyCli: agyStatus,
+      agents: agentsStatus,
+      supervisor: supervisorStatus
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      error: err.message
+    });
   }
 });
 
@@ -118,6 +263,7 @@ const createTaskSchema = z.object({
     'Specialist',
     'QualityGate_L1',
     'Independent_L2',
+    'LegalGate',
     'Architect_L3',
     'Argon_L4',
     'Approved'
@@ -154,6 +300,7 @@ const updateTaskSchema = z.object({
     'Specialist',
     'QualityGate_L1',
     'Independent_L2',
+    'LegalGate',
     'Architect_L3',
     'Argon_L4',
     'Approved'
@@ -220,7 +367,7 @@ const executeTaskSchema = z.object({
 
 apiRouter.post('/tasks/:id/execute', requireAuth, async (req: Request, res: Response) => {
   try {
-    const taskId = String(req.params.id);
+    const taskId = z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/).parse(req.params.id);
     const parsed = executeTaskSchema.parse(req.body || {});
     const task = taskManager.getTaskById(taskId);
     const prompt = parsed.prompt || task?.description || task?.title || `Execute task ${taskId}`;
@@ -334,8 +481,7 @@ apiRouter.get('/knowledge/:filename', (req: Request, res: Response) => {
   if (!knowledgeFilenameRegex.test(filename)) {
     return res.status(400).json({ error: 'Invalid filename' });
   }
-  const docs = antigravityBridge.getKnowledgeDocs();
-  const doc = docs.find(d => d.filename.toLowerCase() === filename.toLowerCase());
+  const doc = antigravityBridge.getKnowledgeDoc(filename);
   if (!doc) return res.status(404).json({ error: 'Knowledge doc not found' });
   res.json(doc);
 });

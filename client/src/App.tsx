@@ -16,6 +16,7 @@ import { ReportModal } from './components/Modals/ReportModal.js';
 import { NewTaskModal } from './components/Modals/NewTaskModal.js';
 
 import { api, eventStream } from './services/api.js';
+import { useTheme } from './hooks/useTheme.js';
 import type { 
   DirectorStatus, 
   AgentInfo, 
@@ -31,6 +32,7 @@ import type {
 } from './types.js';
 
 export function AppContent() {
+  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<NavTab>('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -61,7 +63,7 @@ export function AppContent() {
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
 
   // Первоначальная загрузка данных
-  const loadAllData = async () => {
+  const loadAllData = React.useCallback(async () => {
     try {
       const [
         fetchedStatus,
@@ -91,10 +93,42 @@ export function AppContent() {
     } catch (err) {
       console.error('Ошибка инициализации данных Command Center:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadAllData();
+    let isMounted = true;
+    void (async () => {
+      try {
+        const [
+          fetchedStatus,
+          fetchedAgents,
+          fetchedTasks,
+          fetchedEvents,
+          fetchedAnalytics,
+          fetchedDocs,
+          fetchedSettings
+        ] = await Promise.all([
+          api.getStatus().catch(() => null),
+          api.getAgents().catch(() => []),
+          api.getTasks().catch(() => []),
+          api.getEvents({ limit: 50 }).catch(() => []),
+          api.getAnalytics().catch(() => null),
+          api.getKnowledgeDocs().catch(() => []),
+          api.getSettings().catch(() => null)
+        ]);
+
+        if (!isMounted) return;
+        if (fetchedStatus) setStatus(fetchedStatus);
+        if (fetchedAgents) setAgents(fetchedAgents);
+        if (fetchedTasks) setTasks(fetchedTasks);
+        if (fetchedEvents) setEvents(fetchedEvents);
+        if (fetchedAnalytics) setAnalytics(fetchedAnalytics);
+        if (fetchedDocs) setKnowledgeDocs(fetchedDocs);
+        if (fetchedSettings) setSettings(fetchedSettings);
+      } catch (err) {
+        console.error('Ошибка инициализации данных Command Center:', err);
+      }
+    })();
 
     // Слушатель статуса WebSocket (реконсиляция при восстановлении связи)
     const unsubscribeStatus = eventStream.onStatusChange((newStatus) => {
@@ -145,13 +179,14 @@ export function AppContent() {
     }, 15000);
 
     return () => {
+      isMounted = false;
       unsubscribeStatus();
       unsubscribeEvents();
       if (tasksDebounceTimer.current) clearTimeout(tasksDebounceTimer.current);
       if (agentsDebounceTimer.current) clearTimeout(agentsDebounceTimer.current);
       clearInterval(interval);
     };
-  }, []);
+  }, [loadAllData]);
 
   // Обработчики
   const handleToggleAgent = async (agentId: string, currentEnabled: boolean) => {
@@ -230,7 +265,7 @@ export function AppContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-slate-100">
+    <div className="min-h-screen flex flex-col bg-paper text-obsidian">
       {/* Шапка и статусная строка */}
       <Header
         status={status}
@@ -238,6 +273,8 @@ export function AppContent() {
         onOpenNewTask={() => setIsNewTaskOpen(true)}
         isMobileMenuOpen={isMobileMenuOpen}
         onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       <div className="flex-1 flex overflow-hidden relative">
@@ -252,7 +289,7 @@ export function AppContent() {
         />
 
         {/* Основная рабочая область */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8 space-y-6 bg-paper">
           {activeTab === 'overview' && (
             <Overview
               status={status}

@@ -14,7 +14,7 @@ import {
 import { api, eventStream } from '../services/api.js';
 import { useToast } from './Toast.js';
 import { ArgonVerdictModal } from './Modals/ArgonVerdictModal.js';
-import type { TaskItem, ManagedProcess } from '../types.js';
+import type { TaskItem, ManagedProcess, TaskStatus, TaskPriority } from '../types.js';
 
 interface TaskManagerProps {
   tasks: TaskItem[];
@@ -36,6 +36,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
   const toast = useToast();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [processes, setProcesses] = useState<Record<string, ManagedProcess>>({});
   const [executingTaskIds, setExecutingTaskIds] = useState<Set<string>>(new Set());
   const [cancellingTaskIds, setCancellingTaskIds] = useState<Set<string>>(new Set());
@@ -56,20 +57,37 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
   }, []);
 
   useEffect(() => {
-    refreshProcesses();
-    const interval = setInterval(refreshProcesses, 3000);
+    let isMounted = true;
+    const pollProcesses = async () => {
+      try {
+        const list = await api.getAllProcesses();
+        if (isMounted) {
+          const map: Record<string, ManagedProcess> = {};
+          list.forEach(p => {
+            map[p.taskId] = p;
+          });
+          setProcesses(map);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    pollProcesses();
+    const interval = setInterval(pollProcesses, 3000);
 
     const unsubscribe = eventStream.subscribe((event) => {
       if (event.type.startsWith('task.') || event.type.startsWith('escalation.')) {
-        refreshProcesses();
+        pollProcesses();
       }
     });
 
     return () => {
+      isMounted = false;
       clearInterval(interval);
       unsubscribe();
     };
-  }, [refreshProcesses]);
+  }, []);
 
   // Запуск задачи в CLI через супервизор
   const handleExecuteInCli = async (task: TaskItem) => {
@@ -83,8 +101,9 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       } else {
         toast.error('Не удалось запустить процесс в CLI супервизоре', 'Ошибка запуска');
       }
-    } catch (err: any) {
-      toast.error(err.message || 'Ошибка выполнения задачи в CLI', 'Сбой CLI');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ошибка выполнения задачи в CLI';
+      toast.error(msg, 'Сбой CLI');
     } finally {
       setExecutingTaskIds(prev => {
         const next = new Set(prev);
@@ -100,14 +119,15 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
     try {
       const res = await api.cancelTask(task.id);
       if (res.success) {
-        toast.info(`Процесс задачи "${task.title}" отменён`, 'Процесс остановлен');
+        toast.warning(`Процесс задачи "${task.title}" остановлен`, 'Отмена');
         await refreshProcesses();
         onRefreshTasks?.();
       } else {
-        toast.warning('Процесс уже завершён или не найден', 'Отмена процесса');
+        toast.error('Не удалось отменить процесс', 'Ошибка отмены');
       }
-    } catch (err: any) {
-      toast.error(err.message || 'Ошибка отмены процесса', 'Сбой отмены');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ошибка отмены процесса';
+      toast.error(msg, 'Сбой');
     } finally {
       setCancellingTaskIds(prev => {
         const next = new Set(prev);
@@ -120,32 +140,35 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
   const filteredTasks = tasks.filter(t => {
     const matchesSearch = 
       t.title.toLowerCase().includes(search.toLowerCase()) ||
-      t.description.toLowerCase().includes(search.toLowerCase()) ||
-      t.id.toLowerCase().includes(search.toLowerCase());
-    
+      t.id.toLowerCase().includes(search.toLowerCase()) ||
+      t.assignedAgent.toLowerCase().includes(search.toLowerCase()) ||
+      t.description.toLowerCase().includes(search.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesPriority = priorityFilter === 'all' || t.priority === priorityFilter;
+
+    return matchesSearch && matchesStatus && matchesPriority;
   });
 
-  const translateStatus = (s: string) => {
+  const translateStatus = (s: TaskStatus) => {
     switch (s) {
       case 'completed': return 'ЗАВЕРШЕНО';
       case 'in_progress': return 'В РАБОТЕ';
       case 'escalated': return 'ЭСКАЛИРОВАНО';
-      case 'failed': return 'ОШИБКА';
+      case 'failed': return 'СБОЙ';
       case 'verification': return 'ПРОВЕРКА';
       case 'pending': return 'В ОЧЕРЕДИ';
-      default: return s.toUpperCase();
+      default: return s;
     }
   };
 
-  const translatePriority = (p: string) => {
+  const translatePriority = (p: TaskPriority) => {
     switch (p) {
       case 'critical': return 'КРИТИЧЕСКИЙ';
       case 'high': return 'ВЫСОКИЙ';
       case 'medium': return 'СРЕДНИЙ';
       case 'low': return 'НИЗКИЙ';
-      default: return p.toUpperCase();
+      default: return p;
     }
   };
 
@@ -156,6 +179,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       case 'Specialist': return 'Специалист';
       case 'QualityGate_L1': return 'Шлюз качества L1';
       case 'Independent_L2': return 'Независимый аудит L2';
+      case 'LegalGate': return 'Шлюз 2b: Юрист & комплаенс';
       case 'Architect_L3': return 'Senior Architect (L3)';
       case 'Argon_L4': return 'Gemini 4 Argon (L4)';
       case 'Approved': return 'Утверждено';
@@ -163,76 +187,120 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
     }
   };
 
+  const getStatusBadgeClass = (status: TaskStatus) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-terminal-bg text-terminal-green border-terminal-border';
+      case 'in_progress':
+        return 'bg-info-bg text-info-text border-info-border';
+      case 'escalated':
+        return 'bg-argon-bg text-argon-text border-argon-border';
+      case 'failed':
+        return 'bg-danger-bg text-danger-text border-danger-border';
+      case 'verification':
+        return 'bg-warning-bg text-warning-text border-warning-border';
+      default:
+        return 'bg-surface-subtle text-charcoal border-hairline';
+    }
+  };
+
+  const getPriorityBadgeClass = (priority: TaskPriority) => {
+    switch (priority) {
+      case 'critical':
+        return 'bg-danger-bg text-danger-text border-danger-border font-semibold';
+      case 'high':
+        return 'bg-warning-bg text-warning-text border-warning-border font-medium';
+      case 'medium':
+        return 'bg-surface-subtle text-charcoal border-hairline';
+      case 'low':
+        return 'bg-surface-subtle text-stone border-hairline';
+      default:
+        return 'bg-surface-subtle text-charcoal border-hairline';
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Заголовок и создание задачи */}
-      <div className="glass-panel p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* 1. Header & Quick Action */}
+      <section className="bg-pure border border-hairline rounded-md p-4 sm:p-5 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
-            <CheckSquare className="w-5 h-5 text-director-blue" />
-            <span>Очередь задач и TaskProcessSupervisor</span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Контроль жизненного цикла задач, исполнение в CLI agy, шлюзы качества и замкнутый цикл Аргона.
+          <div className="flex items-center gap-2">
+            <CheckSquare className="w-5 h-5 text-obsidian" />
+            <h1 className="text-lg font-semibold text-obsidian tracking-tight">
+              Очередь задач и TaskProcessSupervisor
+            </h1>
+          </div>
+          <p className="text-[13px] text-charcoal mt-1 leading-relaxed">
+            Мониторинг жизненного цикла задач, исполнение в CLI agy, история делегирования и замкнутый цикл эскалации к Argon.
           </p>
         </div>
 
         <button
+          type="button"
           onClick={onOpenNewTask}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-director-blue to-blue-600 hover:from-blue-500 hover:to-director-blue text-white text-xs font-semibold shadow-glass-subtle transition-all self-start md:self-auto active:scale-[0.98]"
+          className="refero-btn-primary self-start md:self-auto"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           <span>Создать задачу</span>
         </button>
-      </div>
+      </section>
 
-      {/* Панель фильтров */}
-      <div className="flex flex-wrap items-center justify-between gap-3 glass-card p-3.5">
-        <div className="flex items-center gap-3 flex-1 min-w-[280px]">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+      {/* 2. Filters & Search Bar */}
+      <section className="bg-pure border border-hairline rounded-md p-3.5 shadow-subtle flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
+            <Search className="w-3.5 h-3.5 text-graphite absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder="Поиск по названию или ID..."
+              placeholder="Поиск по названию, исполнителю или ID..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="glass-input pl-9 text-xs w-full"
+              className="w-full pl-8 pr-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian placeholder-smoke focus-ring"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="glass-input text-xs"
+            className="px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian focus-ring"
           >
             <option value="all">Все статусы</option>
             <option value="pending">В очереди</option>
             <option value="in_progress">В работе</option>
             <option value="verification">На проверке</option>
             <option value="completed">Завершено</option>
-            <option value="escalated">Эскалировано</option>
-            <option value="failed">Ошибка</option>
+            <option value="escalated">Эскалировано (Argon L4)</option>
+            <option value="failed">Сбой</option>
+          </select>
+
+          <select
+            value={priorityFilter}
+            onChange={e => setPriorityFilter(e.target.value)}
+            className="px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian focus-ring"
+          >
+            <option value="all">Все приоритеты</option>
+            <option value="critical">Критический</option>
+            <option value="high">Высокий</option>
+            <option value="medium">Средний</option>
+            <option value="low">Низкий</option>
           </select>
         </div>
 
-        <div className="text-xs font-mono text-slate-400">
-          Отображено <strong className="text-white">{filteredTasks.length}</strong> из {tasks.length} задач
+        <div className="text-xs font-mono text-slate">
+          Отображено <strong className="text-obsidian font-semibold">{filteredTasks.length}</strong> из {tasks.length} задач
         </div>
-      </div>
+      </section>
 
-      {/* Список задач */}
-      <div className="space-y-3">
+      {/* 3. Task List Cards */}
+      <section className="space-y-3">
         {filteredTasks.length === 0 ? (
-          <div className="glass-panel p-12 text-center text-slate-500 space-y-2">
-            <CheckSquare className="w-8 h-8 mx-auto text-slate-600" />
-            <p className="text-sm">Нет задач, соответствующих выбранным критериям.</p>
+          <div className="bg-pure border border-hairline rounded-md p-12 text-center text-slate space-y-2">
+            <CheckSquare className="w-8 h-8 mx-auto text-ash" />
+            <p className="text-[13px]">Нет задач, соответствующих выбранным критериям.</p>
           </div>
         ) : (
           filteredTasks.map(task => {
-            const isCompleted = task.status === 'completed';
-            const isEscalated = task.status === 'escalated';
             const isInProgress = task.status === 'in_progress';
-            const isFailed = task.status === 'failed';
             const isArgonStage = task.stage === 'Argon_L4';
 
             const proc = processes[task.id];
@@ -243,84 +311,75 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
             return (
               <div
                 key={task.id}
-                className={`glass-card p-4 sm:p-5 space-y-3 hover:border-white/20 transition-all ${
-                  isArgonStage ? 'border-pink-500/30 shadow-glow-argon' : ''
+                className={`bg-pure border rounded-md p-4 sm:p-5 shadow-subtle hover:border-ash transition-all space-y-3.5 ${
+                  isArgonStage ? 'border-argon-border ring-1 ring-argon-border/50' : 'border-hairline'
                 }`}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                {/* Task Header: Badges & Timestamp */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* Плашка статуса */}
-                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-semibold uppercase ${
-                      isCompleted 
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                        : isEscalated
-                        ? 'bg-pink-500/10 text-pink-400 border border-pink-500/20 shadow-glow-argon'
-                        : isInProgress
-                        ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                        : isFailed
-                        ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                        : 'bg-slate-500/10 text-slate-400 border border-white/5'
-                    }`}>
+                    {/* Status Pill */}
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-medium uppercase border ${getStatusBadgeClass(task.status)}`}>
                       {translateStatus(task.status)}
                     </span>
 
-                    {/* Бейдж активного процесса CLI супервизора */}
+                    {/* CLI Running Indicator */}
                     {isProcActive && (
                       <span className="badge-live text-[10px] py-0.5 px-2 font-mono flex items-center gap-1.5">
-                        <Activity className="w-3 h-3 text-emerald-400 animate-pulse" />
+                        <Activity className="w-3 h-3 text-terminal-green animate-pulse" />
                         <span>CLI RUNNING {proc?.pid ? `(PID ${proc.pid})` : ''}</span>
                       </span>
                     )}
 
-                    {/* Плашка приоритета */}
-                    <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold ${
-                      task.priority === 'critical'
-                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                        : task.priority === 'high'
-                        ? 'bg-amber-500/20 text-amber-300'
-                        : 'bg-white/5 text-slate-400'
-                    }`}>
+                    {/* Priority Pill */}
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${getPriorityBadgeClass(task.priority)}`}>
                       {translatePriority(task.priority)}
                     </span>
 
-                    <span className="text-xs font-mono text-director-cyan">
+                    {/* Agent Assignment */}
+                    <span className="text-xs font-mono font-medium text-obsidian">
                       Исполнитель: @{task.assignedAgent}
                     </span>
 
-                    <span className="text-xs font-mono text-slate-400">
+                    {/* Stage Name */}
+                    <span className="text-xs font-mono text-stone hidden md:inline">
                       Стадия: {translateStage(task.stage)}
                     </span>
 
+                    {/* Provenance */}
                     {task.isDemo ? (
-                      <span className="badge-demo text-[9px] py-0 px-1.5 font-mono">ДЕМО</span>
+                      <span className="badge-demo text-[9px] py-0 px-1.5 font-mono">DEMO</span>
                     ) : (
                       <span className="badge-live text-[9px] py-0 px-1.5 font-mono">LIVE</span>
                     )}
                   </div>
 
-                  <div className="text-[11px] font-mono text-slate-500">
+                  <div className="text-[11px] font-mono text-slate">
                     Обновлено: {new Date(task.updatedAt).toLocaleTimeString()}
                   </div>
                 </div>
 
-                {/* Заголовок и описание */}
+                {/* Title and Description */}
                 <div>
-                  <h3 
+                  <h2 
                     onClick={() => onSelectTask(task)}
-                    className="text-sm font-bold text-white hover:text-director-cyan cursor-pointer transition-colors"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTask(task); } }}
+                    className="text-sm font-semibold text-obsidian hover:underline cursor-pointer transition-colors"
                   >
                     {task.title}
-                  </h3>
+                  </h2>
                   {task.description && (
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    <p className="text-[13px] text-charcoal mt-1 leading-relaxed">
                       {task.description}
                     </p>
                   )}
                 </div>
 
-                {/* Лог ошибки, если есть */}
+                {/* Error Log / Escalation Info (if any) */}
                 {task.errorLog && (
-                  <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 font-mono space-y-1">
+                  <div className="p-3 rounded-md bg-danger-bg border border-danger-border text-xs text-danger-text font-mono space-y-1">
                     <span className="text-[10px] uppercase font-bold flex items-center gap-1">
                       <AlertTriangle className="w-3 h-3" />
                       Причина сбоя / статус эскалации:
@@ -329,16 +388,16 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                   </div>
                 )}
 
-                {/* Управление задачей, CLI и Аргон */}
-                <div className="pt-3 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-3 font-mono text-slate-400 text-[11px]">
+                {/* Task Footer: Retries & Action Buttons */}
+                <div className="pt-3 border-t border-hairline flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-3 font-mono text-stone text-[11px]">
                     <span>
-                      Попытки: <strong className={task.retryCount >= task.maxRetries ? 'text-pink-400 font-bold' : 'text-slate-200'}>
+                      Попытки: <strong className={task.retryCount >= task.maxRetries ? 'text-danger-text font-bold' : 'text-obsidian'}>
                         {task.retryCount}/{task.maxRetries}
                       </strong>
                     </span>
                     {task.retryCount >= task.maxRetries && (
-                      <span className="text-pink-400 font-semibold flex items-center gap-1">
+                      <span className="text-danger-text font-semibold flex items-center gap-1">
                         <Flame className="w-3 h-3" />
                         Лимит попыток исчерпан (Эскалация активна)
                       </span>
@@ -346,91 +405,88 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* Кнопка "Ввести вердикт Аргона" при стадии Argon_L4 */}
+                    {/* Enter Argon Verdict (Argon_L4 Stage) */}
                     {isArgonStage && (
                       <button
                         type="button"
                         onClick={() => setArgonModalTask(task)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-500/25 via-purple-500/20 to-pink-500/25 hover:from-pink-500/35 hover:to-purple-500/35 text-pink-300 font-semibold border border-pink-500/40 shadow-glow-argon transition-all active:scale-95"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-argon-bg text-argon-text border border-argon-border hover:bg-argon-border/40 transition-colors focus-ring"
                       >
-                        <Flame className="w-3.5 h-3.5 text-director-argon animate-pulse" />
+                        <Flame className="w-3.5 h-3.5 text-argon-text animate-pulse" />
                         <span>Ввести вердикт Аргона</span>
                       </button>
                     )}
 
-                    {/* Кнопка "Отменить" активный процесс CLI супервизора */}
+                    {/* Stop / Cancel CLI Process */}
                     {(isProcActive || isInProgress) && (
                       <button
                         type="button"
                         onClick={() => handleCancelTask(task)}
                         disabled={isCancelling}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 font-medium border border-rose-500/25 transition-all disabled:opacity-50"
+                        className="refero-btn-danger text-xs py-1 px-2.5"
                         title="Остановить процесс супервизора"
                       >
-                        <Square className="w-3.5 h-3.5 text-rose-400" />
-                        <span>{isCancelling ? 'Отмена...' : 'Отменить'}</span>
+                        <Square className="w-3.5 h-3.5" />
+                        <span>{isCancelling ? 'Отмена...' : 'Остановить CLI'}</span>
                       </button>
                     )}
 
-                    {/* Кнопка "Выполнить в CLI" */}
+                    {/* Execute in CLI */}
                     {!isProcActive && !isInProgress && (
                       <button
                         type="button"
                         onClick={() => handleExecuteInCli(task)}
                         disabled={isExecuting}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-director-cyan font-medium border border-director-blue/30 transition-all shadow-glass-subtle disabled:opacity-50 active:scale-95"
-                        title="Запустить выполнение задачи в CLI agy через TaskProcessSupervisor"
+                        className="refero-btn-primary text-xs py-1 px-2.5"
+                        title="Запустить выполнение задачи в CLI супервизоре"
                       >
-                        {isExecuting ? (
-                          <span className="w-3.5 h-3.5 border-2 border-director-cyan border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <Play className="w-3.5 h-3.5 fill-current" />
-                        )}
-                        <span>Выполнить в CLI</span>
+                        <Play className="w-3.5 h-3.5" />
+                        <span>{isExecuting ? 'Запуск...' : 'Запустить в CLI'}</span>
                       </button>
                     )}
 
-                    {/* Просмотр отчёта 9 пунктов */}
+                    {/* Restart Task */}
+                    <button
+                      type="button"
+                      onClick={() => onRestartTask(task.id)}
+                      className="refero-btn-secondary text-xs py-1 px-2.5"
+                      title="Перезапустить задачу"
+                    >
+                      <RotateCcw className="w-3 h-3 text-graphite" />
+                      <span>Перезапуск</span>
+                    </button>
+
+                    {/* View 9-point report */}
                     {task.report && (
                       <button
                         type="button"
                         onClick={() => onViewReport(task)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/20 transition-all"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-terminal-bg text-terminal-green border border-terminal-border hover:bg-terminal-border/40 transition-colors focus-ring"
                       >
-                        <FileText className="w-3.5 h-3.5" />
+                        <FileText className="w-3 h-3" />
                         <span>9-п. отчёт</span>
                       </button>
                     )}
-
-                    {/* Перезапуск / повтор задачи */}
-                    <button
-                      type="button"
-                      onClick={() => onRestartTask(task.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 font-medium border border-white/10 transition-all"
-                      title={task.retryCount >= task.maxRetries ? 'Будет выполнена эскалация на следующий уровень' : 'Повторить выполнение'}
-                    >
-                      <RotateCcw className="w-3.5 h-3.5 text-director-cyan" />
-                      <span>{task.retryCount >= task.maxRetries ? 'Эскалировать' : 'Перезапустить'}</span>
-                    </button>
                   </div>
                 </div>
               </div>
             );
           })
         )}
-      </div>
+      </section>
 
-      {/* Модальное окно вердикта Gemini 4 Argon */}
-      <ArgonVerdictModal
-        isOpen={Boolean(argonModalTask)}
-        task={argonModalTask}
-        onClose={() => setArgonModalTask(null)}
-        onSuccess={(updatedTask) => {
-          toast.success(`Задача "${updatedTask.title}" возвращена специалисту @${updatedTask.assignedAgent}`, 'Де-эскалация Аргона выполнена');
-          onRefreshTasks?.();
-          refreshProcesses();
-        }}
-      />
+      {/* Argon Verdict Modal */}
+      {argonModalTask && (
+        <ArgonVerdictModal
+          isOpen={!!argonModalTask}
+          task={argonModalTask}
+          onClose={() => setArgonModalTask(null)}
+          onSuccess={() => {
+            setArgonModalTask(null);
+            onRefreshTasks?.();
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -37,23 +37,9 @@ export const ArgonVerdictModal: React.FC<ArgonVerdictModalProps> = ({
   onSuccess
 }) => {
   const [verdict, setVerdict] = useState('');
-  const [targetSpecialist, setTargetSpecialist] = useState('backend-developer');
+  const [targetSpecialist, setTargetSpecialist] = useState(() => task?.assignedAgent || 'backend-developer');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (isOpen && task) {
-      setVerdict('');
-      // If task had an assigned specialist previously, suggest it
-      const prevSpecialist = AVAILABLE_SPECIALISTS.find(s => s.id === task.assignedAgent);
-      if (prevSpecialist) {
-        setTargetSpecialist(prevSpecialist.id);
-      } else {
-        setTargetSpecialist('backend-developer');
-      }
-      setErrorMessage(null);
-    }
-  }, [isOpen, task]);
 
   // Close on Escape
   useEffect(() => {
@@ -91,8 +77,9 @@ export const ArgonVerdictModal: React.FC<ArgonVerdictModalProps> = ({
       } else {
         setErrorMessage('Не удалось зафиксировать вердикт Аргона. Попробуйте снова.');
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Ошибка отправки вердикта в центр управления');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ошибка отправки вердикта в центр управления';
+      setErrorMessage(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -100,144 +87,145 @@ export const ArgonVerdictModal: React.FC<ArgonVerdictModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md transition-all animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm dark:bg-black/70 animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="argon-modal-title"
     >
       <div 
-        className="relative w-full max-w-2xl bg-surface-panel/95 border border-pink-500/30 rounded-2xl shadow-glow-argon overflow-hidden backdrop-blur-deep max-h-[92vh] flex flex-col animate-in zoom-in-95 duration-200"
+        className="w-full max-w-2xl bg-pure border border-hairline rounded-lg shadow-modal p-5 sm:p-6 space-y-4 max-h-[92vh] flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        {/* Заголовок с градиентом Argon */}
-        <div className="p-5 border-b border-white/10 bg-gradient-to-r from-pink-500/15 via-purple-500/10 to-transparent flex items-start justify-between gap-4">
+        {/* Header */}
+        <div className="flex items-start justify-between pb-3 border-b border-hairline gap-4">
           <div className="flex items-start gap-3">
-            <div className="p-2.5 rounded-xl bg-pink-500/20 text-director-argon shadow-glow-argon shrink-0 mt-0.5">
+            <div className="w-9 h-9 rounded-md bg-argon-bg border border-argon-border flex items-center justify-center text-argon-text shrink-0 mt-0.5">
               <Flame className="w-5 h-5 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 id="argon-modal-title" className="text-base font-bold text-white tracking-tight">
+                <h2 id="argon-modal-title" className="text-base font-semibold text-obsidian tracking-tight">
                   Замкнутый цикл Gemini 4 Argon (Уровень 4)
                 </h2>
                 <span className="badge-argon text-[10px] py-0 px-2 font-mono">
                   L4 DE-ESCALATION
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                Фиксация вердикта, выданного Gemini 4 Argon, и возврат задачи на исполнение профильному специалисту на Flash.
+              <p className="text-xs text-stone mt-1 leading-relaxed">
+                Фиксация архитектурного вердикта Gemini 4 Argon и возврат задачи на исполнение профильному специалисту на Flash.
               </p>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
             aria-label="Закрыть окно"
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-hairline text-charcoal hover:text-obsidian hover:bg-surface-subtle transition-colors focus-ring"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Форма вердикта */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1">
-          {/* Сведения о задаче */}
-          <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1.5 text-xs">
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs overflow-y-auto flex-1 pr-1">
+          {/* Task Info Context */}
+          <div className="p-3 rounded-md bg-surface-subtle border border-hairline space-y-1">
             <div className="flex items-center justify-between font-mono text-[11px]">
-              <span className="text-slate-400">Задача ID: <strong className="text-white font-mono">{task.id}</strong></span>
-              <span className="text-pink-400 font-semibold uppercase">Стадия: Argon_L4</span>
+              <span className="text-stone">Задача ID: <strong className="text-obsidian">{task.id}</strong></span>
+              <span className="text-argon-text font-semibold uppercase">Стадия: Argon_L4</span>
             </div>
-            <h3 className="font-semibold text-slate-200 text-sm">{task.title}</h3>
+            <h3 className="font-semibold text-obsidian text-sm">{task.title}</h3>
             {task.description && (
-              <p className="text-slate-400 text-xs line-clamp-2">{task.description}</p>
+              <p className="text-charcoal text-xs line-clamp-2">{task.description}</p>
             )}
           </div>
 
-          {/* Предупреждение / ошибка */}
+          {/* Error Banner */}
           {errorMessage && (
-            <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-xs text-rose-200 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="p-3 rounded-md bg-danger-bg border border-danger-border text-xs text-danger-text flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          {/* Поле вердикта */}
+          {/* Verdict Textarea */}
           <div className="space-y-1.5">
-            <label htmlFor="argon-verdict-input" className="block text-xs font-semibold text-slate-200">
-              Архитектурный диагноз и вердикт Argon <span className="text-pink-400">*</span>
+            <label htmlFor="argon-verdict-input" className="block text-xs font-semibold text-obsidian">
+              Архитектурный диагноз и вердикт Argon <span className="text-argon-text">*</span>
             </label>
-            <p className="text-[11px] text-slate-400">
-              Вставьте стратегию решения, дефекты или пошаговый алгоритм, сформированный Gemini 4 Argon:
+            <p className="text-[11px] text-stone">
+              Вставьте стратегию решения, исправленный паттерн или рекомендации, сформированные Gemini 4 Argon:
             </p>
             <textarea
               id="argon-verdict-input"
-              rows={6}
+              rows={5}
               required
               value={verdict}
               onChange={e => setVerdict(e.target.value)}
-              placeholder="Пример: Первопричина дефекта заключается в гонке данных между WebSocket реконнектом и очередью Ingestion. Стратегия: применить мьютекс транзакции в SQLite и вернуть реализацию субагенту backend-developer..."
-              className="glass-input w-full font-mono text-xs leading-relaxed resize-y focus:border-pink-500/60 focus:ring-pink-500/30"
+              placeholder="Пример: Первопричина дефекта заключается в гонке данных между реконнектом WebSocket и очередью событий. Решение: применить сериализованную транзакцию в SQLite и вернуть реализацию backend-developer..."
+              className="w-full p-3 bg-pure border border-hairline rounded-md font-mono text-xs text-obsidian placeholder-smoke leading-relaxed resize-y focus-ring"
             />
           </div>
 
-          {/* Выбор целевого специалиста */}
-          <div className="space-y-2">
-            <label htmlFor="argon-specialist-select" className="block text-xs font-semibold text-slate-200">
-              Назначить исполнителя на Gemini Flash <span className="text-pink-400">*</span>
+          {/* Specialist Selection */}
+          <div className="space-y-1.5">
+            <label htmlFor="argon-specialist-select" className="block text-xs font-semibold text-obsidian">
+              Назначить исполнителя на Gemini Flash <span className="text-argon-text">*</span>
             </label>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-stone">
               По регламенту Antigravity Gemini 4 Argon не пишет рядовой код. Реализация поручается Flash-специалисту:
             </p>
             <select
               id="argon-specialist-select"
               value={targetSpecialist}
               onChange={e => setTargetSpecialist(e.target.value)}
-              className="glass-input w-full text-xs"
+              className="w-full px-3 py-2 bg-pure border border-hairline rounded-md text-[13px] text-obsidian focus-ring"
             >
               {AVAILABLE_SPECIALISTS.map(spec => (
-                <option key={spec.id} value={spec.id} className="bg-slate-900 text-slate-100">
-                  @{spec.id} — {spec.label} ({spec.role})
+                <option key={spec.id} value={spec.id}>
+                  @{spec.id} — {spec.label}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Информационный бейдж о де-эскалации */}
-          <div className="p-3.5 rounded-xl bg-pink-500/10 border border-pink-500/20 text-xs text-slate-300 flex items-start gap-2.5">
-            <ShieldCheck className="w-4 h-4 text-pink-400 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-semibold text-pink-300">Правило замкнутого цикла (Closed-Loop Rule):</span>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                Задача будет возвращена на стадию <strong className="text-slate-200">Specialist</strong>, а статус сменится на <strong className="text-emerald-400">in_progress</strong>. В шину событий поступит <code className="text-pink-300">escalation.resolved</code> с прикрепленным вердиктом.
+          {/* Protocol Rule Callout */}
+          <div className="p-3 rounded-md bg-surface-subtle border border-hairline text-xs flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-terminal-green shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <span className="font-semibold text-obsidian">Правило замкнутого цикла (Closed-Loop Rule):</span>
+              <p className="text-charcoal leading-relaxed text-[11px]">
+                Задача будет возвращена на стадию <strong className="text-obsidian">Specialist</strong> со статусом <strong className="text-terminal-green">in_progress</strong>. В шину событий поступит <code className="font-mono text-obsidian">escalation.resolved</code> с прикрепленным вердиктом.
               </p>
             </div>
           </div>
 
-          {/* Кнопки действий */}
-          <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-3">
+          {/* Buttons */}
+          <div className="pt-3 border-t border-hairline flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 text-xs font-semibold transition-all disabled:opacity-50"
+              className="refero-btn-secondary text-xs"
             >
               Отмена
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !verdict.trim()}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-pink-500 via-director-argon to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white text-xs font-semibold shadow-glow-argon transition-all disabled:opacity-50 active:scale-[0.98]"
+              className="refero-btn-primary text-xs"
             >
               {isSubmitting ? (
                 <>
-                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span className="w-3.5 h-3.5 border-2 border-pure border-t-transparent rounded-full animate-spin" />
                   <span>Де-эскалация...</span>
                 </>
               ) : (
                 <>
-                  <Check className="w-4 h-4" />
-                  <span>Подтвердить и направить специалисту</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Подтвердить и вернуть специалисту</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
                 </>
               )}
             </button>

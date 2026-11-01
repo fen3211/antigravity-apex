@@ -378,6 +378,18 @@ async function runTests() {
     assert(wsHandshake.includes('Connected to AI Command Center Event Stream'), 'Handshake message received');
     console.log('✓ WebSocket security verified: Unauthorized token/origin closed with 1008, valid client handshakes.');
 
+    // 15d. Diagnostic Doctor Endpoint
+    console.log('\nTest 15d: GET /api/system/doctor Diagnostic Health Check...');
+    const doctorRes = await fetch(`${baseUrl}/api/system/doctor`);
+    assert.strictEqual(doctorRes.status, 200, 'GET /api/system/doctor must return HTTP 200');
+    const doctorData = await doctorRes.json() as any;
+    assert(doctorData.status === 'ok' || doctorData.status === 'degraded', 'Doctor status must be ok or degraded');
+    assert(doctorData.nodejs && typeof doctorData.nodejs.version === 'string', 'Node.js runtime info must be present');
+    assert(doctorData.sqlite && doctorData.sqlite.connected === true, 'SQLite database must be connected');
+    assert(doctorData.agents && doctorData.agents.totalRegistered >= 17, 'All 17 agent definitions must be registered');
+    assert(doctorData.supervisor && typeof doctorData.supervisor.maxConcurrent === 'number', 'Supervisor info must be present');
+    console.log(`✓ System Doctor endpoint verified: status=${doctorData.status}, SQLite connected=${doctorData.sqlite.connected}, agents=${doctorData.agents.totalRegistered}.`);
+
     // 16. Stage 2: Database Pragmas, Indexes & log_parse_state Table Verification
     console.log('\nTest 16: Stage 2 - Database Pragmas, Indexes & log_parse_state Table...');
     const busyTimeout = db.pragma('busy_timeout', { simple: true });

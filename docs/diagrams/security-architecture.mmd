@@ -1,0 +1,164 @@
+flowchart TB
+    %% ==========================================
+    %% AI COMMAND CENTER - SECURITY ARCHITECTURE & TRUST BOUNDARIES
+    %% ==========================================
+
+    subgraph UNTRUSTED_ZONE["Zone 0: Untrusted Network (Public Internet / External LAN)"]
+        direction TB
+        ATTACKER["External Threat Actor / Malicious Site"]:::threatNode
+        REMOTE_REQ["Remote TCP Request (e.g., 192.168.x.x / Public IP)"]
+        ATTACKER --> REMOTE_REQ
+    end
+
+    subgraph LOCALHOST_BOUNDARY["Trust Boundary 1: Local Loopback Isolation"]
+        direction TB
+        SOCKET_BIND["Host Binding: 127.0.0.1 (Loopback Only)
+        CONFIG.HOST = '127.0.0.1'
+        OS network stack drops all non-loopback packets"]:::shieldNode
+        
+        REMOTE_REQ -.->|"REJECTED / DROP (No Route)"| SOCKET_BIND
+    end
+
+    subgraph CLIENT_ZONE["Zone 1: Local Client Environment (Browser Tab)"]
+        direction TB
+        BROWSER["Developer Browser (http://127.0.0.1:5173)"]:::clientNode
+        DEV_TOOLS["Local Web Context / DevTools"]
+        BROWSER --- DEV_TOOLS
+    end
+
+    SOCKET_BIND -->|"Allow Local Loopback Only"| BROWSER
+
+    subgraph GATEWAY_ZONE["Trust Boundary 2: Express HTTP & WebSocket Ingress"]
+        direction TB
+        
+        subgraph CORS_SHIELD["1. CORS Policy Enforcement"]
+            CORS_CHECK{"Origin in Whitelist?
+            - http://localhost:5173
+            - http://127.0.0.1:5173
+            - http://localhost:3000/3001"}
+            CORS_BLOCK["HTTP 403 Forbidden
+            'Blocked by CORS policy'"]:::threatNode
+            CORS_CHECK -->|"No / Unknown"| CORS_BLOCK
+        end
+
+        subgraph BOOTSTRAP_SHIELD["2. Auth Token Bootstrapping Guard (/api/auth/token)"]
+            BOOT_LOCAL{"isLocalRequest(req) &&
+            Origin Allowed?"}
+            BOOT_DENY["HTTP 403 Forbidden
+            (Access denied: loopback only)"]:::threatNode
+            BOOT_ALLOW["Return COMMAND_CENTER_API_KEY
+            to Local Verified Frontend"]
+            BOOT_LOCAL -->|"External / Unauthorized"| BOOT_DENY
+            BOOT_LOCAL -->|"Valid Local Loopback"| BOOT_ALLOW
+        end
+
+        subgraph AUTH_SHIELD["3. Timing-Safe API Authentication (requireAuth)"]
+            TOKEN_EXTRACT["Extract Token:
+            Authorization: Bearer <token>
+            or x-api-key: <token>"]
+            TIMING_SAFE{"crypto.timingSafeEqual(
+              tokenBuf, expectedBuf
+            )"}
+            AUTH_401["HTTP 401 Unauthorized
+            (Invalid or missing token)"]:::threatNode
+            AUTH_OK["Authenticated Session"]
+            
+            TOKEN_EXTRACT --> TIMING_SAFE
+            TIMING_SAFE -->|"Mismatch / Timing Attack"| AUTH_401
+            TIMING_SAFE -->|"Match (Safe Constant Time)"| AUTH_OK
+        end
+
+        subgraph WS_SHIELD["4. WebSocket Security Guard (/ws)"]
+            WS_HANDSHAKE{"Origin Validated &&
+            TimingSafe Token Valid?"}
+            WS_REJECT["Close Connection 1008
+            'Policy Violation'"]:::threatNode
+            WS_FRAME_CHK{"Frame Size <= 64KB?
+            (MAX_WS_PAYLOAD)"}
+            WS_FRAME_DROP["Close 1009 'Message too large'
+            Terminate socket immediately"]:::threatNode
+            WS_ACTIVE["Event Stream Active (ping/pong heartbeat)"]
+            
+            WS_HANDSHAKE -->|"Invalid"| WS_REJECT
+            WS_HANDSHAKE -->|"Valid"| WS_FRAME_CHK
+            WS_FRAME_CHK -->|"> 64KB"| WS_FRAME_DROP
+            WS_FRAME_CHK -->|"<= 64KB"| WS_ACTIVE
+        end
+    end
+
+    BROWSER -->|"HTTP Request"| CORS_CHECK
+    CORS_CHECK -->|"Origin Allowed"| TOKEN_EXTRACT
+    BROWSER -->|"Fetch Token"| BOOT_LOCAL
+    BROWSER <-->|"WS Handshake"| WS_HANDSHAKE
+
+    subgraph CORE_ZONE["Trust Boundary 3: Application Core & Data Defense"]
+        direction TB
+        
+        subgraph PATH_SHIELD["5. Path Traversal & FS Jail Defense"]
+            PATH_VALID{"Filename Regex:
+            /^[a-zA-Z0-9_-]+\\.md$/
+            Reject '..' and separators"}
+            PATH_BLOCK["HTTP 400 Bad Request
+            'Path traversal rejected'"]:::threatNode
+            FS_JAIL["Access Constrained to:
+            - KNOWLEDGE_DIR
+            - BRAIN_DIR (.system_generated/logs)"]
+            
+            PATH_VALID -->|"Contains .. or Special Chars"| PATH_BLOCK
+            PATH_VALID -->|"Clean Canonical Name"| FS_JAIL
+        end
+
+        subgraph CMD_SHIELD["6. Dangerous Command & Execution Guard"]
+            PROMPT_PARAM{"Endpoint: /control/run-prompt
+            - Agent Name Whitelist Regex
+            - Max Length: 10,000 chars
+            - confirm: z.literal(true)"}
+            CMD_REJECT["HTTP 400 Bad Request
+            (Execution rejected)"]:::threatNode
+            CMD_EXEC["Forward to Process Supervisor
+            (Arbitrary shell execution blocked;
+            only mediated agy.exe CLI)"]
+            
+            PROMPT_PARAM -->|"Missing confirm or Invalid Agent"| CMD_REJECT
+            PROMPT_PARAM -->|"Confirmed & Validated"| CMD_EXEC
+        end
+
+        subgraph SQL_SHIELD["7. SQL Injection Defense"]
+            SQL_PREPARE["better-sqlite3 Prepared Statements:
+            INSERT/SELECT ... WHERE id = @id OR ?
+            Zero Raw String Interpolation"]:::shieldNode
+        end
+    end
+
+    AUTH_OK --> PATH_VALID
+    AUTH_OK --> PROMPT_PARAM
+    AUTH_OK --> SQL_PREPARE
+
+    subgraph OS_ZONE["Trust Boundary 4: Operating System Process Isolation"]
+        direction TB
+        
+        subgraph PROC_SHIELD["8. Process Tree Lifecycle & Tree Kill"]
+            SUPERVISOR["TaskProcessSupervisor
+            - Concurrency Pool: Max 6 Processes
+            - Timeout Guard: Default 120s"]
+            
+            KILL_TREE["Process Tree Termination:
+            Windows: taskkill /pid PID /T /F
+            POSIX: process.kill(-pid, 'SIGKILL')
+            (Guarantees zero zombie / orphan processes)"]
+            
+            SPAWN_CHILD["ChildProcess.spawn(agy.exe)
+            windowsHide: true
+            Sanitized argument array (no shell interpolation)"]
+            
+            SUPERVISOR --> SPAWN_CHILD
+            SUPERVISOR -->|"Timeout or Cancel"| KILL_TREE
+        end
+    end
+
+    CMD_EXEC --> SUPERVISOR
+
+    %% Class styles
+    classDef threatNode fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#ffffff;
+    classDef shieldNode fill:#10b981,stroke:#047857,stroke-width:2px,color:#ffffff;
+    classDef clientNode fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#ffffff;

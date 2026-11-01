@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Sparkles, CheckSquare } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Plus, CheckSquare } from 'lucide-react';
 import { useToast } from '../Toast.js';
 import type { TaskItem } from '../../types.js';
 
@@ -8,6 +8,26 @@ interface NewTaskModalProps {
   onClose: () => void;
   onCreate: (task: Partial<TaskItem>) => Promise<void>;
 }
+
+const AGENT_OPTIONS = [
+  { id: 'director', label: 'Director (Flash High)' },
+  { id: 'senior-architect', label: 'Senior Architect (Pro-tier)' },
+  { id: 'researcher', label: 'Researcher (Flash)' },
+  { id: 'frontend-developer', label: 'Frontend Developer (Flash)' },
+  { id: 'backend-developer', label: 'Backend Developer (Flash)' },
+  { id: 'ui-ux-designer', label: 'UI/UX Designer (Flash)' },
+  { id: 'qa-engineer', label: 'QA Engineer (Flash)' },
+  { id: 'code-reviewer', label: 'Code Reviewer (Flash)' },
+  { id: 'legal-compliance', label: 'Legal Advisor & Tech Writer (Flash)' },
+  { id: 'security-engineer', label: 'Security Engineer (Flash/Pro)' },
+  { id: 'devops-engineer', label: 'DevOps Engineer (Flash/Pro)' },
+  { id: 'database-specialist', label: 'Database Specialist (Flash/Pro)' },
+  { id: 'data-engineer', label: 'Data Engineer (Flash/Pro)' },
+  { id: 'product-manager', label: 'Product Manager (Flash)' },
+  { id: 'ai-evaluation-engineer', label: 'AI Evaluation Engineer (Flash/Pro)' },
+  { id: 'performance-engineer', label: 'Performance Engineer (Flash/Pro)' },
+  { id: 'accessibility-specialist', label: 'Accessibility Specialist (Flash)' }
+];
 
 export const NewTaskModal: React.FC<NewTaskModalProps> = ({
   isOpen,
@@ -22,6 +42,17 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
   const [stage] = useState<TaskItem['stage']>('Director_Triage');
   const [isDemo, setIsDemo] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Close on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -43,138 +74,131 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
       setDescription('');
       toast.success(`Задача "${title.trim()}" успешно поставлена в очередь`, 'Задача создана');
       onClose();
-    } catch (err: any) {
-      toast.error(err.message || 'Ошибка создания задачи', 'Сбой создания задачи');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ошибка создания задачи';
+      toast.error(msg, 'Сбой создания задачи');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-lg glass-panel p-6 space-y-5 border border-white/15 shadow-glass-card">
-        {/* Шапка модального окна */}
-        <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+    <div 
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="new-task-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm dark:bg-black/70 animate-fade-in"
+    >
+      <div className="w-full max-w-lg bg-pure border border-hairline rounded-lg shadow-modal p-5 sm:p-6 space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-hairline">
           <div className="flex items-center gap-2.5">
-            <CheckSquare className="w-5 h-5 text-director-blue" />
-            <h3 className="text-sm font-bold text-white">
-              Создать и запустить новую задачу
-            </h3>
+            <CheckSquare className="w-4 h-4 text-obsidian" />
+            <h2 id="new-task-modal-title" className="text-sm font-semibold text-obsidian tracking-tight">
+              Создать новую задачу в пайплайн
+            </h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+            aria-label="Закрыть окно создания задачи"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-hairline text-charcoal hover:text-obsidian hover:bg-surface-subtle transition-colors focus-ring"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Форма создания */}
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          <div>
-            <label className="text-slate-300 font-medium block mb-1">
+          <div className="space-y-1">
+            <label className="text-obsidian font-semibold block">
               Заголовок задачи:
             </label>
             <input
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="например: Реализовать логику переподключения WebSocket"
-              className="glass-input w-full"
+              placeholder="например: Провести предпусковой аудит Legal Gate по 152-ФЗ"
+              className="w-full px-3 py-2 bg-pure border border-hairline rounded-md text-[13px] text-obsidian placeholder-smoke focus-ring"
               required
             />
           </div>
 
-          <div>
-            <label className="text-slate-300 font-medium block mb-1">
-              Описание и технические требования:
+          <div className="space-y-1">
+            <label className="text-obsidian font-semibold block">
+              Технические требования и критерии приёмки:
             </label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Укажите точные границы задачи, изменяемые файлы и критерии проверки..."
-              className="glass-input w-full h-24 resize-none font-sans"
+              placeholder="Укажите границы задачи, модифицируемые файлы и необходимые проверки..."
+              className="w-full h-24 p-3 bg-pure border border-hairline rounded-md text-[13px] text-obsidian placeholder-smoke font-sans resize-none focus-ring"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-slate-300 font-medium block mb-1">
+            <div className="space-y-1">
+              <label className="text-obsidian font-semibold block">
                 Назначенный исполнитель:
               </label>
               <select
                 value={assignedAgent}
                 onChange={e => setAssignedAgent(e.target.value)}
-                className="glass-input w-full"
+                className="w-full px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian focus-ring"
               >
-                <option value="director">director (Триаж Директора)</option>
-                <option value="researcher">researcher (Исследования и код)</option>
-                <option value="frontend-developer">frontend-developer (React/UI)</option>
-                <option value="backend-developer">backend-developer (Node/DB/API)</option>
-                <option value="ui-ux-designer">ui-ux-designer (Эргономика и дизайн)</option>
-                <option value="qa-engineer">qa-engineer (Тестирование)</option>
-                <option value="code-reviewer">code-reviewer (Аудит кода)</option>
-                <option value="legal-compliance">legal-compliance (Юрист и техрайтер)</option>
-                <option value="security-engineer">security-engineer (Безопасность/OWASP)</option>
-                <option value="devops-engineer">devops-engineer (CI/CD и Docker)</option>
-                <option value="product-manager">product-manager (Требования и MVP)</option>
-                <option value="ai-evaluation-engineer">ai-evaluation-engineer (AI эвалы)</option>
-                <option value="performance-engineer">performance-engineer (Оптимизация/CWV)</option>
-                <option value="accessibility-specialist">accessibility-specialist (Доступность WCAG)</option>
-                <option value="database-specialist">database-specialist (Базы данных/SQL)</option>
-                <option value="data-engineer">data-engineer (ETL и потоки данных)</option>
-                <option value="senior-architect">senior-architect (Уровень Pro)</option>
+                {AGENT_OPTIONS.map(agent => (
+                  <option key={agent.id} value={agent.id}>
+                    @{agent.id}
+                  </option>
+                ))}
               </select>
             </div>
 
-            <div>
-              <label className="text-slate-300 font-medium block mb-1">
+            <div className="space-y-1">
+              <label className="text-obsidian font-semibold block">
                 Приоритет:
               </label>
               <select
                 value={priority}
-                onChange={e => setPriority(e.target.value as any)}
-                className="glass-input w-full"
+                onChange={e => setPriority(e.target.value as TaskItem['priority'])}
+                className="w-full px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian focus-ring"
               >
-                <option value="low">Низкий</option>
-                <option value="medium">Средний</option>
-                <option value="high">Высокий</option>
-                <option value="critical">Критический</option>
+                <option value="low">Низкий (low)</option>
+                <option value="medium">Средний (medium)</option>
+                <option value="high">Высокий (high)</option>
+                <option value="critical">Критический (critical)</option>
               </select>
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-white/[0.04] border border-white/5 space-y-1">
-            <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-300">
+          <div className="pt-2 flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer select-none text-charcoal">
               <input
                 type="checkbox"
                 checked={isDemo}
                 onChange={e => setIsDemo(e.target.checked)}
-                className="accent-amber-500 rounded"
+                className="rounded border-hairline text-obsidian accent-obsidian focus-ring"
               />
-              <span>Отметить как ДЕМО-задачу (Тестовая симуляция)</span>
+              <span>Пометить как демонстрационную (DEMO)</span>
             </label>
-            <p className="text-[11px] text-slate-500 pl-5">
-              Отделяет тестовые упражнения от реальных подтверждённых процессов Antigravity.
-            </p>
-          </div>
 
-          <div className="pt-3 border-t border-white/[0.08] flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
-            >
-              Отмена
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !title.trim()}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-director-blue to-blue-600 hover:from-blue-500 text-white font-semibold shadow-glass-subtle transition-all"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{isSubmitting ? 'Создание...' : 'Запустить задачу'}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="refero-btn-secondary text-xs"
+              >
+                Отмена
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting || !title.trim()}
+                className="refero-btn-primary text-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{isSubmitting ? 'Создание...' : 'Поставить в очередь'}</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>

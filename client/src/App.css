@@ -1,12 +1,8 @@
-/* AI Command Center - Global Application Styles */
-/* Liquid Dark Glass Design System is powered by Tailwind and index.css */
+/* REFERO VERCEL STYLE: Engineering Interface × AI Mission Control */
 
 @layer utilities {
-  .text-glow-argon {
-    text-shadow: 0 0 12px rgba(244, 114, 182, 0.4);
-  }
-  
-  .text-glow-cyan {
-    text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+  /* Hairline border utilities */
+  .border-hairline-subtle {
+    border-color: rgb(var(--color-hairline));
   }
 }

@@ -1,0 +1,189 @@
+flowchart TD
+    %% ==========================================
+    %% AI COMMAND CENTER - AGENT ORCHESTRATION WORKFLOW
+    %% ==========================================
+
+    START(["Incoming Task / Feature Request"]):::startNode
+
+    subgraph TRIAGE["Director Triage (Gemini 3.8 Flash High)"]
+        direction TB
+        EVAL{"Task Complexity & Scope Assessment"}
+        SOLO_PATH["Trivial / Small Task (<15 lines, single file typo)"]
+        DELEGATE_PATH["Medium Task (1-3 files, specific component)"]
+        DECOMPOSE_PATH["Large / Cross-cutting Feature (Full-stack, multi-module)"]
+        
+        EVAL -->|"Small (<15 lines)"| SOLO_PATH
+        EVAL -->|"Medium (1-3 files)"| DELEGATE_PATH
+        EVAL -->|"Complex / Multi-file"| DECOMPOSE_PATH
+        
+        DECOMPOSE_PATH --> DECOMP_EXEC["Decomposition into 2..6 Independent Subtasks
+        (Git Worktree Isolation: git worktree add)"]
+    end
+
+    START --> EVAL
+
+    subgraph DIVISIONS["Global 17-Specialist Pool (5 Divisions)"]
+        direction TB
+        
+        subgraph DIV_CMD["1. Command & Governance"]
+            AG_DIR["director
+            (Flash High: Master Orchestrator)"]
+            AG_PM["product-manager
+            (Flash: PRD, Acceptance Criteria, MVP)"]
+            AG_LEGAL["legal-compliance
+            (Flash: Legal Advisor & Technical Writer)"]
+        end
+
+        subgraph DIV_ARCH["2. Architecture & Data Foundation"]
+            AG_ARCH["senior-architect
+            (Pro Tier: System Design, Race Conditions, L3)"]
+            AG_DB["database-specialist
+            (Flash/Pro: Schemas, WAL, Indexes, Migrations)"]
+            AG_DATA["data-engineer
+            (Flash/Pro: ETL/ELT, Stream Processing, JSONL)"]
+        end
+
+        subgraph DIV_ENG["3. Product Engineering"]
+            AG_FE["frontend-developer
+            (Flash: React, TypeScript, UI Kinematics)"]
+            AG_BE["backend-developer
+            (Flash: Node.js, Express, REST/WS APIs)"]
+            AG_UI["ui-ux-designer
+            (Flash: Dark Glass, Ergonomics, Visual Hierarchy)"]
+        end
+
+        subgraph DIV_QA["4. Verification & Quality"]
+            AG_QA["qa-engineer
+            (Flash: Unit/Integration/E2E Automated Tests)"]
+            AG_CR["code-reviewer
+            (Flash: Independent Diff Audit & Security Smells)"]
+            AG_AI_EVAL["ai-evaluation-engineer
+            (Flash/Pro: Prompt Evals, LLM Metrics & Benchmarks)"]
+        end
+
+        subgraph DIV_HARDENING["5. Specialized Hardening & Infrastructure"]
+            AG_SEC["security-engineer
+            (Flash/Pro: OWASP Top 10, Auth, Secrets, Injection)"]
+            AG_DEVOPS["devops-engineer
+            (Flash/Pro: CI/CD, Process Supervisor, Docker, SRE)"]
+            AG_PERF["performance-engineer
+            (Flash/Pro: Core Web Vitals, Memory Leaks, Heap)"]
+            AG_A11Y["accessibility-specialist
+            (Flash: WCAG 2.2 AA/AAA, Screen Readers, ARIA)"]
+        end
+    end
+
+    DELEGATE_PATH --> DIVISIONS
+    DECOMP_EXEC --> DIVISIONS
+
+    subgraph RESOURCE_POOL["Concurrency Slot Pool & Throttling"]
+        direction TB
+        THROTTLE{"Slot Pool Check
+        - MAX_CONCURRENT = 6
+        - DEFAULT_CONCURRENCY = 3
+        - MAX_EXPENSIVE (Pro) = 2"}
+        
+        WAIT_QUEUE["FIFO Ingestion Queue
+        (Auto-Draining when slot releases)"]
+        DISPATCH["Active Execution Slot Dispatched
+        (Process Supervisor: spawnTask)"]
+        
+        THROTTLE -->|"Slots Full (>= 6)"| WAIT_QUEUE
+        WAIT_QUEUE -.->|"Slot Frees Up"| THROTTLE
+        THROTTLE -->|"Slot Available (< 6)"| DISPATCH
+    end
+
+    DIVISIONS --> THROTTLE
+
+    subgraph EXECUTION["Specialist Execution"]
+        RUN["Subagent Execution in Workspace
+        - Strict TypeScript / Schemas
+        - Minimal Invasive Diffs"]
+    end
+
+    DISPATCH --> RUN
+    SOLO_PATH --> RUN
+
+    subgraph QUALITY_AUDIT["Multi-Tier Quality Gates"]
+        direction TB
+        
+        subgraph GATE_L1["Quality Gate L1: Self-Audit"]
+            L1_CHK["Specialist Verification:
+            - Build, Linter, Typecheck
+            - 9-Point Structured Subagent Report"]
+            L1_EVAL{"L1 Checks Pass?"}
+            L1_CHK --> L1_EVAL
+        end
+
+        subgraph GATE_2B["Gate 2b: Legal & Compliance Gate"]
+            LEGAL_TRIGGER{"Touches PII, AI API, Scraping,
+            Licenses, E-Commerce, or ToS?"}
+            LEGAL_AUDIT["Legal Advisor & Tech Writer Audit:
+            11-Point Opinion (152-FZ, 243-FZ, GDPR)"]
+            LEGAL_VERDICT{"Legal Verdict"}
+            
+            LEGAL_TRIGGER -->|"Yes"| LEGAL_AUDIT
+            LEGAL_TRIGGER -->|"No"| GATE_L2
+            LEGAL_AUDIT --> LEGAL_VERDICT
+            LEGAL_VERDICT -->|"GREEN / AMBER"| GATE_L2
+            LEGAL_VERDICT -->|"RED (Isolated)"| LEGAL_BLOCK["Block Risky Scope Only;
+            Safe Components Proceed"]
+            LEGAL_VERDICT -->|"UNKNOWN"| LEGAL_REFUSE["Refuse Guessing;
+            Request Official Parameters"]
+        end
+
+        subgraph GATE_L2["Quality Gate L2: Independent Verification"]
+            L2_CHK["Independent QA & Review:
+            - qa-engineer: Regression & Edge Cases
+            - code-reviewer: Security & Defect Audit"]
+            L2_EVAL{"L2 Independent Pass?"}
+            L2_CHK --> L2_EVAL
+        end
+    end
+
+    RUN --> L1_CHK
+    L1_EVAL -->|"Yes"| LEGAL_TRIGGER
+    L1_EVAL -->|"No (Failure)"| RETRY_CHECK{"Retry Count < 2?"}
+
+    LEGAL_BLOCK --> RETRY_CHECK
+    LEGAL_REFUSE --> RETRY_CHECK
+
+    L2_EVAL -->|"Yes"| APPROVED(["Approved & Merged into Main"]):::successNode
+    L2_EVAL -->|"No (Regression)"| RETRY_CHECK
+
+    RETRY_CHECK -->|"Yes (Retries Left)"| RETRY_INC["Increment retryCount (+1)
+    Change Approach Strategy"] --> RUN
+    
+    subgraph ESCALATION_TIERS["Hierarchical Escalation Framework"]
+        direction TB
+        
+        subgraph L3_TIER["Level 3 Escalation: Senior Architect (Pro Tier)"]
+            L3_INVOKE["Mobilize senior-architect
+            - Root-cause debugging of anomalous failures
+            - Concurrency & state safety analysis
+            - Minimal invasive refactoring plan"]
+            L3_EXEC{"Architect Solution Pass?"}
+            L3_INVOKE --> L3_EXEC
+        end
+
+        subgraph L4_TIER["Level 4 Escalation: Gemini 4 Argon"]
+            L4_PACK["Director Synthesizes 10-Point Argon Prompt Pack
+            (Isolated 20-50 line context, 2 failed attempts proof)"]
+            L4_SWITCH["Operator Manually Switches Model to Gemini 4 Argon"]
+            L4_ARGON["Gemini 4 Argon Delivers Architectural Resolution"]
+            L4_DEESCALATE["Argon Closed-Loop De-Escalation
+            (POST /api/control/argon-verdict)"]
+            
+            L4_PACK --> L4_SWITCH --> L4_ARGON --> L4_DEESCALATE
+        end
+    end
+
+    RETRY_CHECK -->|"No (>2 Failed Attempts)"| L3_INVOKE
+    L3_EXEC -->|"Resolved"| GATE_L2
+    L3_EXEC -->|"2nd Failure / Deadlock"| L4_PACK
+    
+    L4_DEESCALATE -->|"Switch Model back to Flash High"| DIVISIONS
+
+    %% Class styles
+    classDef startNode fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#ffffff;
+    classDef successNode fill:#10b981,stroke:#047857,stroke-width:2px,color:#ffffff;

@@ -1,0 +1,65 @@
+sequenceDiagram
+    autonumber
+    %% ==========================================
+    %% AI COMMAND CENTER - EVENT & DATA FLOW
+    %% ==========================================
+
+    participant AGY as Antigravity Engine<br/>(Subagents / agy.exe)
+    participant FS as Local File System<br/>(transcript.jsonl)
+    participant CHK as Chokidar Watcher<br/>(AntigravityBridge)
+    participant QUEUE as IngestionQueue<br/>(Deduplication & Rerun)
+    participant RDR as JsonlStreamReader<br/>(64KB Quantums & UTF-8)
+    participant DB as SQLite WAL Database<br/>(Atomic Transaction)
+    participant BUS as EventBus<br/>(Pub/Sub Broker)
+    participant WSS as WebSocket Server<br/>(RFC 6455 @ /ws)
+    participant CLIENT as Client React FSM<br/>(EventStreamClient)
+    participant UI as Dashboard UI<br/>(Liquid Glass Views)
+
+    Note over AGY,FS: Step 1: Telemetry Generation
+    AGY->>FS: Append execution logs, tool_calls (invoke_subagent),<br/>token counters & errors to transcript.jsonl
+
+    Note over FS,CHK: Step 2: Reactive FS Watcher Detection
+    FS-->>CHK: Trigger FS Event: 'add' or 'change' (transcript.jsonl)
+    CHK->>CHK: Path Filter Predicate (ignore .tmp, .swp, non-brain paths)
+    CHK->>QUEUE: enqueue(filePath)
+
+    Note over QUEUE,RDR: Step 3: Serialized Ingestion & Deduplication
+    QUEUE->>QUEUE: Check activeSet & enqueuedSet (prevent concurrent race)
+    QUEUE->>DB: Query current log_parse_state (last_offset, inode, mtime)
+    DB-->>QUEUE: Return last_offset & parse state
+    QUEUE->>RDR: readNextQuantum(filePath, state, 64KB)
+
+    Note over RDR: Step 4: Stream Parsing, UTF-8 & Recovery
+    RDR->>FS: Open file handle & read 64KB chunk from last_offset
+    FS-->>RDR: Return raw byte buffer
+    RDR->>RDR: StringDecoder('utf8') preserves multi-byte code points
+    RDR->>RDR: Split lines by '\n', preserve incomplete trailing fragment
+    RDR->>RDR: Try JSON.parse(line). If malformed -> log & continue safely
+    RDR->>RDR: extractEventsFromTranscriptEntry (generate deterministic Event IDs)
+    RDR-->>QUEUE: Return QuantumReadResult (events, tokenDelta, newOffset)
+
+    Note over QUEUE,DB: Step 5: Atomic SQLite Transaction
+    rect rgb(16, 185, 129, 0.1)
+        QUEUE->>DB: BEGIN IMMEDIATE TRANSACTION
+        QUEUE->>DB: INSERT OR IGNORE INTO events (deterministic ID)
+        QUEUE->>DB: UPSERT log_parse_state (newOffset, last_line, mtime)
+        QUEUE->>DB: UPSERT session_token_usage (increment input/output/cache tokens)
+        QUEUE->>DB: UPDATE model_usage (update live telemetry metrics)
+        QUEUE->>DB: COMMIT TRANSACTION
+    end
+    DB-->>QUEUE: Transaction Committed Successfully
+
+    Note over QUEUE,WSS: Step 6: Post-Commit Event Distribution
+    loop For each inserted event
+        QUEUE->>BUS: publish(event)
+        BUS->>WSS: Broadcast frame { channel: 'events', event: EventPayload }
+    end
+
+    Note over WSS,CLIENT: Step 7: Real-Time WebSocket Delivery
+    WSS-->>CLIENT: WebSocket Message Frame (JSON payload <= 64KB)
+    CLIENT->>CLIENT: Validate frame structure & dispatch to event listeners
+
+    Note over CLIENT,UI: Step 8: React FSM State Transitions & Reactive UI
+    CLIENT->>UI: Dispatch event (e.g. agent.started, task.updated)
+    UI->>UI: Update React State:
+    Note right of UI: - LiveWorkflow: Highlight active specialist node (amber glow)<br/>- Overview: Update token odometer & active session counter<br/>- TaskManager: Update task stage & Kanban column<br/>- EventLog: Append entry to live telemetry inspector

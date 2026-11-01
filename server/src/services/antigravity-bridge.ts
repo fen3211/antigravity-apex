@@ -7,7 +7,6 @@ import { CONFIG, checkPathExists } from '../config.js';
 import { db } from '../db/database.js';
 import { eventBus } from './event-bus.js';
 import { ingestionQueue } from './ingestion-queue.js';
-import { controlService } from './control.js';
 import type { AgentInfo, KnowledgeDoc, DirectorStatus } from '../types.js';
 
 const execFileAsync = promisify(execFile);
@@ -87,14 +86,20 @@ export class AntigravityBridge {
 
   // Load agent specifications from the global ai-director plugin directory
   public loadAgentSpecs(): AgentInfo[] {
+    // 1. Pre-seed with all 17 default roles to guarantee 100% role coverage
+    const defaults = this.getDefaultAgents();
+    for (const def of defaults) {
+      this.knownAgents.set(def.id, { ...def });
+    }
+
     const agentsDir = CONFIG.AI_DIRECTOR_AGENTS_DIR;
     if (!checkPathExists(agentsDir)) {
       console.warn(`[Bridge] Agents directory not found at: ${agentsDir}`);
-      return this.getDefaultAgents();
+      return Array.from(this.knownAgents.values());
     }
 
     try {
-      const files = fs.readdirSync(agentsDir).filter(f => f.endsWith('.md'));
+      const files = fs.readdirSync(agentsDir).filter(f => f.endsWith('.md') && !f.includes('.bak'));
       for (const file of files) {
         const id = file.replace('.md', '');
         const filePath = path.join(agentsDir, file);
@@ -108,10 +113,12 @@ export class AntigravityBridge {
         if (id === 'director') model = 'gemini-3.8-flash-high';
         else if (id === 'senior-architect') model = 'pro';
 
+        const existing = this.knownAgents.get(id);
+
         const agentInfo: AgentInfo = {
           id,
           name,
-          role: id.replace('-', ' ').toUpperCase(),
+          role: existing ? existing.role : id.replace('-', ' ').toUpperCase(),
           domain: this.getAgentDomain(id),
           model,
           status: 'idle',
@@ -126,10 +133,6 @@ export class AntigravityBridge {
       }
     } catch (err) {
       console.error('[Bridge] Failed reading agent markdown specs:', err);
-    }
-
-    if (this.knownAgents.size === 0) {
-      return this.getDefaultAgents();
     }
 
     return Array.from(this.knownAgents.values());
@@ -358,13 +361,28 @@ export class AntigravityBridge {
       state: liveSessions.length > 0 ? 'ACTIVE' : 'ONLINE',
       model: 'Gemini 3.8 Flash High',
       activeSubagentsCount: liveSessions.length > 0 ? 1 : 0,
-      maxSubagents: controlService.getSettings().maxConcurrentAgents,
+      maxSubagents: this.getMaxSubagents(),
       activeSessions,
       agyCliAvailable: this.isAgyCliAvailable,
       knowledgeBaseConnected: checkPathExists(CONFIG.KNOWLEDGE_DIR),
       activeLocksCount: activeSessions.length,
       liveTranscriptsCount: liveSessions.length
     };
+  }
+
+  private getMaxSubagents(): number {
+    try {
+      const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('control_settings') as { value: string } | undefined;
+      if (row && row.value) {
+        const parsed = JSON.parse(row.value);
+        if (typeof parsed.maxConcurrentAgents === 'number') {
+          return parsed.maxConcurrentAgents;
+        }
+      }
+    } catch {
+      // fallback
+    }
+    return 6;
   }
 
   private getTokensFromTranscript(filePath: string): { input: number; output: number; cacheRead: number } {
@@ -417,9 +435,58 @@ export class AntigravityBridge {
     }
   }
 
+  public getKnowledgeDoc(filename: string): KnowledgeDoc | null {
+    if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\') || filename.includes('\0')) {
+      console.warn('[Bridge] Path traversal rejected in getKnowledgeDoc:', filename);
+      return null;
+    }
+
+    if (!/^[a-zA-Z0-9_-]+\.md$/i.test(filename)) {
+      console.warn('[Bridge] Invalid filename pattern in getKnowledgeDoc:', filename);
+      return null;
+    }
+
+    const safeFilename = path.basename(filename);
+    const resolvedKnowledgeDir = path.resolve(CONFIG.KNOWLEDGE_DIR);
+    const targetPath = path.resolve(CONFIG.KNOWLEDGE_DIR, safeFilename);
+
+    if (!targetPath.startsWith(resolvedKnowledgeDir + path.sep) && targetPath !== resolvedKnowledgeDir) {
+      console.warn('[Bridge] Path traversal rejected (outside knowledge dir):', targetPath);
+      return null;
+    }
+
+    if (!fs.existsSync(targetPath)) {
+      return null;
+    }
+
+    try {
+      const stat = fs.statSync(targetPath);
+      const content = fs.readFileSync(targetPath, 'utf-8');
+      const firstLine = content.split('\n')[0] || safeFilename;
+      const title = firstLine.replace(/^#+\s*/, '').trim();
+
+      return {
+        filename: safeFilename,
+        path: targetPath,
+        title: title || safeFilename,
+        content,
+        lastModified: stat.mtime.toISOString(),
+        size: stat.size
+      };
+    } catch (err) {
+      console.error('[Bridge] Error reading knowledge doc:', err);
+      return null;
+    }
+  }
+
   public saveKnowledgeDoc(filename: string, content: string): boolean {
-    if (filename.includes('..')) {
+    if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\') || filename.includes('\0')) {
       console.warn('[Bridge] Path traversal rejected (".."):', filename);
+      return false;
+    }
+
+    if (!/^[a-zA-Z0-9_-]+\.md$/i.test(filename)) {
+      console.warn('[Bridge] Invalid filename pattern in saveKnowledgeDoc:', filename);
       return false;
     }
 
@@ -427,7 +494,7 @@ export class AntigravityBridge {
     const resolvedKnowledgeDir = path.resolve(CONFIG.KNOWLEDGE_DIR);
     const targetPath = path.resolve(CONFIG.KNOWLEDGE_DIR, safeFilename);
 
-    if (!targetPath.startsWith(resolvedKnowledgeDir)) {
+    if (!targetPath.startsWith(resolvedKnowledgeDir + path.sep) && targetPath !== resolvedKnowledgeDir) {
       console.warn('[Bridge] Path traversal rejected (outside knowledge dir):', targetPath);
       return false;
     }
@@ -460,7 +527,7 @@ export class AntigravityBridge {
     if (!this.isAgyCliAvailable) {
       return {
         stdout: '',
-        stderr: 'agy.exe is not installed or not found at: ' + CONFIG.AGY_CLI_PATH,
+        stderr: 'agy CLI is not installed or not found at: ' + CONFIG.AGY_CLI_PATH,
         success: false
       };
     }

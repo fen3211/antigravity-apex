@@ -4,7 +4,9 @@ import {
   Cpu, 
   Flame, 
   Info,
-  Database
+  Database,
+  Layers,
+  CheckCircle2
 } from 'lucide-react';
 import type { ModelMetrics, DataProvenance } from '../types.js';
 
@@ -23,8 +25,9 @@ interface ModelAnalyticsProps {
 export const ModelAnalytics: React.FC<ModelAnalyticsProps> = ({ analytics }) => {
   if (!analytics) {
     return (
-      <div className="glass-panel p-8 text-center text-slate-400">
-        Загрузка аналитики моделей Antigravity...
+      <div className="bg-pure border border-hairline rounded-md p-12 text-center text-slate space-y-2">
+        <BarChart3 className="w-8 h-8 mx-auto text-ash animate-pulse" />
+        <p className="text-[13px] font-mono">Загрузка телеметрии моделей Antigravity...</p>
       </div>
     );
   }
@@ -32,14 +35,23 @@ export const ModelAnalytics: React.FC<ModelAnalyticsProps> = ({ analytics }) => 
   const renderProvenanceBadge = (provenance?: string, isEstimate?: boolean) => {
     const norm = (provenance || (isEstimate ? 'ESTIMATED' : 'LIVE')).toUpperCase();
     if (norm === 'LIVE') {
-      return <span className="badge-live text-[10px] py-0.5 px-2 font-mono">LIVE</span>;
+      return (
+        <span className="badge-live text-[10px] py-0.5 px-2 font-mono">
+          <span className="w-1.5 h-1.5 rounded-full bg-terminal-green" />
+          LIVE
+        </span>
+      );
     }
     if (norm === 'DEMO') {
-      return <span className="badge-demo text-[10px] py-0.5 px-2 font-mono">DEMO</span>;
+      return (
+        <span className="badge-demo text-[10px] py-0.5 px-2 font-mono">
+          DEMO
+        </span>
+      );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/20">
-        ESTIMATED
+      <span className="badge-estimate text-[10px] py-0.5 px-2 font-mono">
+        ESTIMATE
       </span>
     );
   };
@@ -48,183 +60,191 @@ export const ModelAnalytics: React.FC<ModelAnalyticsProps> = ({ analytics }) => 
 
   return (
     <div className="space-y-6">
-      {/* Заголовок и уведомление о достоверности данных */}
-      <div className="glass-panel p-5 space-y-3">
+      {/* 1. Header & Data Policy Surface */}
+      <section className="bg-pure border border-hairline rounded-md p-4 sm:p-5 shadow-subtle space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
-              <BarChart3 className="w-5 h-5 text-director-blue" />
-              <span>Аналитика маршрутизации моделей и телеметрия</span>
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Детализация расхода ресурсов между Gemini 3.8 Flash, Pro-уровнем и Gemini 4 Argon.
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-obsidian" />
+              <h1 className="text-lg font-semibold text-obsidian tracking-tight">
+                Аналитика маршрутизации моделей и телеметрия
+              </h1>
+            </div>
+            <p className="text-[13px] text-charcoal mt-1 leading-relaxed">
+              Мониторинг расхода токенов и частоты эскалаций между Gemini 3.8 Flash, Pro-уровнем и Gemini 4 Argon.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-2 text-xs font-mono self-start md:self-auto shrink-0">
             <span className="badge-live">
-              <Database className="w-3.5 h-3.5" />
+              <Database className="w-3.5 h-3.5 text-terminal-green" />
               <span>{analytics.verifiedRealSessionsCount} реальных сессий подтверждено</span>
             </span>
           </div>
         </div>
 
-        {/* Заметка о прозрачности источников данных */}
-        <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-slate-300 flex items-start gap-2.5">
-          <Info className="w-4 h-4 text-director-cyan shrink-0 mt-0.5" />
+        {/* Data Provenance Policy Callout */}
+        <div className="p-3.5 rounded-md bg-surface-subtle border border-hairline text-xs flex items-start gap-3">
+          <Info className="w-4 h-4 text-obsidian shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-semibold text-white">Политика достоверности данных:</span>
-            <p className="text-slate-400 leading-relaxed">
-              Токены и временные метки извлекаются напрямую из активных и архивных логов <code className="text-director-cyan">transcript.jsonl</code> каталога Antigravity. 
-              Метрики классифицируются по источникам: <span className="badge-live text-[10px] py-0 px-1.5 font-mono">LIVE</span> (реальные сессии), <span className="badge-demo text-[10px] py-0 px-1.5 font-mono">DEMO</span> (стендовые данные) и <span className="text-sky-400 font-mono text-[10px]">ESTIMATED</span> (расчётные оценки).
+            <span className="font-semibold text-obsidian">Политика прозрачности и маркировки данных:</span>
+            <p className="text-charcoal leading-relaxed">
+              Токены и временные метки извлекаются напрямую из файлов журналов <code className="font-mono text-obsidian bg-pure px-1 py-0.5 rounded border border-hairline">transcript.jsonl</code> каталога сессий Antigravity.
+              Все показатели строго разделены по источникам: <span className="badge-live text-[10px] py-0 px-1.5 font-mono">LIVE</span> (подтверждённые сессии), <span className="badge-estimate text-[10px] py-0 px-1.5 font-mono">ESTIMATE</span> (расчётная интерполяция) и <span className="badge-demo text-[10px] py-0 px-1.5 font-mono">DEMO</span> (стендовые данные).
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Сводные агрегированные показатели */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass-card p-5">
-          <span className="text-xs text-slate-400">Всего запусков</span>
-          <div className="mt-2 text-2xl font-bold font-mono text-white">
+      {/* 2. Aggregate KPI Metrics Grid */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-pure border border-hairline rounded-md p-4 shadow-subtle space-y-2">
+          <div className="flex items-center justify-between text-xs text-stone">
+            <span>Всего запусков</span>
+            <Layers className="w-3.5 h-3.5 text-graphite" />
+          </div>
+          <div className="text-2xl font-bold font-mono text-obsidian tracking-tight">
             {analytics.totalRuns}
           </div>
-          <span className="text-[11px] text-slate-500 mt-1 block font-mono">
+          <span className="text-[11px] text-slate block font-mono">
             По {analytics.tiers.length} модельным уровням
           </span>
         </div>
 
-        <div className="glass-card p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-400">Входные токены</span>
+        <div className="bg-pure border border-hairline rounded-md p-4 shadow-subtle space-y-2">
+          <div className="flex items-center justify-between text-xs text-stone">
+            <span>Входные токены</span>
             {renderProvenanceBadge(overallProvenance)}
           </div>
-          <div className="mt-2 text-2xl font-bold font-mono text-director-cyan">
-            {(analytics.totalTokens.input / 1000).toFixed(1)}k
+          <div className="text-2xl font-bold font-mono text-obsidian tracking-tight">
+            {analytics.totalTokens.input.toLocaleString()}
           </div>
-          <span className="text-[11px] text-slate-500 mt-1 block font-mono">
-            {overallProvenance === 'LIVE' ? 'Подтверждено transcript.jsonl' : 'Сводный пул токенов'}
+          <span className="text-[11px] text-slate block font-mono">
+            Prompt Context Volume
           </span>
         </div>
 
-        <div className="glass-card p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-400">Выходные токены</span>
+        <div className="bg-pure border border-hairline rounded-md p-4 shadow-subtle space-y-2">
+          <div className="flex items-center justify-between text-xs text-stone">
+            <span>Выходные токены</span>
             {renderProvenanceBadge(overallProvenance)}
           </div>
-          <div className="mt-2 text-2xl font-bold font-mono text-director-blue">
-            {(analytics.totalTokens.output / 1000).toFixed(1)}k
+          <div className="text-2xl font-bold font-mono text-obsidian tracking-tight">
+            {analytics.totalTokens.output.toLocaleString()}
           </div>
-          <span className="text-[11px] text-slate-500 mt-1 block font-mono">
-            {overallProvenance === 'LIVE' ? 'Подтверждено transcript.jsonl' : 'Сводный пул токенов'}
+          <span className="text-[11px] text-slate block font-mono">
+            Generated Output Stream
           </span>
         </div>
 
-        <div className="glass-card p-5">
-          <span className="text-xs text-slate-400">Частота эскалаций</span>
-          <div className="mt-2 text-2xl font-bold font-mono text-pink-400">
-            {analytics.escalationRate}%
+        <div className="bg-pure border border-hairline rounded-md p-4 shadow-subtle space-y-2">
+          <div className="flex items-center justify-between text-xs text-stone">
+            <span>Кэшированные токены</span>
+            <span className="badge-live text-[10px] py-0 px-1.5">TRANSCRIPT</span>
           </div>
-          <span className="text-[11px] text-slate-400 mt-1 block font-mono">
-            Senior Arch (L3) / Argon (L4)
+          <div className="text-2xl font-bold font-mono text-terminal-green tracking-tight">
+            {analytics.totalTokens.cacheRead.toLocaleString()}
+          </div>
+          <span className="text-[11px] text-slate block font-mono">
+            Экономия на чтении кэша
           </span>
         </div>
-      </div>
+      </section>
 
-      {/* Карточки по модельным уровням */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {analytics.tiers.map((tier) => {
-          const isArgon = tier.tier.includes('argon');
-          const isDirector = tier.tier.includes('flash-high');
-          const isPro = tier.tier === 'pro';
-
-          return (
-            <div
-              key={tier.tier}
-              className={`glass-panel p-5 space-y-4 border ${
-                isArgon
-                  ? 'border-pink-500/25 bg-gradient-to-br from-pink-500/5 to-transparent'
-                  : isDirector
-                  ? 'border-director-blue/25 bg-gradient-to-br from-director-blue/5 to-transparent'
-                  : 'border-white/[0.08]'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className={`p-2 rounded-xl ${
-                    isArgon 
-                      ? 'bg-pink-500/20 text-director-argon' 
-                      : isDirector 
-                      ? 'bg-director-blue/20 text-director-cyan'
-                      : isPro 
-                      ? 'bg-purple-500/20 text-purple-300'
-                      : 'bg-white/5 text-slate-300'
-                  }`}>
-                    {isArgon ? <Flame className="w-5 h-5" /> : <Cpu className="w-5 h-5" />}
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                      {tier.displayName}
-                    </h3>
-                    <span className="text-[11px] font-mono text-slate-400">
-                      ID: {tier.tier}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  {renderProvenanceBadge(tier.provenance, tier.isEstimate)}
-                </div>
-              </div>
-
-              {/* Панель цифр */}
-              <div className="grid grid-cols-3 gap-3 p-3 rounded-xl bg-black/40 border border-white/5 text-center font-mono">
-                <div>
-                  <span className="text-[10px] text-slate-500 uppercase block">Запусков</span>
-                  <span className="text-base font-bold text-white">{tier.runsCount}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 uppercase block">Завершено</span>
-                  <span className="text-base font-bold text-emerald-400">{tier.tasksCompleted}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 uppercase block">Эскалаций</span>
-                  <span className="text-base font-bold text-pink-400">{tier.escalationCount}</span>
-                </div>
-              </div>
-
-              {/* Индикатор прогресса */}
-              <div className="space-y-1.5 text-xs font-mono">
-                <div className="flex justify-between text-slate-400 text-[11px]">
-                  <span>Успешность</span>
-                  <span className="text-emerald-400 font-semibold">{tier.successRate}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      tier.successRate > 90 
-                        ? 'bg-emerald-500' 
-                        : tier.successRate > 75 
-                        ? 'bg-amber-500' 
-                        : 'bg-rose-500'
-                    }`}
-                    style={{ width: `${tier.successRate}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Подсчёт токенов */}
-              <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-2 border-t border-white/5">
-                <span>Учтено токенов:</span>
-                <span className="text-slate-200">
-                  {(tier.inputTokens + tier.outputTokens).toLocaleString()} токенов
-                </span>
-              </div>
+      {/* 3. Success Rates & Escalation Summary Cards */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-pure border border-hairline rounded-md p-4 shadow-subtle flex items-center justify-between gap-4">
+          <div className="space-y-1">
+            <span className="text-xs text-stone font-medium">Общий процент успешности шлюзов качества</span>
+            <div className="text-2xl font-bold font-mono text-terminal-green">
+              {analytics.overallSuccessRate}%
             </div>
-          );
-        })}
-      </div>
+            <p className="text-[11px] text-slate font-mono">
+              Проверка по 9-пунктному стандарту перед утверждением
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-md bg-terminal-bg border border-terminal-border flex items-center justify-center text-terminal-green shrink-0">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="bg-pure border border-hairline rounded-md p-4 shadow-subtle flex items-center justify-between gap-4">
+          <div className="space-y-1">
+            <span className="text-xs text-stone font-medium">Доля эскалаций к Senior Architect и Argon</span>
+            <div className="text-2xl font-bold font-mono text-argon-text">
+              {analytics.escalationRate}%
+            </div>
+            <p className="text-[11px] text-slate font-mono">
+              L3 (Gemini Pro) и L4 (Gemini 4 Argon)
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-md bg-argon-bg border border-argon-border flex items-center justify-center text-argon-text shrink-0">
+            <Flame className="w-5 h-5" />
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Model Tiers Data Table */}
+      <section className="bg-pure border border-hairline rounded-md shadow-subtle overflow-hidden">
+        <div className="p-4 border-b border-hairline flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-obsidian tracking-tight">
+              Телеметрия по модельным уровням
+            </h2>
+            <p className="text-xs text-stone mt-0.5">
+              Подробная разбивка запусков, выполненных задач и расхода токенов с явным указанием достоверности.
+            </p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-[13px]">
+            <thead>
+              <tr className="bg-paper border-b border-hairline text-stone text-[11px] uppercase tracking-wider font-medium font-sans">
+                <th className="py-2.5 px-4">Модельный уровень</th>
+                <th className="py-2.5 px-4">Идентификатор</th>
+                <th className="py-2.5 px-4 text-right">Запусков</th>
+                <th className="py-2.5 px-4 text-right">Завершено задач</th>
+                <th className="py-2.5 px-4 text-right">Эскалаций</th>
+                <th className="py-2.5 px-4 text-right">Токены (Вход / Выход)</th>
+                <th className="py-2.5 px-4 text-center">Источник данных</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-hairline">
+              {analytics.tiers.map(tier => (
+                <tr key={tier.tier} className="hover:bg-surface-subtle transition-colors">
+                  <td className="py-3 px-4">
+                    <div className="font-semibold text-obsidian flex items-center gap-1.5">
+                      <Cpu className="w-3.5 h-3.5 text-graphite" />
+                      <span>{tier.displayName}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-stone">
+                    {tier.tier}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono text-xs text-obsidian font-semibold">
+                    {tier.runsCount}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono text-xs text-charcoal">
+                    {tier.tasksCompleted}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono text-xs text-charcoal">
+                    {tier.escalationCount}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono text-xs text-charcoal">
+                    <span className="text-obsidian font-semibold">{tier.inputTokens.toLocaleString()}</span>
+                    <span className="text-slate"> / </span>
+                    <span>{tier.outputTokens.toLocaleString()}</span>
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    {renderProvenanceBadge(tier.provenance, tier.isEstimate)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 };

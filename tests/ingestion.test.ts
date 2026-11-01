@@ -653,8 +653,8 @@ async function main() {
     // SCENARIO 17: createAntigravityPathFilter predicate accuracy
     // ------------------------------------------------------------------------
     await runScenario('17. Antigravity path filter predicate accuracy', async () => {
-      const brainDir = 'C:/Users/vlad2/.gemini/antigravity/brain';
-      const presenceDir = 'C:/Users/vlad2/.gemini/antigravity/presence';
+      const brainDir = 'C:/Users/developer/.gemini/antigravity/brain';
+      const presenceDir = 'C:/Users/developer/.gemini/antigravity/presence';
       const filter = createAntigravityPathFilter(brainDir, presenceDir);
 
       const fakeDirStats = { isDirectory: () => true } as fs.Stats;
@@ -662,24 +662,24 @@ async function main() {
 
       // Allowed files
       assert.strictEqual(
-        filter('C:/Users/vlad2/.gemini/antigravity/brain/session-1/.system_generated/logs/transcript.jsonl', fakeFileStats),
+        filter('C:/Users/developer/.gemini/antigravity/brain/session-1/.system_generated/logs/transcript.jsonl', fakeFileStats),
         true,
         'transcript.jsonl in .system_generated/logs must be allowed'
       );
       assert.strictEqual(
-        filter('C:/Users/vlad2/.gemini/antigravity/presence/session-1.lock', fakeFileStats),
+        filter('C:/Users/developer/.gemini/antigravity/presence/session-1.lock', fakeFileStats),
         true,
         'presence lock file must be allowed'
       );
 
       // Allowed directory traversal
       assert.strictEqual(
-        filter('C:/Users/vlad2/.gemini/antigravity/brain/session-1', fakeDirStats),
+        filter('C:/Users/developer/.gemini/antigravity/brain/session-1', fakeDirStats),
         true,
         'session directory in brain must be allowed'
       );
       assert.strictEqual(
-        filter('C:/Users/vlad2/.gemini/antigravity/brain/session-1/.system_generated', fakeDirStats),
+        filter('C:/Users/developer/.gemini/antigravity/brain/session-1/.system_generated', fakeDirStats),
         true,
         '.system_generated directory must be allowed'
       );
@@ -700,7 +700,7 @@ async function main() {
 
       // Denied arbitrary files outside logs
       assert.strictEqual(
-        filter('C:/Users/vlad2/.gemini/antigravity/brain/session-1/notes.txt', fakeFileStats),
+        filter('C:/Users/developer/.gemini/antigravity/brain/session-1/notes.txt', fakeFileStats),
         false,
         'notes.txt outside logs rejected'
       );

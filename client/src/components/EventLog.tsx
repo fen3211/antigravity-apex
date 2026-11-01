@@ -5,7 +5,11 @@ import {
   Copy, 
   Check, 
   Download,
-  Sparkles
+  Sparkles,
+  Terminal,
+  Eye,
+  X,
+  Code2
 } from 'lucide-react';
 import type { EventPayload, EventType } from '../types.js';
 
@@ -50,180 +54,229 @@ export const EventLog: React.FC<EventLogProps> = ({
     a.click();
   };
 
+  const getEventTypeColor = (type: string) => {
+    if (type.startsWith('quality_gate.passed') || type.startsWith('agent.completed') || type.startsWith('task.completed')) {
+      return 'text-terminal-green bg-terminal-bg border-terminal-border';
+    }
+    if (type.startsWith('escalation.') || type.startsWith('quality_gate.failed') || type.startsWith('legal_gate.blocked')) {
+      return 'text-argon-text bg-argon-bg border-argon-border';
+    }
+    if (type.startsWith('agent.failed') || type.startsWith('task.failed')) {
+      return 'text-danger-text bg-danger-bg border-danger-border';
+    }
+    if (type.startsWith('agent.started') || type.startsWith('task.created') || type.startsWith('task.updated')) {
+      return 'text-info-text bg-info-bg border-info-border';
+    }
+    return 'text-charcoal bg-surface-subtle border-hairline';
+  };
+
   return (
     <div className="space-y-6">
-      {/* Заголовок */}
-      <div className="glass-panel p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* 1. Header Surface */}
+      <section className="bg-pure border border-hairline rounded-md p-4 sm:p-5 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
-            <Radio className="w-5 h-5 text-director-blue animate-pulse" />
-            <span>Единый поток событий Antigravity</span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Стриминг телеметрии в реальном времени через WebSocket. Стандартизированная 10-типовая шина событий.
+          <div className="flex items-center gap-2">
+            <Radio className="w-5 h-5 text-obsidian animate-pulse" />
+            <h1 className="text-lg font-semibold text-obsidian tracking-tight">
+              Единый поток событий Antigravity (Event Stream)
+            </h1>
+          </div>
+          <p className="text-[13px] text-charcoal mt-1 leading-relaxed">
+            Полнотекстовый журнал WebSocket-телеметрии. Фильтрация по типам событий, поиск по агентам и инспектирование JSON payload.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Тестовые события для проверки шины */}
+          {/* Test Event Buttons */}
           <button
+            type="button"
             onClick={() => onEmitTestEvent('quality_gate.passed')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-mono border border-emerald-500/20 transition-all"
+            className="refero-btn-secondary text-xs"
+            title="Опубликовать тестовое событие прохождения шлюза"
           >
-            <Sparkles className="w-3 h-3" />
-            <span>Тест: Шлюз пройден</span>
+            <Sparkles className="w-3.5 h-3.5 text-terminal-green" />
+            <span>Тест: Шлюз L1</span>
           </button>
 
           <button
+            type="button"
             onClick={() => onEmitTestEvent('escalation.requested')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 text-xs font-mono border border-pink-500/20 transition-all"
+            className="refero-btn-secondary text-xs"
+            title="Опубликовать тестовое событие эскалации"
           >
-            <Sparkles className="w-3 h-3" />
+            <Sparkles className="w-3.5 h-3.5 text-argon-text" />
             <span>Тест: Эскалация L4</span>
           </button>
 
           <button
+            type="button"
             onClick={handleExportJson}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono border border-white/10 transition-all"
+            className="refero-btn-primary text-xs"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Экспорт JSON</span>
           </button>
         </div>
-      </div>
+      </section>
 
-      {/* Панель фильтров */}
-      <div className="glass-card p-3.5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3 flex-1 min-w-[280px]">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+      {/* 2. Search & Filter Bar */}
+      <section className="bg-pure border border-hairline rounded-md p-3.5 shadow-subtle flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
+            <Search className="w-3.5 h-3.5 text-graphite absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder="Поиск по типу события, задаче или агенту..."
+              placeholder="Поиск по типу, агенту или ID..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="glass-input pl-9 text-xs w-full font-mono"
+              className="w-full pl-8 pr-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian placeholder-smoke focus-ring"
             />
           </div>
 
           <select
             value={typeFilter}
             onChange={e => setTypeFilter(e.target.value)}
-            className="glass-input text-xs font-mono"
+            className="px-3 py-1.5 bg-pure border border-hairline rounded-md text-[13px] text-obsidian focus-ring"
           >
-            <option value="all">Все события</option>
-            <option value="agent">agent.* (Запуск, Завершение, Сбой)</option>
-            <option value="task">task.* (Создание, Обновление, Завершение)</option>
-            <option value="escalation">escalation.* (Запрос, Разрешение)</option>
-            <option value="quality_gate">quality_gate.* (Пройден, Провален)</option>
+            <option value="all">Все типы событий</option>
+            <option value="task.">События задач (task.*)</option>
+            <option value="agent.">События агентов (agent.*)</option>
+            <option value="quality_gate.">Шлюзы качества (quality_gate.*)</option>
+            <option value="legal_gate.">Юридические шлюзы (legal_gate.*)</option>
+            <option value="escalation.">Эскалации (escalation.*)</option>
           </select>
         </div>
 
-        <div className="text-xs font-mono text-slate-400">
-          Отображено <strong className="text-white">{filteredEvents.length}</strong> событий
+        <div className="text-xs font-mono text-slate">
+          Найдено <strong className="text-obsidian font-semibold">{filteredEvents.length}</strong> из {events.length} событий
         </div>
-      </div>
+      </section>
 
-      {/* Список событий и инспектор */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Список событий */}
-        <div className="lg:col-span-2 glass-panel p-4 space-y-2 max-h-[600px] overflow-y-auto">
-          {filteredEvents.length === 0 ? (
-            <p className="text-center py-12 text-slate-500 text-xs">
-              Нет событий, соответствующих выбранному фильтру.
-            </p>
-          ) : (
-            filteredEvents.map(evt => {
-              const isSelected = selectedEvent?.id === evt.id;
-              const isEscalation = evt.type.startsWith('escalation');
-              const isQuality = evt.type.startsWith('quality_gate');
-              const isAgent = evt.type.startsWith('agent');
+      {/* 3. Event List */}
+      <section className="space-y-2.5">
+        {filteredEvents.length === 0 ? (
+          <div className="bg-pure border border-hairline rounded-md p-12 text-center text-slate space-y-2">
+            <Terminal className="w-8 h-8 mx-auto text-ash" />
+            <p className="text-[13px]">События не найдены.</p>
+          </div>
+        ) : (
+          filteredEvents.map(evt => {
+            const isCopied = copiedId === evt.id;
 
-              return (
-                <div
-                  key={evt.id}
-                  onClick={() => setSelectedEvent(evt)}
-                  className={`p-3 rounded-xl border text-xs cursor-pointer transition-all space-y-1 ${
-                    isSelected
-                      ? 'bg-director-blue/20 border-director-cyan shadow-glass-subtle'
-                      : 'bg-black/30 hover:bg-white/[0.04] border-white/5'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={`font-mono font-bold ${
-                      isEscalation 
-                        ? 'text-pink-400' 
-                        : isQuality 
-                        ? 'text-emerald-400' 
-                        : isAgent 
-                        ? 'text-director-cyan' 
-                        : 'text-slate-200'
-                    }`}>
+            return (
+              <div
+                key={evt.id}
+                className="bg-pure border border-hairline rounded-md p-3.5 shadow-subtle hover:border-ash transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
+              >
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-medium border ${getEventTypeColor(evt.type)}`}>
                       {evt.type}
                     </span>
 
-                    <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                      evt.source === 'LIVE_AGY'
-                        ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
-                        : evt.source === 'DEMO'
-                        ? 'bg-amber-500/10 text-amber-300'
-                        : 'bg-slate-500/10 text-slate-400'
+                    <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded border ${
+                      evt.source === 'LIVE_AGY' 
+                        ? 'bg-terminal-bg text-terminal-green border-terminal-border' 
+                        : 'bg-surface-subtle text-charcoal border-hairline'
                     }`}>
                       {evt.source}
                     </span>
+
+                    {evt.agent_id && (
+                      <span className="font-mono text-obsidian font-semibold text-xs">
+                        @{evt.agent_id}
+                      </span>
+                    )}
+
+                    {evt.task_id && (
+                      <span className="font-mono text-stone text-[11px] truncate max-w-[140px]">
+                        [{evt.task_id}]
+                      </span>
+                    )}
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                    <span>
-                      {evt.agent_id ? `@${evt.agent_id}` : 'система'} {evt.task_id ? `• [${evt.task_id}]` : ''}
-                    </span>
-                    <span className="text-slate-500">
-                      {new Date(evt.timestamp).toLocaleTimeString()}
-                    </span>
+                  {evt.data?.summary || evt.data?.note || evt.data?.message ? (
+                    <p className="text-[13px] text-charcoal truncate">
+                      {evt.data.summary || evt.data.note || evt.data.message}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0 text-slate font-mono text-[11px]">
+                  <span>{new Date(evt.timestamp).toLocaleTimeString()}</span>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedEvent(evt)}
+                      className="refero-btn-secondary text-xs py-1 px-2.5"
+                      title="Инспектировать payload события"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-graphite" />
+                      <span>Payload</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(evt)}
+                      className="refero-btn-secondary text-xs py-1 px-2"
+                      title="Скопировать JSON события"
+                    >
+                      {isCopied ? <Check className="w-3.5 h-3.5 text-terminal-green" /> : <Copy className="w-3.5 h-3.5 text-graphite" />}
+                    </button>
                   </div>
                 </div>
-              );
-            })
-          )}
-        </div>
+              </div>
+            );
+          })
+        )}
+      </section>
 
-        {/* Инспектор структуры JSON */}
-        <div className="glass-panel p-5 space-y-3 flex flex-col">
-          <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-            <h3 className="text-xs font-bold font-mono text-slate-200 uppercase">
-              Инспектор структуры события
-            </h3>
-            {selectedEvent && (
+      {/* 4. Event Payload Inspector Modal */}
+      {selectedEvent && (
+        <div 
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm dark:bg-black/70 animate-fade-in"
+        >
+          <div className="w-full max-w-2xl bg-pure border border-hairline rounded-lg shadow-modal p-5 sm:p-6 space-y-4 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-hairline">
+              <div className="flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-obsidian" />
+                <h3 className="text-sm font-semibold text-obsidian tracking-tight">
+                  Инспектор события {selectedEvent.type}
+                </h3>
+              </div>
               <button
-                onClick={() => handleCopy(selectedEvent)}
-                className="flex items-center gap-1 text-[11px] font-mono text-director-cyan hover:underline"
+                type="button"
+                onClick={() => setSelectedEvent(null)}
+                aria-label="Закрыть инспектор payload"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-hairline text-charcoal hover:text-obsidian hover:bg-surface-subtle transition-colors focus-ring"
               >
-                {copiedId === selectedEvent.id ? (
-                  <>
-                    <Check className="w-3 h-3 text-emerald-400" />
-                    <span>Скопировано!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3 h-3" />
-                    <span>Копировать JSON</span>
-                  </>
-                )}
+                <X className="w-4 h-4" />
               </button>
-            )}
-          </div>
-
-          {selectedEvent ? (
-            <pre className="flex-1 p-3.5 rounded-xl bg-black/60 border border-white/5 text-[11px] font-mono text-slate-300 overflow-auto whitespace-pre-wrap leading-relaxed max-h-[500px]">
-              {JSON.stringify(selectedEvent, null, 2)}
-            </pre>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-center text-slate-500 text-xs py-20 font-mono">
-              Выберите любое событие из потока для детального просмотра метаданных.
             </div>
-          )}
+
+            <div className="flex-1 overflow-y-auto">
+              <pre className="p-4 rounded-md bg-surface-subtle border border-hairline font-mono text-xs text-obsidian leading-relaxed whitespace-pre-wrap selection:bg-obsidian selection:text-pure">
+                {JSON.stringify(selectedEvent, null, 2)}
+              </pre>
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-hairline text-xs font-mono">
+              <span className="text-slate">ID: {selectedEvent.id}</span>
+              <button
+                type="button"
+                onClick={() => handleCopy(selectedEvent)}
+                className="refero-btn-secondary text-xs"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Скопировать JSON</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -5,12 +5,15 @@ import {
   Wifi, 
   WifiOff, 
   Plus, 
-  Sparkles, 
   Layers,
   Menu,
-  X
+  X,
+  Cpu,
+  Sun,
+  Moon
 } from 'lucide-react';
 import type { DirectorStatus, ConnectionStatus } from '../types.js';
+import { useTheme, type Theme } from '../hooks/useTheme.js';
 
 interface HeaderProps {
   status: DirectorStatus | null;
@@ -18,6 +21,8 @@ interface HeaderProps {
   connectionStatus?: ConnectionStatus;
   isMobileMenuOpen?: boolean;
   onToggleMobileMenu?: () => void;
+  theme?: Theme;
+  onToggleTheme?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -25,188 +30,193 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNewTask, 
   connectionStatus = 'DISCONNECTED',
   isMobileMenuOpen = false,
-  onToggleMobileMenu
+  onToggleMobileMenu,
+  theme: controlledTheme,
+  onToggleTheme: controlledToggleTheme
 }) => {
+  // Автономная поддержка темы, если пропсы не переданы напрямую
+  const localThemeHook = useTheme();
+  const theme = controlledTheme ?? localThemeHook.theme;
+  const toggleTheme = controlledToggleTheme ?? localThemeHook.toggleTheme;
+
   const isLive = status?.state === 'ACTIVE' || status?.state === 'ONLINE';
   const liveSessions = status?.activeSessions.filter(s => s.isLive).length || 0;
   const currentTokens = status?.activeSessions[0]?.tokenUsage;
 
   const stateLabel = status?.state === 'ACTIVE' 
-    ? 'АКТИВЕН' 
+    ? 'ACTIVE' 
     : status?.state === 'ONLINE' 
-    ? 'В СЕТИ' 
+    ? 'ONLINE' 
     : status?.state === 'ESCALATED' 
-    ? 'ЭСКАЛАЦИЯ' 
-    : 'ПОДКЛЮЧЕНИЕ...';
+    ? 'ESCALATED' 
+    : 'CONNECTING...';
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-deep bg-background/80 border-b border-white/[0.08] px-3.5 sm:px-6 py-2.5 sm:py-3.5 transition-all">
-      <div className="flex items-center justify-between gap-2 sm:gap-4">
-        {/* Бренд, статус Director и мобильный гамбургер */}
-        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-          {/* Кнопка мобильного меню (только <lg) */}
+    <header className="sticky top-0 z-40 w-full bg-pure border-b border-hairline px-3.5 sm:px-6 py-2.5 transition-colors">
+      <div className="flex items-center justify-between gap-3 sm:gap-4 max-w-[1920px] mx-auto">
+        {/* Brand & System Status */}
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          {/* Mobile Drawer Toggle (min 44x44 touch target) */}
           <button
             type="button"
             onClick={onToggleMobileMenu}
-            aria-label={isMobileMenuOpen ? "Закрыть мобильное меню" : "Открыть мобильное меню"}
+            aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={isMobileMenuOpen}
-            className="lg:hidden p-2 rounded-xl bg-white/[0.05] hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-director-cyan shrink-0 active:scale-95"
+            className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md border border-hairline text-charcoal hover:text-obsidian hover:bg-surface-subtle transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-obsidian"
           >
             {isMobileMenuOpen ? (
-              <X className="w-5 h-5 text-director-cyan" />
+              <X className="w-5 h-5 text-obsidian" />
             ) : (
-              <Menu className="w-5 h-5 text-slate-300" />
+              <Menu className="w-5 h-5 text-charcoal" />
             )}
           </button>
 
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-director-blue/30 via-director-violet/20 to-transparent border border-white/10 shadow-glass-subtle shrink-0">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-director-cyan animate-pulse-slow" />
-              <div className="absolute -inset-0.5 rounded-xl bg-director-blue/20 blur-sm -z-10" />
+          {/* Logo & Product Title */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-obsidian text-pure font-mono font-bold text-xs shrink-0">
+              <Cpu className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <h1 className="text-sm sm:text-base font-bold tracking-tight text-white font-sans truncate">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold tracking-tight text-obsidian font-sans truncate">
                   AI COMMAND CENTER
-                </h1>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.08] text-slate-400 border border-white/5 shrink-0 hidden xs:inline-block">
+                </span>
+                <span className="text-[11px] font-mono px-1.5 py-0.2 rounded bg-surface-subtle text-slate border border-hairline shrink-0 hidden xs:inline-block">
                   v1.0.0
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-400 hidden sm:flex items-center gap-1.5 truncate">
-                <span>Панель оркестрации Antigravity</span>
-                <span className="text-slate-600">•</span>
-                <span className="text-director-cyan font-mono text-[11px]">Протокол Director 3.8</span>
+              <p className="text-[11px] text-stone hidden sm:flex items-center gap-1.5 truncate">
+                <span>Antigravity Orchestration</span>
+                <span className="text-ash">•</span>
+                <span className="font-mono text-charcoal">Director Protocol 3.8</span>
               </p>
             </div>
           </div>
 
-          <div className="h-6 w-px bg-white/10 hidden md:block" />
+          <div className="h-4 w-px bg-hairline hidden md:block" />
 
-          {/* Индикатор статуса Director */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 shrink-0">
-            <span className="relative flex h-2 w-2">
-              {isLive && (
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              )}
-              <span className={`relative inline-flex rounded-full h-2 w-2 ${isLive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+          {/* Director Status Tag */}
+          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md border border-hairline bg-surface-subtle shrink-0">
+            <span className={`inline-block w-1.5 h-1.5 rounded-full ${isLive ? 'bg-terminal-green' : 'bg-warning-text'}`} />
+            <span className="text-xs font-mono font-medium text-obsidian">
+              DIRECTOR: <span className={isLive ? 'text-terminal-green' : 'text-warning-text'}>{stateLabel}</span>
             </span>
-            <span className="text-xs font-semibold tracking-wide text-slate-200">
-              ДИРЕКТОР: <span className={isLive ? 'text-emerald-400' : 'text-amber-400'}>{stateLabel}</span>
-            </span>
-            <span className="text-xs font-mono text-slate-400 border-l border-white/10 pl-2 hidden xl:inline">
+            <span className="text-[11px] font-mono text-slate border-l border-hairline pl-2 hidden xl:inline">
               {status?.model || 'Gemini 3.8 Flash High'}
             </span>
           </div>
         </div>
 
-        {/* Метрики реального времени и статусы подсистем */}
+        {/* Real-time Subsystem, Theme Switcher & Actions */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* Индикатор сессий Antigravity */}
-          <div className="hidden lg:flex items-center gap-3 text-xs bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-1.5">
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <Layers className="w-3.5 h-3.5 text-director-blue" />
-              <span>Сессии:</span>
-              <span className="font-mono font-medium text-white">{liveSessions} активных</span>
-              <span className="text-slate-500 font-mono">({status?.activeLocksCount || 0} в истории)</span>
+          {/* Active Sessions Counter */}
+          <div className="hidden lg:flex items-center gap-3 text-xs bg-pure border border-hairline rounded-md px-2.5 py-1">
+            <div className="flex items-center gap-1.5 text-charcoal">
+              <Layers className="w-3.5 h-3.5 text-stone" />
+              <span>Sessions:</span>
+              <span className="font-mono font-medium text-obsidian">{liveSessions} active</span>
+              <span className="text-slate font-mono text-[11px]">({status?.activeLocksCount || 0} locks)</span>
             </div>
 
             {currentTokens && (
-              <div className="hidden xl:flex items-center gap-2 border-l border-white/10 pl-3 font-mono text-[11px] text-slate-400">
-                <span title="Токены подтверждены из реального транскрипта Antigravity">
-                  Вход: <strong className="text-slate-200 font-normal">{(currentTokens.input / 1000).toFixed(1)}k</strong>
-                </span>
-                <span>•</span>
-                <span>
-                  Выход: <strong className="text-slate-200 font-normal">{(currentTokens.output / 1000).toFixed(1)}k</strong>
-                </span>
+              <div className="hidden xl:flex items-center gap-2 border-l border-hairline pl-2.5 font-mono text-[11px] text-stone">
+                <span>In: <strong className="text-obsidian font-medium">{(currentTokens.input / 1000).toFixed(1)}k</strong></span>
+                <span className="text-ash">•</span>
+                <span>Out: <strong className="text-obsidian font-medium">{(currentTokens.output / 1000).toFixed(1)}k</strong></span>
               </div>
             )}
           </div>
 
-          {/* Плашки подсистем */}
+          {/* Subsystem Indicators */}
           <div className="hidden md:flex items-center gap-1.5 text-[11px] font-mono">
             <div 
-              className={`flex items-center gap-1 px-2 py-1 rounded-md border ${
+              className={`flex items-center gap-1 px-2 py-0.5 rounded border ${
                 status?.agyCliAvailable 
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' 
-                  : 'bg-rose-500/10 border-rose-500/20 text-rose-300'
+                  ? 'bg-terminal-bg border-terminal-border text-terminal-green' 
+                  : 'bg-danger-bg border-danger-border text-danger-text'
               }`}
-              title="CLI Antigravity (agy.exe) готов к работе"
+              title="Antigravity CLI (agy.exe)"
             >
               <Terminal className="w-3 h-3" />
               <span>CLI agy</span>
             </div>
 
             <div 
-              className={`flex items-center gap-1 px-2 py-1 rounded-md border ${
+              className={`flex items-center gap-1 px-2 py-0.5 rounded border ${
                 status?.knowledgeBaseConnected 
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' 
-                  : 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                  ? 'bg-terminal-bg border-terminal-border text-terminal-green' 
+                  : 'bg-warning-bg border-warning-border text-warning-text'
               }`}
-              title="Глобальная база знаний ~/.gemini/antigravity/knowledge подключена"
+              title="Global Antigravity Knowledge Base"
             >
               <Database className="w-3 h-3" />
-              <span>Память</span>
+              <span>Memory</span>
             </div>
 
-            {/* Индикатор статуса WebSocket */}
+            {/* WebSocket Stream Indicator */}
             {connectionStatus === 'CONNECTED' ? (
               <div 
-                className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
-                title="WebSocket поток: подключен (WS Онлайн)"
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded border bg-terminal-bg border-terminal-border text-terminal-green"
+                title="WebSocket real-time event stream: CONNECTED"
               >
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                </span>
-                <Wifi className="w-3 h-3 text-emerald-400" />
-                <span>WS Онлайн</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-terminal-green" />
+                <Wifi className="w-3 h-3 text-terminal-green" />
+                <span>WS Online</span>
               </div>
             ) : (connectionStatus === 'CONNECTING' || connectionStatus === 'RECONNECTING') ? (
               <div 
-                className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-amber-500/10 border-amber-500/20 text-amber-300"
-                title="WebSocket поток: восстановление соединения (WS Реконнект...)"
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded border bg-warning-bg border-warning-border text-warning-text"
+                title="WebSocket stream reconnecting..."
               >
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500" />
-                </span>
-                <Wifi className="w-3 h-3 text-amber-400 animate-pulse" />
-                <span>WS Реконнект...</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-warning-text animate-pulse" />
+                <Wifi className="w-3 h-3 text-warning-text" />
+                <span>WS Reconnect</span>
               </div>
             ) : (
               <div 
-                className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-rose-500/10 border-rose-500/20 text-rose-300"
-                title={`WebSocket поток: соединение разорвано (WS Офлайн - ${connectionStatus})`}
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded border bg-danger-bg border-danger-border text-danger-text"
+                title={`WebSocket stream disconnected (${connectionStatus})`}
               >
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
-                </span>
-                <WifiOff className="w-3 h-3 text-rose-400" />
-                <span>WS Офлайн</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-danger-text" />
+                <WifiOff className="w-3 h-3 text-danger-text" />
+                <span>WS Offline</span>
               </div>
             )}
           </div>
 
-          {/* Мобильный компактный индикатор статуса соединения */}
-          <div className="md:hidden flex items-center">
+          {/* Mobile WS Indicator */}
+          <div className="md:hidden flex items-center pr-1">
             {connectionStatus === 'CONNECTED' ? (
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500" title="WS Онлайн" />
+              <span className="w-2 h-2 rounded-full bg-terminal-green" title="WS Online" />
             ) : (
-              <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" title="WS Офлайн" />
+              <span className="w-2 h-2 rounded-full bg-danger-text animate-pulse" title="WS Offline" />
             )}
           </div>
 
-          {/* Кнопка создания задачи */}
+          {/* Theme Toggle Button (Sun / Moon) */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? "Переключить на светлую тему" : "Переключить на тёмную тему"}
+            title={theme === 'dark' ? "Светлая тема" : "Тёмная тема"}
+            className="min-h-[34px] min-w-[34px] flex items-center justify-center rounded-md border border-hairline bg-surface-subtle text-charcoal hover:text-obsidian hover:bg-surface-hover transition-colors focus-ring shrink-0"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-warning-text transition-transform duration-200 hover:rotate-45" />
+            ) : (
+              <Moon className="w-4 h-4 text-stone transition-transform duration-200 hover:-rotate-12" />
+            )}
+          </button>
+
+          {/* Action Button: New Task */}
           <button
             type="button"
             onClick={onOpenNewTask}
-            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-director-blue to-blue-600 hover:from-blue-500 hover:to-director-blue text-white text-xs font-semibold shadow-glass-subtle transition-all active:scale-[0.98] shrink-0"
+            className="refero-btn-primary shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span className="hidden xs:inline">Новая задача</span>
-            <span className="xs:hidden">Задача</span>
+            <span className="hidden xs:inline">New Task</span>
+            <span className="xs:hidden">Task</span>
           </button>
         </div>
       </div>

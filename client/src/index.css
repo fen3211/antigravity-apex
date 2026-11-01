@@ -4,60 +4,211 @@
 
 @layer base {
   :root {
+    color-scheme: light;
+
+    /* Refero Light Engineering Palette */
+    --color-paper: 250 250 250;           /* #FAFAFA Canvas */
+    --color-pure: 255 255 255;            /* #FFFFFF Cards & Panels */
+    --color-surface-subtle: 245 245 245;  /* #F5F5F5 Subtle Surfaces */
+    --color-surface-hover: 240 240 240;   /* #F0F0F0 Hover States */
+    --color-surface-active: 234 234 234;  /* #EAEAEA Active States */
+
+    --color-obsidian: 23 23 23;           /* #171717 Primary Text */
+    --color-charcoal: 77 77 77;           /* #4D4D4D Secondary Text */
+    --color-stone: 102 102 102;           /* #666666 Muted Text */
+    --color-slate: 125 125 125;           /* #7D7D7D */
+    --color-graphite: 143 143 143;        /* #8F8F8F */
+    --color-smoke: 168 168 168;           /* #A8A8A8 Placeholder/Ghost */
+    --color-ash: 201 201 201;             /* #C9C9C9 Hover borders */
+    --color-hairline: 235 235 235;        /* #EBEBEB Hairline borders */
+
+    /* Refero Status Tokens (Light) */
+    --color-terminal-green: 41 122 58;    /* #297A3A */
+    --color-terminal-bg: 244 251 246;     /* #F4FBF6 */
+    --color-terminal-border: 211 240 220; /* #D3F0DC */
+
+    --color-warning-text: 161 98 7;       /* #A16207 */
+    --color-warning-bg: 254 252 232;      /* #FEFCE8 */
+    --color-warning-border: 254 240 138;  /* #FEF08A */
+
+    --color-danger-text: 185 28 28;       /* #B91C1C */
+    --color-danger-bg: 254 242 242;       /* #FEF2F2 */
+    --color-danger-border: 254 202 202;   /* #FECACA */
+
+    --color-info-text: 29 78 216;         /* #1D4ED8 */
+    --color-info-bg: 239 246 255;         /* #EFF6FF */
+    --color-info-border: 191 219 254;     /* #BFDBFE */
+
+    --color-argon-text: 126 34 206;       /* #7E22CE */
+    --color-argon-bg: 250 245 255;        /* #FAF5FF */
+    --color-argon-border: 233 213 255;    /* #E9D5FF */
+
+    /* Primary button tokens */
+    --btn-primary-bg: #171717;
+    --btn-primary-text: #FFFFFF;
+    --btn-primary-hover: #2E2E2E;
+    --btn-primary-active: #000000;
+  }
+
+  .dark {
     color-scheme: dark;
+
+    /* Refero Vercel Dark Engineering Palette */
+    --color-paper: 10 10 10;              /* #0A0A0A Deep Obsidian Canvas */
+    --color-pure: 18 18 18;               /* #121212 Cards & Panels */
+    --color-surface-subtle: 28 28 28;     /* #1C1C1C Subtle Surfaces */
+    --color-surface-hover: 34 34 34;      /* #222222 Hover States */
+    --color-surface-active: 42 42 42;     /* #2A2A2A Active States */
+
+    --color-obsidian: 237 237 237;        /* #EDEDED Primary Text */
+    --color-charcoal: 161 161 161;        /* #A1A1A1 Secondary Text */
+    --color-stone: 115 115 115;           /* #737373 Muted Text */
+    --color-slate: 143 143 143;           /* #8F8F8F */
+    --color-graphite: 115 115 115;        /* #737373 */
+    --color-smoke: 82 82 82;              /* #525252 Placeholder/Ghost */
+    --color-ash: 51 51 51;                /* #333333 Hover borders */
+    --color-hairline: 38 38 38;           /* #262626 Hairline borders */
+
+    /* Refero Status Tokens (Dark) */
+    --color-terminal-green: 34 197 94;    /* #22C55E Terminal Green */
+    --color-terminal-bg: 10 31 17;        /* #0A1F11 */
+    --color-terminal-border: 22 62 36;    /* #163E24 */
+
+    --color-warning-text: 250 204 21;     /* #FACC15 Warning */
+    --color-warning-bg: 31 26 5;          /* #1F1A05 */
+    --color-warning-border: 61 50 11;     /* #3D320B */
+
+    --color-danger-text: 248 113 113;     /* #F87171 Danger */
+    --color-danger-bg: 36 11 11;          /* #240B0B */
+    --color-danger-border: 71 24 24;      /* #471818 */
+
+    --color-info-text: 96 165 250;        /* #60A5FA Info */
+    --color-info-bg: 11 25 46;            /* #0B192E */
+    --color-info-border: 23 51 92;        /* #17335C */
+
+    --color-argon-text: 192 132 252;      /* #C084FC Argon L4 */
+    --color-argon-bg: 28 11 43;           /* #1C0B2B */
+    --color-argon-border: 59 26 89;       /* #3B1A59 */
+
+    /* Primary button tokens (High contrast Vercel white button in dark mode) */
+    --btn-primary-bg: #EDEDED;
+    --btn-primary-text: #0A0A0A;
+    --btn-primary-hover: #FFFFFF;
+    --btn-primary-active: #D4D4D4;
   }
   
   body {
-    @apply bg-background text-slate-100 antialiased overflow-x-hidden min-h-screen selection:bg-director-blue/30 selection:text-white font-sans;
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(20, 30, 60, 0.35) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(40, 15, 50, 0.25) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(10, 25, 45, 0.4) 0px, transparent 50%);
-    background-attachment: fixed;
+    @apply bg-paper text-obsidian antialiased overflow-x-hidden min-h-screen font-sans;
+    background-color: rgb(var(--color-paper));
   }
 
-  /* Custom subtle scrollbar */
+  /* Smooth color transitions */
+  body,
+  .refero-panel,
+  .refero-card,
+  .refero-input,
+  .refero-btn,
+  header,
+  aside,
+  main,
+  section,
+  nav {
+    transition-property: color, background-color, border-color, box-shadow;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transition-duration: 200ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+
+  /* Thin minimalist engineering scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgb(var(--color-paper));
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 9999px;
+    background: rgb(var(--color-hairline));
+    border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgb(var(--color-ash));
   }
 }
 
 @layer components {
-  .glass-panel {
-    @apply bg-surface-panel backdrop-blur-deep border border-white/10 rounded-2xl shadow-glass-subtle;
+  /* Refero Panel & Card */
+  .refero-panel {
+    @apply bg-pure border border-hairline rounded-md shadow-subtle;
   }
 
-  .glass-card {
-    @apply bg-surface-card backdrop-blur-glass border border-white/[0.08] rounded-xl shadow-glass-card transition-all duration-200 hover:border-white/20;
+  .refero-card {
+    @apply bg-pure border border-hairline rounded-md p-4 shadow-subtle hover:border-ash transition-colors duration-150;
   }
 
-  .glass-input {
-    @apply bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-director-blue/60 focus:ring-1 focus:ring-director-blue/40 transition-all;
+  .refero-input {
+    @apply bg-pure border border-hairline rounded-md px-3 py-1.5 text-[13px] text-obsidian placeholder-smoke focus:outline-none focus:border-obsidian focus:ring-1 focus:ring-obsidian transition-all;
   }
 
+  /* Refero Buttons */
+  .refero-btn {
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-obsidian focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none;
+  }
+
+  .refero-btn-primary {
+    @apply refero-btn;
+    background-color: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+  }
+
+  .refero-btn-primary:hover:not(:disabled) {
+    background-color: var(--btn-primary-hover);
+  }
+
+  .refero-btn-primary:active:not(:disabled) {
+    background-color: var(--btn-primary-active);
+  }
+
+  .refero-btn-secondary {
+    @apply refero-btn bg-pure text-obsidian border border-hairline hover:bg-surface-subtle active:bg-surface-active;
+  }
+
+  .refero-btn-danger {
+    @apply refero-btn bg-pure text-danger-text border border-danger-border hover:bg-danger-bg active:bg-danger-border;
+  }
+
+  /* Refero Badges & Provenance Indicators */
   .badge-live {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-glow-emerald;
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium bg-terminal-bg text-terminal-green border border-terminal-border;
   }
 
   .badge-demo {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20;
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium bg-warning-bg text-warning-text border border-warning-border;
+  }
+
+  .badge-estimate {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium bg-info-bg text-info-text border border-info-border;
   }
 
   .badge-argon {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pink-500/15 text-pink-300 border border-pink-500/30 shadow-glow-argon;
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium bg-argon-bg text-argon-text border border-argon-border;
+  }
+
+  .badge-neutral {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium bg-surface-subtle text-charcoal border border-hairline;
+  }
+
+  /* Focus Ring */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-obsidian focus-visible:ring-offset-2;
   }
 }

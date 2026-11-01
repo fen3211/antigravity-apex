@@ -49,6 +49,87 @@ function getOrInitApiKey(): string {
   return generatedToken;
 }
 
+export function resolveAgyCliPath(env: NodeJS.ProcessEnv = process.env, platform: string = process.platform): string {
+  // 1. Explicit environment variable override
+  if (env.AGY_CLI_PATH && env.AGY_CLI_PATH.trim().length > 0) {
+    return path.resolve(env.AGY_CLI_PATH.trim());
+  }
+
+  const isWin = platform === 'win32';
+  const targetHome = isWin && env.USERPROFILE ? env.USERPROFILE : (env.HOME || homeDir);
+  const exeNames = isWin ? ['agy.exe', 'agy.cmd', 'agy.bat', 'agy'] : ['agy'];
+
+  // 2. Standard OS candidate paths
+  const candidates: string[] = [];
+  if (isWin) {
+    if (env.LOCALAPPDATA) {
+      candidates.push(path.join(env.LOCALAPPDATA, 'agy', 'bin', 'agy.exe'));
+    }
+    candidates.push(path.join(targetHome, 'AppData', 'Local', 'agy', 'bin', 'agy.exe'));
+    candidates.push(path.join(targetHome, '.local', 'bin', 'agy.exe'));
+    candidates.push(path.join(targetHome, '.local', 'bin', 'agy'));
+  } else {
+    candidates.push(path.join(targetHome, '.local', 'bin', 'agy'));
+    candidates.push('/usr/local/bin/agy');
+    candidates.push('/usr/bin/agy');
+    candidates.push('/opt/homebrew/bin/agy');
+  }
+
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // 3. Search in system PATH
+  const envPath = env.PATH || env.Path || '';
+  const pathDirs = envPath.split(path.delimiter).filter(Boolean);
+  for (const dir of pathDirs) {
+    for (const exe of exeNames) {
+      const fullPath = path.join(dir, exe);
+      try {
+        if (fs.existsSync(fullPath)) {
+          return fullPath;
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  // 4. Default fallback when not found
+  return isWin
+    ? path.join(targetHome, 'AppData', 'Local', 'agy', 'bin', 'agy.exe')
+    : path.join(targetHome, '.local', 'bin', 'agy');
+}
+
+export function getAllowedOrigins(env: NodeJS.ProcessEnv = process.env): string[] {
+  const defaultOrigins = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3001'
+  ];
+
+  const envOrigins = env.ALLOWED_ORIGINS || env.CORS_ALLOWED_ORIGINS;
+  if (envOrigins && envOrigins.trim().length > 0) {
+    const custom = envOrigins.split(',').map(s => s.trim()).filter(Boolean);
+    for (const origin of custom) {
+      if (!defaultOrigins.includes(origin)) {
+        defaultOrigins.push(origin);
+      }
+    }
+  }
+
+  return defaultOrigins;
+}
+
 export const CONFIG = {
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3001,
   HOST: process.env.HOST || '127.0.0.1',
@@ -69,20 +150,13 @@ export const CONFIG = {
   AI_DIRECTOR_SKILLS_DIR: path.join(homeDir, '.gemini', 'config', 'plugins', 'ai-director', 'skills'),
   
   // CLI
-  AGY_CLI_PATH: path.join(homeDir, 'AppData', 'Local', 'agy', 'bin', 'agy.exe'),
+  AGY_CLI_PATH: resolveAgyCliPath(),
   
   // DB
   DB_PATH: path.join(process.cwd(), 'command_center.sqlite'),
 
   // CORS
-  ALLOWED_ORIGINS: [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:3001',
-    'http://127.0.0.1:3001'
-  ]
+  ALLOWED_ORIGINS: getAllowedOrigins()
 };
 
 // Helper to check if a path exists safely
