@@ -110,27 +110,48 @@ The AI Development Director strictly enforces a **2-attempt maximum retry budget
 ### Level 3: Senior Architect (Pro Tier)
 When an agent fails twice on the same approach, the task is automatically reassigned to `senior-architect` powered by **Gemini Pro**. The Senior Architect investigates root causes, race conditions, or flawed design assumptions, producing a structural redesign.
 
-### Level 4: Gemini 4 Argon Closed Contour
-If the Senior Architect encounters an architectural or algorithmic impasse that cannot be resolved, the Director initiates **Level 4 Argon Escalation**:
+### Level 4: Intelligent Argon Escalation (Autonomous Detection & Closed Contour)
 
-#### 1. Argon Prompt Pack Synthesis
-The Director synthesizes a self-contained, high-density **Argon Prompt Pack** containing:
-1. Exact component name, file path, and responsible role.
-2. Concise 2-sentence problem statement.
-3. Root-cause hypothesis.
-4. Failure Attempt 1 summary and error log.
-5. Failure Attempt 2 summary and error log.
-6. Minimal isolated reproduction snippet (20–50 lines).
-7. Targeted architectural diagnostic question.
-8. Human operator execution directive.
+If a task encounters repeated failure or an architectural deadlock, the system activates the **Intelligent Argon Escalation Engine**:
 
-#### 2. Manual Model Switching Directive
-The operator manually switches the execution model to **Gemini 4 Argon** in an isolated session or tab. This guarantees that unverified code is never directly executed in production.
+#### 1. Autonomous Detection Signals & Sensitivity Modes
+The system continuously evaluates tasks via `EscalationManager`:
+- **Repeated Failures**: Tracks attempts against configurable thresholds.
+- **Diagnostic Impasse**: Detects keywords indicating deadlocks, race conditions, memory leaks, or unreleased thread contention.
+- **Agent Contradiction**: Detects conflicting verdicts between independent specialist reports.
+- **Sensitivity Switcher**:
+  - `Conservative`: Requires 3 consecutive failed retries before escalating.
+  - `Balanced` (Default): Warning on retry 2; escalates on retry 3, diagnostic impasse, or agent contradiction.
+  - `Aggressive`: Warning on retry 1; escalates on retry 2 or critical concurrency hazards.
+- **Non-Blocking Invariant**: The escalated subtask is quarantined in `Argon_L4`, while safe parallel tasks continue running unblocked.
+- **System Directive**: Emits official message `[ARGON ESCALATION REQUIRED]`.
 
-#### 3. Closed-Loop Verdict De-escalation
-Argon produces an architectural diagnosis and resolution strategy (never direct blind code modifications). The operator pastes this verdict into the **Argon Verdict Resolution** console (`POST /api/control/argon-verdict`). 
+#### 2. 18-Point Prompt Pack Generator with Automated Sanitization
+The Director synthesizes a structured 18-point package formatted for maximum reasoning efficiency:
+1. Title & Executive Metadata (Timestamp, Task ID, Priority, Sensitivity Profile).
+2. Root Problem Statement & Symptoms.
+3. Affected Subsystems & Component Architecture.
+4. Minimal Isolated Code Context (20–60 lines).
+5. Reproduction Steps & Failure Conditions.
+6. Sanitized Stack Traces & Error Logs (API keys and user home directories are regex-masked).
+7. Failed Approach 1 (Specialist hypothesis and failure mechanism).
+8. Failed Approach 2 (Senior Architect hypothesis and failure mechanism).
+9. Ruled-Out Hypotheses & Ineffective Fixes.
+10. System Invariants & Strict Constraints (SQLite WAL integrity, non-blocking UI).
+11. Agent Contradictions & Divergent Findings.
+12. Diagnostic Impasse & Concurrency/Race Analysis.
+13. Security & Compliance Implications (OWASP, 152-FZ, GDPR).
+14. Targeted Directive & Specific Questions for Gemini 4 Argon.
+15. Required Output Format from Argon (Root Cause, Architectural Blueprint, Verification Command).
+16. Closed-Loop Handoff Instructions back to Gemini Flash / Pro.
+17. Risk Analysis if Left Unresolved.
+18. Multi-Tier Verification Plan upon Resolution.
 
-The Director processes the verdict and automatically de-escalates the task back to the appropriate Flash specialist (e.g., `backend-developer` or `frontend-developer`) to implement the verified solution under standard Quality Gate surveillance.
+#### 3. Dashboard Integration & Workflow
+- **Mission Control Banner**: Prominent `[ARGON ESCALATION REQUIRED]` alert banner with quick-copy actions.
+- **Sidebar Counter**: Live badge counter on the **Argon Escalations** tab.
+- **Escalation Center**: Filter by status, priority, and date, with instant copy-to-clipboard confirmation.
+- **Closed-Loop Resolution**: Operator pastes Argon's response into the modal. The Director digests the blueprint, generates an execution directive, and hands off implementation back to Gemini 3.8 Flash High specialists.
 
 ---
 

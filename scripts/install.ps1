@@ -31,6 +31,7 @@ param(
     [switch]$DryRun,
     [switch]$CheckOnly,
     [switch]$Force,
+    [Alias("TargetDir", "Destination")]
     [string]$TargetGeminiDir = ""
 )
 
@@ -269,17 +270,33 @@ foreach ($file in $rulesFiles) {
     Write-Status "OK" Green "Deployed rule $($file.Name)" "$destPlugin & $destConfig"
 }
 
-# 4.3 Deploy Skills
-$srcSkillDir = Join-Path $AgentConfigDir "skills\director-orchestration"
-$destSkillDir = Join-Path $targetSkillsDir "director-orchestration"
-if (Test-Path $srcSkillDir) {
-    if (-not $DryRun) {
-        if (-not (Test-Path $destSkillDir)) {
-            New-Item -ItemType Directory -Path $destSkillDir -Force | Out-Null
+# 4.3 Deploy Skills & Templates
+$skillsRootDir = Join-Path $AgentConfigDir "skills"
+if (Test-Path $skillsRootDir) {
+    Get-ChildItem -Path $skillsRootDir -Directory | ForEach-Object {
+        $skillName = $_.Name
+        $srcSkill = $_.FullName
+        $destSkill = Join-Path $targetSkillsDir $skillName
+        if (-not $DryRun) {
+            if (-not (Test-Path $destSkill)) {
+                New-Item -ItemType Directory -Path $destSkill -Force | Out-Null
+            }
+            Copy-Item -Path (Join-Path $srcSkill "*") -Destination $destSkill -Recurse -Force
         }
-        Copy-Item -Path (Join-Path $srcSkillDir "*") -Destination $destSkillDir -Recurse -Force
+        Write-Status "OK" Green "Deployed skill: $skillName" $destSkill
     }
-    Write-Status "OK" Green "Deployed director-orchestration skill" $destSkillDir
+}
+
+$srcTemplatesDir = Join-Path $AgentConfigDir "templates"
+$destTemplatesDir = Join-Path $aiDirectorPluginDir "templates"
+if (Test-Path $srcTemplatesDir) {
+    if (-not $DryRun) {
+        if (-not (Test-Path $destTemplatesDir)) {
+            New-Item -ItemType Directory -Path $destTemplatesDir -Force | Out-Null
+        }
+        Copy-Item -Path (Join-Path $srcTemplatesDir "*") -Destination $destTemplatesDir -Recurse -Force
+    }
+    Write-Status "OK" Green "Deployed agent templates" $destTemplatesDir
 }
 
 # 4.4 Deploy plugin.json manifest
@@ -306,13 +323,15 @@ Write-Status "OK" Green "Created plugin manifest" $pluginJsonPath
 # -----------------------------------------------------------------------------
 Write-SectionHeader "5. Installation Completed Successfully"
 
+$backupDisplay = if (Test-Path $backupSessionDir) { $backupSessionDir } else { "None (Fresh Installation)" }
+
 Write-Host "
 Summary:
   - 17 Agent Definitions: $targetAgentsDir
   - Rules (AGENTS.md, GEMINI.md): $targetRulesDir & $configDir
   - Orchestration Skills: $destSkillDir
   - Plugin Manifest: $pluginJsonPath
-  - Backups Stored: $backupSessionDir
+  - Backups Stored: $backupDisplay
 
 Next Steps:
   1. Run diagnostic self-check:

@@ -103,6 +103,32 @@ export function initDatabase(targetDb: any = db) {
     CREATE INDEX IF NOT EXISTS idx_log_parse_conv ON log_parse_state(conversation_id);
     CREATE INDEX IF NOT EXISTS idx_log_parse_status ON log_parse_state(status);
     CREATE INDEX IF NOT EXISTS idx_log_parse_updated ON log_parse_state(last_parsed_at DESC);
+
+    CREATE TABLE IF NOT EXISTS escalations (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
+      task_title TEXT NOT NULL,
+      reason TEXT NOT NULL,
+      priority TEXT NOT NULL,
+      status TEXT NOT NULL,
+      attempts_count INTEGER DEFAULT 1,
+      involved_agents TEXT NOT NULL,
+      failure_signatures TEXT NOT NULL,
+      evidence TEXT NOT NULL,
+      prompt_pack TEXT NOT NULL,
+      argon_response TEXT,
+      director_analysis TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      copied_at TEXT,
+      sent_at TEXT,
+      completed_at TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_escalations_task ON escalations(task_id);
+    CREATE INDEX IF NOT EXISTS idx_escalations_status ON escalations(status);
+    CREATE INDEX IF NOT EXISTS idx_escalations_priority ON escalations(priority);
+    CREATE INDEX IF NOT EXISTS idx_escalations_created ON escalations(created_at DESC);
   `);
 
   // Migration: verify provenance column exists in model_usage

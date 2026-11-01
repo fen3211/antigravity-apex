@@ -278,6 +278,26 @@ if (!skillFound) {
   report('WARN', 'director-orchestration SKILL.md not found in active skill paths');
 }
 
+const argonCandidatePaths = [
+  path.join(aiDirectorPluginDir, 'skills', 'argon-escalation', 'SKILL.md'),
+  path.join(projectRoot, 'agent-config', 'skills', 'argon-escalation', 'SKILL.md')
+];
+
+let argonFound = false;
+for (const p of argonCandidatePaths) {
+  if (fs.existsSync(p)) {
+    const content = fs.readFileSync(p, 'utf-8');
+    if (content.includes('argon-escalation')) {
+      report('PASS', 'argon-escalation skill verified', p);
+      argonFound = true;
+      break;
+    }
+  }
+}
+if (!argonFound) {
+  report('WARN', 'argon-escalation SKILL.md not found in active skill paths');
+}
+
 // -----------------------------------------------------------------------------
 // 6. Antigravity CLI & Runtime Directories
 // -----------------------------------------------------------------------------
@@ -341,7 +361,7 @@ if (fs.existsSync(dbPath)) {
 
     // Check tables
     const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(r => r.name);
-    const requiredTables = ['tasks', 'events', 'settings', 'model_usage'];
+    const requiredTables = ['tasks', 'events', 'settings', 'model_usage', 'escalations'];
     const missingTables = requiredTables.filter(t => !tables.includes(t));
 
     db.close();

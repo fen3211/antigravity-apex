@@ -270,16 +270,30 @@ for file in "$SRC_RULES_DIR"/*.md; do
     fi
 done
 
-# 4.3 Deploy Skills
-SRC_SKILL_DIR="$AGENT_CONFIG_DIR/skills/director-orchestration"
-DEST_SKILL_DIR="$TARGET_SKILLS_DIR/director-orchestration"
+# 4.3 Deploy Skills & Templates
+SKILLS_ROOT_DIR="$AGENT_CONFIG_DIR/skills"
+if [[ -d "$SKILLS_ROOT_DIR" ]]; then
+    for skill_path in "$SKILLS_ROOT_DIR"/*; do
+        if [[ -d "$skill_path" ]]; then
+            skill_name=$(basename "$skill_path")
+            dest_skill="$TARGET_SKILLS_DIR/$skill_name"
+            if [[ "$DRY_RUN" == false ]]; then
+                mkdir -p "$dest_skill"
+                cp -R "$skill_path"/* "$dest_skill/"
+            fi
+            print_status "OK" "$GREEN" "Deployed skill: $skill_name" "$dest_skill"
+        fi
+    done
+fi
 
-if [[ -d "$SRC_SKILL_DIR" ]]; then
+SRC_TEMPLATES_DIR="$AGENT_CONFIG_DIR/templates"
+DEST_TEMPLATES_DIR="$AI_DIRECTOR_PLUGIN_DIR/templates"
+if [[ -d "$SRC_TEMPLATES_DIR" ]]; then
     if [[ "$DRY_RUN" == false ]]; then
-        mkdir -p "$DEST_SKILL_DIR"
-        cp -R "$SRC_SKILL_DIR"/* "$DEST_SKILL_DIR/"
+        mkdir -p "$DEST_TEMPLATES_DIR"
+        cp -R "$SRC_TEMPLATES_DIR"/* "$DEST_TEMPLATES_DIR/"
     fi
-    print_status "OK" "$GREEN" "Deployed director-orchestration skill" "$DEST_SKILL_DIR"
+    print_status "OK" "$GREEN" "Deployed agent templates" "$DEST_TEMPLATES_DIR"
 fi
 
 # 4.4 Deploy plugin.json manifest
@@ -304,6 +318,12 @@ print_status "OK" "$GREEN" "Created plugin manifest" "$PLUGIN_JSON_PATH"
 # -----------------------------------------------------------------------------
 print_header "5. Installation Completed Successfully"
 
+if [[ -d "$BACKUP_SESSION_DIR" ]]; then
+    BACKUP_DISPLAY="$BACKUP_SESSION_DIR"
+else
+    BACKUP_DISPLAY="None (Fresh Installation)"
+fi
+
 cat <<EOF
 
 Summary:
@@ -311,7 +331,7 @@ Summary:
   - Rules (AGENTS.md, GEMINI.md): $TARGET_RULES_DIR & $CONFIG_DIR
   - Orchestration Skills: $DEST_SKILL_DIR
   - Plugin Manifest: $PLUGIN_JSON_PATH
-  - Backups Stored: $BACKUP_SESSION_DIR
+  - Backups Stored: $BACKUP_DISPLAY
 
 Next Steps:
   1. Run diagnostic self-check:

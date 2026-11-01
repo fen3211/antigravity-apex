@@ -39,7 +39,12 @@ export type EventType =
   | 'task.completed'
   | 'task.rejected'
   | 'escalation.requested'
+  | 'escalation.created'
+  | 'escalation.updated'
+  | 'escalation.prompt_copied'
+  | 'escalation.sent'
   | 'escalation.resolved'
+  | 'escalation.rejected'
   | 'quality_gate.passed'
   | 'quality_gate.failed'
   | 'legal_gate.passed'
@@ -212,4 +217,60 @@ export interface LegalAssessment {
   humanCounselRequirement: 'YES' | 'NO' | 'RECOMMENDED';
   verdict: LegalGateStatus;
   safeScopeCanProceed?: boolean;
+}
+
+export type EscalationStatus =
+  | 'DETECTED'
+  | 'PROMPT_READY'
+  | 'AWAITING_USER'
+  | 'COPIED'
+  | 'SENT_TO_ARGON'
+  | 'AWAITING_RESULT'
+  | 'RESULT_RECEIVED'
+  | 'IN_REVIEW'
+  | 'COMPLETED'
+  | 'REJECTED'
+  | 'CANCELLED';
+
+export type EscalationPriority = 'critical' | 'high' | 'medium';
+export type SensitivitySetting = 'conservative' | 'balanced' | 'aggressive';
+
+export interface EscalationEvidence {
+  errorLogs?: string[];
+  failingChecks?: string[];
+  conflictingReports?: SubagentReport[];
+  codeSnippets?: { file: string; lineRange?: string; snippet: string }[];
+  environmentInfo?: Record<string, any>;
+  attemptSummaries?: { attemptNumber: number; agent: string; hypothesis: string; failureReason: string }[];
+}
+
+export interface EscalationItem {
+  id: string;
+  taskId: string;
+  taskTitle: string;
+  reason: string;
+  priority: EscalationPriority;
+  status: EscalationStatus;
+  attemptsCount: number;
+  involvedAgents: string[];
+  failureSignatures: string[];
+  evidence: EscalationEvidence;
+  promptPack: string;
+  argonResponse?: string;
+  directorAnalysis?: string;
+  createdAt: string;
+  updatedAt: string;
+  copiedAt?: string;
+  sentAt?: string;
+  completedAt?: string;
+}
+
+export interface EscalationStats {
+  total: number;
+  activeCount: number;
+  awaitingUserCount: number;
+  inReviewCount: number;
+  resolvedCount: number;
+  rejectedCount: number;
+  byPriority: Record<EscalationPriority, number>;
 }

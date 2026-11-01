@@ -1,3 +1,4 @@
+import { escalationManager } from './escalation-manager.js';
 import { db } from '../db/database.js';
 import { eventBus } from './event-bus.js';
 import { antigravityBridge } from './antigravity-bridge.js';
@@ -194,6 +195,18 @@ export class TaskManager {
           reason: 'Max retries exhausted'
         }
       });
+
+      if (nextStage === 'Argon_L4' && updated) {
+        try {
+          escalationManager.triggerEscalation({
+            task: updated,
+            reason: `Maximum retries exhausted in ${task.stage}. Automatic Level 4 Escalation.`,
+            involvedAgents: [task.assignedAgent, 'senior-architect', 'director']
+          });
+        } catch (e) {
+          console.error('[TaskManager] Failed to auto-trigger escalation:', e);
+        }
+      }
 
       return {
         task: updated,

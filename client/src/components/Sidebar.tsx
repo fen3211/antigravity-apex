@@ -18,6 +18,7 @@ export type NavTab =
   | 'workflow' 
   | 'analytics' 
   | 'tasks' 
+  | 'escalations'
   | 'memory' 
   | 'control' 
   | 'events';
@@ -27,6 +28,7 @@ interface SidebarProps {
   onSelectTab: (tab: NavTab) => void;
   pendingTasksCount: number;
   liveEventsCount: number;
+  activeEscalationsCount?: number;
   isMobileOpen?: boolean;
   onClose?: () => void;
 }
@@ -36,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectTab,
   pendingTasksCount,
   liveEventsCount,
+  activeEscalationsCount = 0,
   isMobileOpen = false,
   onClose
 }) => {
@@ -44,6 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'agents', label: 'Agents', icon: Users, badge: '17' },
     { id: 'workflow', label: 'Orchestration', icon: GitBranch },
     { id: 'tasks', label: 'Task Queue', icon: CheckSquare, badge: pendingTasksCount > 0 ? pendingTasksCount : undefined, badgeColor: 'bg-obsidian text-pure' },
+    { id: 'escalations', label: 'Argon Escalations', icon: Flame, badge: activeEscalationsCount > 0 ? `${activeEscalationsCount}` : undefined, badgeColor: 'bg-danger text-pure animate-pulse' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'memory', label: 'Memory & Rules', icon: Brain, badge: '8 docs' },
     { id: 'events', label: 'Events Feed', icon: Radio, badge: liveEventsCount > 0 ? `${liveEventsCount}` : undefined, badgeColor: 'bg-terminal-bg text-terminal-green border border-terminal-border' },

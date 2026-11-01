@@ -10,6 +10,7 @@ import { analyticsService } from '../services/analytics.js';
 import { controlService } from '../services/control.js';
 import { processSupervisor } from '../services/process-supervisor.js';
 import { legalGateService, OFFICIAL_PRIMARY_SOURCES } from '../services/legal-gate.js';
+import { escalationManager } from '../services/escalation-manager.js';
 
 export const apiRouter = Router();
 
@@ -718,4 +719,191 @@ apiRouter.post('/legal/reconcile', (req: Request, res: Response) => {
 
 apiRouter.get('/legal/sources', (_req: Request, res: Response) => {
   res.json(OFFICIAL_PRIMARY_SOURCES);
+});
+
+// ==========================================
+// 10. Intelligent Argon Escalation
+// ==========================================
+
+apiRouter.get('/escalations', (req: Request, res: Response) => {
+  try {
+    const status = req.query.status as any;
+    const priority = req.query.priority as any;
+    const search = req.query.search as string;
+    const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+    const offset = req.query.offset ? parseInt(String(req.query.offset), 10) : undefined;
+
+    const escalations = escalationManager.getAllEscalations({ status, priority, search, limit, offset });
+    res.json(escalations);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+apiRouter.get('/escalations/stats', (_req: Request, res: Response) => {
+  try {
+    const stats = escalationManager.getEscalationStats();
+    res.json(stats);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+apiRouter.get('/escalations/settings', (_req: Request, res: Response) => {
+  try {
+    const sensitivity = escalationManager.getSensitivity();
+    res.json({ sensitivity });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const sensitivitySchema = z.object({
+  sensitivity: z.enum(['conservative', 'balanced', 'aggressive'])
+});
+
+apiRouter.put('/escalations/settings', requireAuth, (req: Request, res: Response) => {
+  try {
+    const parsed = sensitivitySchema.parse(req.body);
+    escalationManager.setSensitivity(parsed.sensitivity);
+    res.json({ success: true, sensitivity: parsed.sensitivity });
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+apiRouter.get('/escalations/:id', (req: Request, res: Response) => {
+  try {
+    const escalation = escalationManager.getEscalationById(req.params.id);
+    if (!escalation) {
+      return res.status(404).json({ error: 'Escalation not found' });
+    }
+    res.json(escalation);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const evaluateTaskSchema = z.object({
+  taskId: z.string().min(1),
+  errorLogs: z.array(z.string()).optional(),
+  reports: z.array(z.any()).optional(),
+  codeSnippet: z.string().optional()
+});
+
+apiRouter.post('/escalations/evaluate-task', (req: Request, res: Response) => {
+  try {
+    const parsed = evaluateTaskSchema.parse(req.body);
+    const task = taskManager.getTaskById(parsed.taskId);
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    const evalResult = escalationManager.evaluateTaskForEscalation(task, {
+      errorLogs: parsed.errorLogs,
+      reports: parsed.reports,
+      codeSnippet: parsed.codeSnippet
+    });
+    res.json(evalResult);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+const triggerEscalationSchema = z.object({
+  taskId: z.string().min(1),
+  reason: z.string().optional(),
+  priority: z.enum(['critical', 'high', 'medium']).optional(),
+  involvedAgents: z.array(z.string()).optional(),
+  evidence: z.any().optional(),
+  force: z.boolean().optional()
+});
+
+apiRouter.post('/escalations/trigger', requireAuth, (req: Request, res: Response) => {
+  try {
+    const parsed = triggerEscalationSchema.parse(req.body);
+    const task = taskManager.getTaskById(parsed.taskId);
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    const result = escalationManager.triggerEscalation({
+      task,
+      reason: parsed.reason,
+      priority: parsed.priority,
+      involvedAgents: parsed.involvedAgents,
+      evidence: parsed.evidence,
+      force: parsed.force
+    });
+    res.status(201).json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+apiRouter.post('/escalations/:id/copy', (req: Request, res: Response) => {
+  try {
+    const updated = escalationManager.markPromptCopied(req.params.id);
+    res.json(updated);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+apiRouter.post('/escalations/:id/send', (req: Request, res: Response) => {
+  try {
+    const updated = escalationManager.markSentToArgon(req.params.id);
+    res.json(updated);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+const submitResponseSchema = z.object({
+  responseText: z.string().min(1, 'Response text is required')
+});
+
+apiRouter.post('/escalations/:id/response', requireAuth, (req: Request, res: Response) => {
+  try {
+    const parsed = submitResponseSchema.parse(req.body);
+    const result = escalationManager.submitArgonResponse(req.params.id, parsed.responseText);
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+const resolveEscalationSchema = z.object({
+  note: z.string().optional()
+});
+
+apiRouter.post('/escalations/:id/resolve', requireAuth, (req: Request, res: Response) => {
+  try {
+    const parsed = resolveEscalationSchema.parse(req.body || {});
+    const resolved = escalationManager.resolveEscalation(req.params.id, parsed.note);
+    res.json(resolved);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+const rejectEscalationSchema = z.object({
+  reason: z.string().optional()
+});
+
+apiRouter.post('/escalations/:id/reject', requireAuth, (req: Request, res: Response) => {
+  try {
+    const parsed = rejectEscalationSchema.parse(req.body || {});
+    const rejected = escalationManager.rejectEscalation(req.params.id, parsed.reason);
+    res.json(rejected);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+apiRouter.post('/escalations/:id/regenerate', requireAuth, (req: Request, res: Response) => {
+  try {
+    const regenerated = escalationManager.regeneratePromptPack(req.params.id);
+    res.json(regenerated);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
 });

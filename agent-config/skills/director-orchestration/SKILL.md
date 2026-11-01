@@ -91,3 +91,12 @@ Never consider a task complete based solely on a subagent's claim.
 - **Retry Limit**: Max 2 retry attempts for any single technical approach.
 - **Pivot Rule**: If an approach fails twice, Director MUST change the strategy or escalate to `senior-architect`.
 - **Targeted Context**: Pass only relevant file paths and specifications to subagents. Avoid dumping the entire repository history.
+
+## 7. Intelligent Level 4 Argon Escalation Protocol
+
+When an architectural impasse persists across 2 distinct approaches (or reaches 3 retries in Balanced sensitivity):
+1. **Signal**: System emits `[ARGON ESCALATION REQUIRED]`.
+2. **Autonomous Synthesis**: Director generates an 18-point structured prompt pack with full secret and path sanitization.
+3. **Non-Blocking Execution**: The blocked task transitions to `Argon_L4`, while other safe tasks continue unblocked.
+4. **Manual Switch**: Operator switches to Gemini 4 Argon, inputs the prompt pack, and enters the architectural verdict into the Command Center.
+5. **Closed-Loop Resolution**: Director digests the blueprint, delegates implementation to Flash subagents, and enforces Gate 1 and Gate 2 verification before marking the escalation `COMPLETED`.

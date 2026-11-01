@@ -145,6 +145,7 @@ PRAGMA busy_timeout = 5000;
 | `session_token_usage` | `conversation_id` (TEXT) | Token breakdown (`input`, `output`, `cache_read`) per active conversation. |
 | `model_usage` | `tier` (TEXT) | Aggregated run counts, completion rates, and token expenditures per model. |
 | `settings` | `key` (TEXT) | Dynamic runtime configuration keys and values. |
+| `escalations` | `id` (TEXT) | Autonomous Level 4 Argon escalations, failure signatures, 18-point prompt packs, and verdicts. |
 
 ---
 

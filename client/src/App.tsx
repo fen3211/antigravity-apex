@@ -9,6 +9,8 @@ import { TaskManager } from './components/TaskManager.js';
 import { MemoryExplorer } from './components/MemoryExplorer.js';
 import { ControlCenter } from './components/ControlCenter.js';
 import { EventLog } from './components/EventLog.js';
+import { EscalationCenter } from './components/EscalationCenter.js';
+import { EscalationDetailModal } from './components/Modals/EscalationDetailModal.js';
 import { ToastProvider, toast } from './components/Toast.js';
 
 import { PromptModal } from './components/Modals/PromptModal.js';
@@ -28,7 +30,10 @@ import type {
   EventType,
   SubagentReport,
   ConnectionStatus,
-  DataProvenance
+  DataProvenance,
+  EscalationItem,
+  EscalationStats,
+  SensitivitySetting
 } from './types.js';
 
 export function AppContent() {
@@ -52,6 +57,11 @@ export function AppContent() {
   } | null>(null);
   const [knowledgeDocs, setKnowledgeDocs] = useState<KnowledgeDoc[]>([]);
   const [settings, setSettings] = useState<ControlSettings | null>(null);
+  const [escalations, setEscalations] = useState<EscalationItem[]>([]);
+  const [escalationStats, setEscalationStats] = useState<EscalationStats | null>(null);
+  const [escalationSensitivity, setEscalationSensitivity] = useState<SensitivitySetting>('balanced');
+  const [selectedEscalationModal, setSelectedEscalationModal] = useState<EscalationItem | null>(null);
+
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(() => eventStream.getStatus());
   const prevStatusRef = React.useRef<ConnectionStatus>(eventStream.getStatus());
   const tasksDebounceTimer = React.useRef<any>(null);
@@ -72,7 +82,10 @@ export function AppContent() {
         fetchedEvents,
         fetchedAnalytics,
         fetchedDocs,
-        fetchedSettings
+        fetchedSettings,
+        fetchedEscalations,
+        fetchedEscStats,
+        fetchedEscSettings
       ] = await Promise.all([
         api.getStatus().catch(() => null),
         api.getAgents().catch(() => []),
@@ -80,7 +93,10 @@ export function AppContent() {
         api.getEvents({ limit: 50 }).catch(() => []),
         api.getAnalytics().catch(() => null),
         api.getKnowledgeDocs().catch(() => []),
-        api.getSettings().catch(() => null)
+        api.getSettings().catch(() => null),
+        api.getEscalations().catch(() => []),
+        api.getEscalationStats().catch(() => null),
+        api.getEscalationSettings().catch(() => null)
       ]);
 
       if (fetchedStatus) setStatus(fetchedStatus);
@@ -90,6 +106,9 @@ export function AppContent() {
       if (fetchedAnalytics) setAnalytics(fetchedAnalytics);
       if (fetchedDocs) setKnowledgeDocs(fetchedDocs);
       if (fetchedSettings) setSettings(fetchedSettings);
+      if (fetchedEscalations) setEscalations(fetchedEscalations);
+      if (fetchedEscStats) setEscalationStats(fetchedEscStats);
+      if (fetchedEscSettings?.sensitivity) setEscalationSensitivity(fetchedEscSettings.sensitivity);
     } catch (err) {
       console.error('Ошибка инициализации данных Command Center:', err);
     }
@@ -106,7 +125,10 @@ export function AppContent() {
           fetchedEvents,
           fetchedAnalytics,
           fetchedDocs,
-          fetchedSettings
+          fetchedSettings,
+          fetchedEscalations,
+          fetchedEscStats,
+          fetchedEscSettings
         ] = await Promise.all([
           api.getStatus().catch(() => null),
           api.getAgents().catch(() => []),
@@ -114,7 +136,10 @@ export function AppContent() {
           api.getEvents({ limit: 50 }).catch(() => []),
           api.getAnalytics().catch(() => null),
           api.getKnowledgeDocs().catch(() => []),
-          api.getSettings().catch(() => null)
+          api.getSettings().catch(() => null),
+          api.getEscalations().catch(() => []),
+          api.getEscalationStats().catch(() => null),
+          api.getEscalationSettings().catch(() => null)
         ]);
 
         if (!isMounted) return;
@@ -125,6 +150,9 @@ export function AppContent() {
         if (fetchedAnalytics) setAnalytics(fetchedAnalytics);
         if (fetchedDocs) setKnowledgeDocs(fetchedDocs);
         if (fetchedSettings) setSettings(fetchedSettings);
+        if (fetchedEscalations) setEscalations(fetchedEscalations);
+        if (fetchedEscStats) setEscalationStats(fetchedEscStats);
+        if (fetchedEscSettings?.sensitivity) setEscalationSensitivity(fetchedEscSettings.sensitivity);
       } catch (err) {
         console.error('Ошибка инициализации данных Command Center:', err);
       }
@@ -240,6 +268,54 @@ export function AppContent() {
     }
   };
 
+
+  const handleUpdateSensitivity = async (s: SensitivitySetting) => {
+    try {
+      await api.updateEscalationSettings(s);
+      setEscalationSensitivity(s);
+      toast.success(`Чувствительность обновлена: ${s}`);
+    } catch {
+      toast.error('Не удалось обновить чувствительность');
+    }
+  };
+
+  const handleCopyEscalationPrompt = async (id: string) => {
+    try {
+      await api.copyEscalationPrompt(id);
+      api.getEscalations().then(setEscalations);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleMarkEscalationSent = async (id: string) => {
+    await api.sendEscalationToArgon(id);
+    api.getEscalations().then(setEscalations);
+  };
+
+  const handleSubmitArgonResponse = async (id: string, responseText: string) => {
+    await api.submitArgonResponse(id, responseText);
+    api.getEscalations().then(setEscalations);
+    api.getTasks().then(setTasks);
+  };
+
+  const handleResolveEscalation = async (id: string, note?: string) => {
+    await api.resolveEscalation(id, note);
+    api.getEscalations().then(setEscalations);
+    api.getTasks().then(setTasks);
+  };
+
+  const handleRejectEscalation = async (id: string, reason?: string) => {
+    await api.rejectEscalation(id, reason);
+    api.getEscalations().then(setEscalations);
+    api.getTasks().then(setTasks);
+  };
+
+  const handleRegenerateEscalationPrompt = async (id: string) => {
+    await api.regenerateEscalationPrompt(id);
+    api.getEscalations().then(setEscalations);
+  };
+
   const handleEmitTestEvent = async (type: EventType) => {
     await api.publishEvent({
       type,
@@ -284,6 +360,7 @@ export function AppContent() {
           onSelectTab={setActiveTab}
           pendingTasksCount={tasks.filter(t => t.status === 'in_progress' || t.status === 'pending').length}
           liveEventsCount={events.length}
+          activeEscalationsCount={escalations.filter(e => !['COMPLETED', 'REJECTED', 'CANCELLED'].includes(e.status)).length}
           isMobileOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
         />
@@ -300,6 +377,9 @@ export function AppContent() {
               onNavigate={setActiveTab}
               onOpenNewTask={() => setIsNewTaskOpen(true)}
               onSelectTask={handleSelectTaskFromWorkflow}
+              activeEscalations={escalations.filter(e => !['COMPLETED', 'REJECTED', 'CANCELLED'].includes(e.status))}
+              onOpenEscalationModal={(esc) => setSelectedEscalationModal(esc)}
+              onCopyEscalationPrompt={handleCopyEscalationPrompt}
             />
           )}
 
@@ -366,6 +446,23 @@ export function AppContent() {
               docs={knowledgeDocs}
               onSaveDoc={handleSaveDoc}
               onRefresh={() => api.getKnowledgeDocs().then(setKnowledgeDocs)}
+            />
+          )}
+
+
+          {activeTab === 'escalations' && (
+            <EscalationCenter
+              escalations={escalations}
+              stats={escalationStats}
+              sensitivity={escalationSensitivity}
+              onUpdateSensitivity={handleUpdateSensitivity}
+              onRefresh={loadAllData}
+              onCopyPrompt={handleCopyEscalationPrompt}
+              onMarkSent={handleMarkEscalationSent}
+              onSubmitResponse={handleSubmitArgonResponse}
+              onResolve={handleResolveEscalation}
+              onReject={handleRejectEscalation}
+              onRegenerate={handleRegenerateEscalationPrompt}
             />
           )}
 

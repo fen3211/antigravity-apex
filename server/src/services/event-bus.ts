@@ -9,6 +9,7 @@ interface HeartbeatWebSocket extends WebSocket {
 export class EventBus {
   private clients: Set<HeartbeatWebSocket> = new Set();
   private heartbeatInterval: NodeJS.Timeout | null = null;
+  private inProcessListeners: Set<(event: EventPayload) => void> = new Set();
 
   constructor() {
     this.startHeartbeat(30000);
@@ -133,6 +134,17 @@ export class EventBus {
       this.broadcastRawEvent(fullEvent);
     }
 
+    // Notify in-process listeners
+    if (this.inProcessListeners) {
+      for (const listener of this.inProcessListeners) {
+        try {
+          listener(fullEvent);
+        } catch (err) {
+          console.error('[EventBus] Error in in-process listener:', err);
+        }
+      }
+    }
+
     return fullEvent;
   }
 
@@ -151,6 +163,14 @@ export class EventBus {
         }
       }
     }
+  }
+
+
+  public subscribe(cb: (event: EventPayload) => void): () => void {
+    this.inProcessListeners.add(cb);
+    return () => {
+      this.inProcessListeners.delete(cb);
+    };
   }
 
   public getRecentEvents(options: {

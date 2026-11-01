@@ -12,6 +12,7 @@ import {
   Cpu
 } from 'lucide-react';
 import type { 
+  EscalationItem,
   DirectorStatus, 
   AgentInfo, 
   TaskItem, 
@@ -38,6 +39,9 @@ interface OverviewProps {
   onNavigate: (tab: NavTab) => void;
   onOpenNewTask: () => void;
   onSelectTask: (task: TaskItem) => void;
+  activeEscalations?: EscalationItem[];
+  onOpenEscalationModal?: (esc: EscalationItem) => void;
+  onCopyEscalationPrompt?: (id: string) => Promise<void>;
 }
 
 export const Overview: React.FC<OverviewProps> = ({
@@ -48,7 +52,10 @@ export const Overview: React.FC<OverviewProps> = ({
   analytics,
   onNavigate,
   onOpenNewTask,
-  onSelectTask
+  onSelectTask,
+  activeEscalations = [],
+  onOpenEscalationModal,
+  onCopyEscalationPrompt
 }) => {
   const pendingTasks = tasks.filter(t => t.status === 'pending' || t.status === 'in_progress');
   const completedTasks = tasks.filter(t => t.status === 'completed');
@@ -105,6 +112,70 @@ export const Overview: React.FC<OverviewProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* 0. Top Urgent Alert Banner: Active Argon Escalations */}
+      {activeEscalations && activeEscalations.length > 0 && (
+        <div className="p-4 sm:p-5 rounded-md bg-gradient-to-r from-danger/10 via-amber-500/10 to-transparent border-2 border-danger/60 shadow-subtle space-y-3 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono font-bold bg-danger text-pure animate-pulse">
+                <Flame className="w-4 h-4" />
+                [ARGON ESCALATION REQUIRED]
+              </span>
+              <span className="text-xs font-mono font-semibold text-danger-text uppercase">
+                Обнаружен архитектурный тупик ({activeEscalations.length})
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onNavigate('escalations')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono font-medium bg-obsidian text-pure hover:bg-graphite transition-colors shadow-xs"
+              >
+                <span>Перейти в центр эскалаций</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            {activeEscalations.slice(0, 2).map(esc => (
+              <div
+                key={esc.id}
+                onClick={() => onOpenEscalationModal ? onOpenEscalationModal(esc) : onNavigate('escalations')}
+                className="p-3 bg-pure/90 border border-hairline rounded flex items-start justify-between gap-3 cursor-pointer hover:border-danger/40 transition-colors"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-danger-bg text-danger-text uppercase">
+                      {esc.priority}
+                    </span>
+                    <span className="text-xs font-bold text-obsidian line-clamp-1">
+                      {esc.taskTitle}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-stone line-clamp-1">
+                    {esc.reason}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+                  <button
+                    onClick={async () => {
+                      if (onCopyEscalationPrompt) {
+                        await onCopyEscalationPrompt(esc.id);
+                        await navigator.clipboard.writeText(esc.promptPack);
+                      }
+                    }}
+                    className="p-1.5 rounded text-xs font-mono bg-surface border border-hairline hover:bg-surface-subtle"
+                    title="Скопировать 18-пунктный пакет"
+                  >
+                    <Flame className="w-3.5 h-3.5 text-danger" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 1. Header: Mission Control Telemetry Surface */}
       <section className="bg-pure border border-hairline rounded-md p-5 sm:p-6 shadow-subtle">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">

@@ -8,7 +8,12 @@ import type {
   ControlSettings,
   SubagentReport,
   ManagedProcess,
-  DataProvenance
+  DataProvenance,
+  EscalationItem,
+  EscalationStatus,
+  EscalationPriority,
+  SensitivitySetting,
+  EscalationStats
 } from '../types.js';
 
 
@@ -197,7 +202,58 @@ export const api = {
 
   // CLI Tools
   getModels: () => fetchJson<{ id: string; name: string }[]>('/models'),
-  getPlugins: () => fetchJson<{ raw: string; success: boolean }>('/plugins')
+  getPlugins: () => fetchJson<{ raw: string; success: boolean }>('/plugins'),
+
+  // Intelligent Argon Escalations
+  getEscalations: (params?: { status?: EscalationStatus; priority?: EscalationPriority; search?: string; limit?: number; offset?: number }) => {
+    const query = new URLSearchParams();
+    if (params?.status) query.set('status', params.status);
+    if (params?.priority) query.set('priority', params.priority);
+    if (params?.search) query.set('search', params.search);
+    if (params?.limit) query.set('limit', String(params.limit));
+    if (params?.offset) query.set('offset', String(params.offset));
+    const qs = query.toString();
+    return fetchJson<EscalationItem[]>(qs ? `/escalations?${qs}` : '/escalations');
+  },
+  getEscalationStats: () => fetchJson<EscalationStats>('/escalations/stats'),
+  getEscalationSettings: () => fetchJson<{ sensitivity: SensitivitySetting }>('/escalations/settings'),
+  updateEscalationSettings: (sensitivity: SensitivitySetting) =>
+    fetchJson<{ success: boolean; sensitivity: SensitivitySetting }>('/escalations/settings', {
+      method: 'PUT',
+      body: JSON.stringify({ sensitivity })
+    }),
+  getEscalation: (id: string) => fetchJson<EscalationItem>(`/escalations/${id}`),
+  evaluateTaskForEscalation: (data: { taskId: string; errorLogs?: string[]; reports?: any[]; codeSnippet?: string }) =>
+    fetchJson<any>('/escalations/evaluate-task', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+  triggerEscalation: (data: { taskId: string; reason?: string; priority?: EscalationPriority; involvedAgents?: string[]; evidence?: any; force?: boolean }) =>
+    fetchJson<{ escalation: EscalationItem; isNew: boolean; deduped: boolean }>('/escalations/trigger', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+  copyEscalationPrompt: (id: string) =>
+    fetchJson<EscalationItem>(`/escalations/${id}/copy`, { method: 'POST' }),
+  sendEscalationToArgon: (id: string) =>
+    fetchJson<EscalationItem>(`/escalations/${id}/send`, { method: 'POST' }),
+  submitArgonResponse: (id: string, responseText: string) =>
+    fetchJson<{ escalation: EscalationItem; directorAnalysis: string }>(`/escalations/${id}/response`, {
+      method: 'POST',
+      body: JSON.stringify({ responseText })
+    }),
+  resolveEscalation: (id: string, note?: string) =>
+    fetchJson<EscalationItem>(`/escalations/${id}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify({ note })
+    }),
+  rejectEscalation: (id: string, reason?: string) =>
+    fetchJson<EscalationItem>(`/escalations/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason })
+    }),
+  regenerateEscalationPrompt: (id: string) =>
+    fetchJson<EscalationItem>(`/escalations/${id}/regenerate`, { method: 'POST' }),
 };
 
 export type ConnectionStatus = 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED' | 'ERROR';
