@@ -259,7 +259,7 @@ function seedInitialTasks(targetDb: any = db) {
         taskName: 'Предварительный аудит архитектуры',
         status: 'SUCCESS',
         summary: 'Прямая проверка всех каталогов Antigravity и базы знаний Директора.',
-        modifiedFiles: ['d:/Projects/antigravity-apex/shared/types.ts'],
+        modifiedFiles: ['shared/types.ts'],
         executedChecks: ['agy agents', 'agy models', 'agy plugins list', 'проверка transcript.jsonl'],
         checkResults: 'Все ключевые подсистемы Antigravity проверены и доступны на локальной машине.',
         issuesAndRisks: 'Antigravity не предоставляет открытый HTTP сервер из коробки; необходим файловый наблюдатель и CLI мост.',

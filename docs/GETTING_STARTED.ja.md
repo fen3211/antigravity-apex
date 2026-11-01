@@ -26,7 +26,7 @@ Antigravity Apex の提供価値：
 ターミナルを開き、プロジェクトのルートディレクトリに移動します：
 
 ```bash
-cd d:\Projects\antigravity-apex
+cd antigravity-apex
 npm run dev
 ```
 

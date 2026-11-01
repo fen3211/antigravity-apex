@@ -26,7 +26,7 @@ Antigravity Apex 提供：
 打开终端并进入项目根目录：
 
 ```bash
-cd d:\Projects\antigravity-apex
+cd antigravity-apex
 npm run dev
 ```
 

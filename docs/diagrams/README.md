@@ -8,11 +8,11 @@
 
 | Файл диаграммы | Название и назначение | Основные узлы и концепции |
 | :--- | :--- | :--- |
-| [`system-architecture.mmd`](file:///d:/Projects/antigravity-apex/docs/diagrams/system-architecture.mmd) | **System Architecture**<br>Общая компонентная архитектура системы | User, React 19 SPA, Express Ingress Guards, SQLite WAL, Process Supervisor, Ingestion Pipeline, Antigravity Bridge, WebSocket, Antigravity Brain |
-| [`agent-orchestration.mmd`](file:///d:/Projects/antigravity-apex/docs/diagrams/agent-orchestration.mmd) | **Agent Orchestration Workflow**<br>Жизненный цикл задачи и оркестрация | Director Triage, 17 специалистов в 5 дивизионах, Concurrency Slot Pool (до 6), Quality Gates L1/L2, Gate 2b (Legal), Senior Architect L3, Argon L4 и De-escalation loop |
-| [`installation-flow.mmd`](file:///d:/Projects/antigravity-apex/docs/diagrams/installation-flow.mmd) | **Installation & Onboarding Flow**<br>Развертывание, диагностика и запуск | Clone, Health Doctor, Discovery конфигурации, автогенерация API-ключа, деплой правил агентов, миграции SQLite, запуск валидации, Ready |
-| [`security-architecture.mmd`](file:///d:/Projects/antigravity-apex/docs/diagrams/security-architecture.mmd) | **Security Architecture & Trust Boundaries**<br>Модель угроз и эшелонированная защита | 4 границы доверия, Localhost binding (127.0.0.1), Timing-safe API Key Auth, CORS, Path Traversal Shield, Process Tree Isolation, подтверждение опасных команд |
-| [`data-flow.mmd`](file:///d:/Projects/antigravity-apex/docs/diagrams/data-flow.mmd) | **Event & Telemetry Data Flow**<br>Потоковая обработка событий телеметрии | `transcript.jsonl` -> Chokidar -> `JsonlStreamReader` (кванты 64KB, UTF-8 StringDecoder) -> `IngestionQueue` -> Atomic SQLite WAL -> `EventBus` -> WebSocket -> Client React FSM |
+| [`system-architecture.mmd`](./system-architecture.mmd) | **System Architecture**<br>Общая компонентная архитектура системы | User, React 19 SPA, Express Ingress Guards, SQLite WAL, Process Supervisor, Ingestion Pipeline, Antigravity Bridge, WebSocket, Antigravity Brain |
+| [`agent-orchestration.mmd`](./agent-orchestration.mmd) | **Agent Orchestration Workflow**<br>Жизненный цикл задачи и оркестрация | Director Triage, 17 специалистов в 5 дивизионах, Concurrency Slot Pool (до 6), Quality Gates L1/L2, Gate 2b (Legal), Senior Architect L3, Argon L4 и De-escalation loop |
+| [`installation-flow.mmd`](./installation-flow.mmd) | **Installation & Onboarding Flow**<br>Развертывание, диагностика и запуск | Clone, Health Doctor, Discovery конфигурации, автогенерация API-ключа, деплой правил агентов, миграции SQLite, запуск валидации, Ready |
+| [`security-architecture.mmd`](./security-architecture.mmd) | **Security Architecture & Trust Boundaries**<br>Модель угроз и эшелонированная защита | 4 границы доверия, Localhost binding (127.0.0.1), Timing-safe API Key Auth, CORS, Path Traversal Shield, Process Tree Isolation, подтверждение опасных команд |
+| [`data-flow.mmd`](./data-flow.mmd) | **Event & Telemetry Data Flow**<br>Потоковая обработка событий телеметрии | `transcript.jsonl` -> Chokidar -> `JsonlStreamReader` (кванты 64KB, UTF-8 StringDecoder) -> `IngestionQueue` -> Atomic SQLite WAL -> `EventBus` -> WebSocket -> Client React FSM |
 
 ---
 

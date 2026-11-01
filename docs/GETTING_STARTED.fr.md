@@ -26,7 +26,7 @@ Antigravity Apex fournit :
 Ouvrez votre terminal et rendez-vous dans le répertoire du projet :
 
 ```bash
-cd d:\Projects\antigravity-apex
+cd antigravity-apex
 npm run dev
 ```
 
