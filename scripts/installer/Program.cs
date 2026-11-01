@@ -77,6 +77,26 @@ namespace AICommandCenter.Installer
                 Directory.SetCurrentDirectory(projectDir);
                 Console.WriteLine("  [3/6] Working directory: " + projectDir);
 
+                // Auto-update if repository exists
+                string gitDir = Path.Combine(projectDir, ".git");
+                if (Directory.Exists(gitDir))
+                {
+                    Console.Write("        [Auto-Update] Checking for updates from GitHub... ");
+                    string fetchRes = RunCommandCapture("git", "pull origin main");
+                    if (!string.IsNullOrEmpty(fetchRes) && fetchRes.Contains("Already up to date"))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("Up to date.");
+                        Console.ResetColor();
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.WriteLine("Updated to latest.");
+                        Console.ResetColor();
+                    }
+                }
+
                 // 4. Setup .env file
                 string envFile = Path.Combine(projectDir, ".env");
                 string envExample = Path.Combine(projectDir, ".env.example");
@@ -110,6 +130,15 @@ namespace AICommandCenter.Installer
                 else
                 {
                     Console.WriteLine("        Client dependencies already installed.");
+                }
+
+                string clientDist = Path.Combine(clientDir, "dist");
+                string serverDist = Path.Combine(projectDir, "server", "dist");
+                if (!Directory.Exists(clientDist) || !Directory.Exists(serverDist))
+                {
+                    Console.WriteLine("        Building server and client distribution...");
+                    RunCommandLive("cmd.exe", "/c npm run server:build");
+                    RunCommandLive("cmd.exe", "/c npm run client:build");
                 }
 
                 // 6. Deploy Antigravity Agents Suite
