@@ -114,6 +114,7 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({
                 <option value="ui-ux-designer">ui-ux-designer (Эргономика)</option>
                 <option value="qa-engineer">qa-engineer (Тестирование)</option>
                 <option value="code-reviewer">code-reviewer (Аудит)</option>
+                <option value="legal-compliance">legal-compliance (Юрист и комплаенс)</option>
                 <option value="senior-architect">senior-architect (Уровень Pro)</option>
               </select>
             </div>

@@ -41,7 +41,10 @@ export type EventType =
   | 'escalation.requested'
   | 'escalation.resolved'
   | 'quality_gate.passed'
-  | 'quality_gate.failed';
+  | 'quality_gate.failed'
+  | 'legal_gate.passed'
+  | 'legal_gate.blocked'
+  | 'legal_gate.warning';
 
 export type EventSource = 'LIVE_AGY' | 'INTERNAL_BRIDGE' | 'SYSTEM' | 'DEMO';
 
@@ -66,6 +69,7 @@ export type WorkflowStage =
   | 'Specialist'
   | 'QualityGate_L1'
   | 'Independent_L2'
+  | 'LegalGate'
   | 'Architect_L3'
   | 'Argon_L4'
   | 'Approved';
@@ -197,4 +201,52 @@ export interface IngestionMetrics {
   queueLength: number;
   activeWorkers: number;
   lastProcessedAt: string | null;
+}
+
+export type LegalRiskLevel = 'GREEN' | 'AMBER' | 'RED' | 'UNKNOWN';
+export type LegalGateStatus = 'APPROVED' | 'BLOCKED_RED' | 'NEEDS_REVIEW_AMBER' | 'INSUFFICIENT_DATA_UNKNOWN';
+export type JurisdictionType = 'RU' | 'EU_NL' | 'DUAL_RU_EU' | 'OTHER' | 'UNKNOWN';
+
+export interface JurisdictionCriteria {
+  entityLocation?: string;        // 1. Место регистрации компании-разработчика / оператора
+  founderCitizenship?: string;    // 2. Гражданство / резидентство основателей / разработчиков
+  serverDbLocation?: string;      // 3. Расположение серверов и баз данных
+  targetAudience?: string;        // 4. Целевая аудитория (язык, доменные зоны)
+  paymentMethods?: string;        // 5. Способы оплаты (МИР/СБП/рубли vs Stripe/iDEAL/SEPA)
+  regulatoryRegistries?: string;  // 6. Регистрация в реестрах (ОРИ, реестр ПО Минцифры, KvK)
+  distributionChannels?: string;  // 7. Каналы дистрибуции (RuStore, App Store, Telegram Mini Apps)
+  thirdPartyServices?: string;    // 8. Сторонние сервисы (Яндекс.Метрика vs Google Analytics, Yandex GPT vs Gemini/OpenAI)
+  applicableLawClause?: string;   // 9. Применимое право в ToS
+  advertisingTerritory?: string;  // 10. Территория распространения рекламы
+}
+
+export interface TriggerEvaluationResult {
+  triggered: boolean;
+  jurisdiction: JurisdictionType;
+  riskCategory?: 'PERSONAL_DATA' | 'AI_REGULATION' | 'LICENSING' | 'SCRAPING' | 'COMMERCIAL_RELEASE' | 'AUTOMATED_DECISION' | 'ECOMMERCE' | 'ADVERTISING' | 'CONTENT_PLATFORM';
+  reasons: string[];
+  recommendedAction: string;
+  safeScopeCanProceed?: boolean;
+}
+
+export interface LegalOfficialSource {
+  name: string;
+  url: string;
+  checkedDate: string;
+  inForceDate: string;
+}
+
+export interface LegalAssessment {
+  projectAndFeature: string;
+  jurisdiction: string;
+  applicableNorms: string[];
+  identifiedRisks: string[];
+  riskLevel: LegalRiskLevel;
+  officialSources: LegalOfficialSource[];
+  mechanismOfNonCompliance?: string;
+  potentialConsequences?: string;
+  recommendedRemediation?: string;
+  humanCounselRequirement: 'YES' | 'NO' | 'RECOMMENDED';
+  verdict: LegalGateStatus;
+  safeScopeCanProceed?: boolean;
 }

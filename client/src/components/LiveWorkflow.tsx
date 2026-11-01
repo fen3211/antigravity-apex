@@ -64,6 +64,15 @@ export const LiveWorkflow: React.FC<LiveWorkflowProps> = ({ tasks, onSelectTask 
       description: 'Независимый аудит крупных изменений (>50 строк, схемы БД, авторизация, API). Никакой агент не одобряет свою работу сам.',
       gateRequirement: 'Независимое подтверждение от QA или ревьюера.'
     },
+        {
+      id: 'LegalGate',
+      title: 'Шлюз 2b: Юрист и комплаенс',
+      tier: 'Шлюз уровня 2b',
+      model: 'Gemini Flash',
+      role: 'Legal & Compliance (RU / EU / Dual)',
+      description: 'Оценка правовых рисков: 152-ФЗ, 243-ФЗ, GDPR, EU AI Act, 38-ФЗ, 54-ФЗ, лицензии и авторские права. Не блокирует независимую разработку.',
+      gateRequirement: 'Отсутствие неразрешённых рисков уровня RED. Разделение согласий и локализация.'
+    },
     {
       id: 'Approved',
       title: 'Финальное утверждение',

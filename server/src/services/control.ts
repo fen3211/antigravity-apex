@@ -30,7 +30,8 @@ export class ControlService {
         'ui-ux-designer',
         'qa-engineer',
         'code-reviewer',
-        'senior-architect'
+        'senior-architect',
+        'legal-compliance'
       ]
     };
   }

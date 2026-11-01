@@ -17,7 +17,8 @@ const AVAILABLE_SPECIALISTS = [
   { id: 'code-reviewer', label: 'Code Reviewer (Flash)', role: 'Security & Quality Gate Audit' },
   { id: 'senior-architect', label: 'Senior Architect (Pro-tier)', role: 'Complex concurrency & core architecture' },
   { id: 'researcher', label: 'Researcher (Flash)', role: 'Knowledge base & dependency analysis' },
-  { id: 'ui-ux-designer', label: 'UI/UX Designer (Flash)', role: 'UX research & design system' }
+  { id: 'ui-ux-designer', label: 'UI/UX Designer (Flash)', role: 'UX research & design system' },
+  { id: 'legal-compliance', label: 'Legal & Compliance (Flash)', role: 'GDPR, 152-FZ, EU AI Act, 243-FZ, IP & Licensing' }
 ];
 
 export const ArgonVerdictModal: React.FC<ArgonVerdictModalProps> = ({

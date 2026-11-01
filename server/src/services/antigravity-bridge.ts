@@ -145,6 +145,7 @@ export class AntigravityBridge {
       case 'code-reviewer': return 'Независимый аудит безопасности diff-ов и поиск дефектов';
       case 'senior-architect': return 'Сложная архитектура, concurrency-гонки и эскалация L3';
       case 'firestore-rules-author': return 'Правила безопасности Cloud Firestore и аудит';
+      case 'legal-compliance': return 'Юридический анализ, GDPR/AVG, EU AI Act, аудит лицензий и ToS';
       default: return 'Профильный субагент';
     }
   }
@@ -159,7 +160,8 @@ export class AntigravityBridge {
       { id: 'qa-engineer', name: 'QA Engineer', role: 'ТЕСТИРОВЩИК', model: 'flash' },
       { id: 'code-reviewer', name: 'Code Reviewer', role: 'РЕВЬЮЕР', model: 'flash' },
       { id: 'senior-architect', name: 'Senior Architect', role: 'АРХИТЕКТОР', model: 'pro' },
-      { id: 'firestore-rules-author', name: 'Firestore Rules Author', role: 'БЕЗОПАСНОСТЬ', model: 'flash' }
+      { id: 'firestore-rules-author', name: 'Firestore Rules Author', role: 'БЕЗОПАСНОСТЬ', model: 'flash' },
+      { id: 'legal-compliance', name: 'Legal & Compliance Agent', role: 'ЮРИСТ И КОМПЛАЕНС', model: 'flash' }
     ];
 
     return list.map(a => ({

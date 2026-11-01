@@ -8,6 +8,7 @@ import { eventBus } from '../services/event-bus.js';
 import { analyticsService } from '../services/analytics.js';
 import { controlService } from '../services/control.js';
 import { processSupervisor } from '../services/process-supervisor.js';
+import { legalGateService, OFFICIAL_PRIMARY_SOURCES } from '../services/legal-gate.js';
 
 export const apiRouter = Router();
 
@@ -477,4 +478,94 @@ apiRouter.get('/plugins', async (req: Request, res: Response) => {
     raw: cliRes.stdout || cliRes.stderr,
     success: cliRes.success
   });
+});
+
+// ==========================================
+// 9. Legal & Compliance Gate (Gate 2b)
+// ==========================================
+const legalEvaluateSchema = z.object({
+  title: z.string().min(1, 'title is required'),
+  description: z.string().optional(),
+  criteria: z.object({
+    entityLocation: z.string().optional(),
+    founderCitizenship: z.string().optional(),
+    serverDbLocation: z.string().optional(),
+    targetAudience: z.string().optional(),
+    paymentMethods: z.string().optional(),
+    regulatoryRegistries: z.string().optional(),
+    distributionChannels: z.string().optional(),
+    thirdPartyServices: z.string().optional(),
+    applicableLawClause: z.string().optional(),
+    advertisingTerritory: z.string().optional()
+  }).optional()
+});
+
+apiRouter.post('/legal/evaluate', (req: Request, res: Response) => {
+  try {
+    const parsed = legalEvaluateSchema.parse(req.body);
+    const result = legalGateService.evaluateTrigger(parsed.title, parsed.description, parsed.criteria);
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+const legalAssessSchema = z.object({
+  projectAndFeature: z.string().min(1, 'projectAndFeature is required'),
+  jurisdiction: z.string().optional(),
+  applicableNorms: z.array(z.string()),
+  identifiedRisks: z.array(z.string()),
+  riskLevel: z.enum(['GREEN', 'AMBER', 'RED', 'UNKNOWN']),
+  officialSources: z.array(z.object({
+    name: z.string(),
+    url: z.string(),
+    checkedDate: z.string(),
+    inForceDate: z.string()
+  })).optional(),
+  mechanismOfNonCompliance: z.string().optional(),
+  potentialConsequences: z.string().optional(),
+  recommendedRemediation: z.string().optional(),
+  humanCounselRequirement: z.enum(['YES', 'NO', 'RECOMMENDED']).optional(),
+  taskId: z.string().optional(),
+  criteria: z.object({
+    entityLocation: z.string().optional(),
+    founderCitizenship: z.string().optional(),
+    serverDbLocation: z.string().optional(),
+    targetAudience: z.string().optional(),
+    paymentMethods: z.string().optional(),
+    regulatoryRegistries: z.string().optional(),
+    distributionChannels: z.string().optional(),
+    thirdPartyServices: z.string().optional(),
+    applicableLawClause: z.string().optional(),
+    advertisingTerritory: z.string().optional()
+  }).optional()
+});
+
+apiRouter.post('/legal/assess', requireAuth, (req: Request, res: Response) => {
+  try {
+    const parsed = legalAssessSchema.parse(req.body);
+    const assessment = legalGateService.createAssessment(parsed);
+    res.json(assessment);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+const legalReconcileSchema = z.object({
+  feature: z.string().min(1, 'feature is required'),
+  description: z.string().optional()
+});
+
+apiRouter.post('/legal/reconcile', (req: Request, res: Response) => {
+  try {
+    const parsed = legalReconcileSchema.parse(req.body);
+    const result = legalGateService.reconcileDualJurisdiction(parsed.feature, parsed.description);
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: err.errors || err.message });
+  }
+});
+
+apiRouter.get('/legal/sources', (_req: Request, res: Response) => {
+  res.json(OFFICIAL_PRIMARY_SOURCES);
 });

@@ -10,13 +10,13 @@
     "client": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,magenta\" \"npm run server\" \"npm run client\"",
-    "test": "tsx tests/api.test.ts && tsx tests/ingestion.test.ts && tsx tests/analytics.test.ts && tsx tests/websocket-resilience.test.ts && tsx tests/process-supervisor.test.ts",
+    "test": "tsx tests/api.test.ts && tsx tests/ingestion.test.ts && tsx tests/analytics.test.ts && tsx tests/websocket-resilience.test.ts && tsx tests/process-supervisor.test.ts && tsx tests/legal-compliance.test.ts",
     "test:ingestion": "tsx tests/ingestion.test.ts",
     "test:analytics": "tsx tests/analytics.test.ts",
     "test:ws": "tsx tests/websocket-resilience.test.ts",
     "test:supervisor": "tsx tests/process-supervisor.test.ts",
-    "start": "node server/dist/index.js"
-
+    "start": "node server/dist/index.js",
+    "test:legal": "tsx tests/legal-compliance.test.ts"
   },
   "keywords": [
     "antigravity",
