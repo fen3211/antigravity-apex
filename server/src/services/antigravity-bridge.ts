@@ -7,6 +7,7 @@ import { CONFIG, checkPathExists } from '../config.js';
 import { db } from '../db/database.js';
 import { eventBus } from './event-bus.js';
 import { ingestionQueue } from './ingestion-queue.js';
+import { controlService } from './control.js';
 import type { AgentInfo, KnowledgeDoc, DirectorStatus } from '../types.js';
 
 const execFileAsync = promisify(execFile);
@@ -357,7 +358,7 @@ export class AntigravityBridge {
       state: liveSessions.length > 0 ? 'ACTIVE' : 'ONLINE',
       model: 'Gemini 3.8 Flash High',
       activeSubagentsCount: liveSessions.length > 0 ? 1 : 0,
-      maxSubagents: 3,
+      maxSubagents: controlService.getSettings().maxConcurrentAgents,
       activeSessions,
       agyCliAvailable: this.isAgyCliAvailable,
       knowledgeBaseConnected: checkPathExists(CONFIG.KNOWLEDGE_DIR),

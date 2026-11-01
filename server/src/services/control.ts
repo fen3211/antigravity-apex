@@ -7,41 +7,43 @@ import type { ControlSettings, TaskItem } from '../types.js';
 
 export class ControlService {
   public getSettings(): ControlSettings {
-    const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('control_settings') as any;
-    if (row && row.value) {
-      try {
-        return JSON.parse(row.value);
-      } catch {
-        // fallback
-      }
-    }
-
-    return {
+    const defaultSettings: ControlSettings = {
       maxConcurrentAgents: 6,
       maxRetryAttempts: 2,
       defaultModelTier: 'gemini-3.8-flash-high',
       escalationPolicy: 'strict',
       autoQualityGates: true,
       allowedAgents: [
-      'director',
-      'researcher',
-      'frontend-developer',
-      'backend-developer',
-      'ui-ux-designer',
-      'qa-engineer',
-      'code-reviewer',
-      'senior-architect',
-      'legal-compliance',
-      'security-engineer',
-      'devops-engineer',
-      'product-manager',
-      'ai-evaluation-engineer',
-      'performance-engineer',
-      'accessibility-specialist',
-      'database-specialist',
-      'data-engineer'
-    ]
+        'director',
+        'researcher',
+        'frontend-developer',
+        'backend-developer',
+        'ui-ux-designer',
+        'qa-engineer',
+        'code-reviewer',
+        'senior-architect',
+        'legal-compliance',
+        'security-engineer',
+        'devops-engineer',
+        'product-manager',
+        'ai-evaluation-engineer',
+        'performance-engineer',
+        'accessibility-specialist',
+        'database-specialist',
+        'data-engineer'
+      ]
     };
+
+    const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('control_settings') as { value: string } | undefined;
+    if (row && row.value) {
+      try {
+        return { ...defaultSettings, ...JSON.parse(row.value) };
+      } catch {
+        // fallback
+      }
+    }
+
+    return defaultSettings;
   }
 
   public updateSettings(settings: Partial<ControlSettings>): ControlSettings {

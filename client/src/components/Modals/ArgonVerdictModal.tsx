@@ -11,6 +11,7 @@ interface ArgonVerdictModalProps {
 }
 
 const AVAILABLE_SPECIALISTS = [
+  { id: 'director', label: 'Director / Orchestrator (Flash High)', role: 'Triage, coordination & task delegation' },
   { id: 'backend-developer', label: 'Backend Developer (Flash)', role: 'Node.js, Express, SQLite, Schemas' },
   { id: 'frontend-developer', label: 'Frontend Developer (Flash)', role: 'React, Tailwind, UI, Ergonomics' },
   { id: 'qa-engineer', label: 'QA Engineer (Flash)', role: 'E2E, Integration, Automated Tests' },

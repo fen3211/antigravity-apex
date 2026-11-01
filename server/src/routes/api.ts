@@ -225,6 +225,10 @@ apiRouter.post('/tasks/:id/execute', requireAuth, async (req: Request, res: Resp
     const task = taskManager.getTaskById(taskId);
     const prompt = parsed.prompt || task?.description || task?.title || `Execute task ${taskId}`;
     const agentName = parsed.agentName || task?.assignedAgent || 'director';
+    const settings = controlService.getSettings();
+    if (!settings.allowedAgents.includes(agentName) || !/^[a-zA-Z0-9_-]+$/.test(agentName)) {
+      return res.status(400).json({ error: `Agent "${agentName}" is not allowed` });
+    }
     const process = await processSupervisor.spawnTask(taskId, prompt, agentName, parsed.timeoutMs);
     res.json({ success: true, process });
   } catch (err: any) {

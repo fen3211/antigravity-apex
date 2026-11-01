@@ -32,7 +32,7 @@ export class TaskProcessSupervisor {
       const settings = controlService.getSettings();
       return Math.min(Math.max(settings.maxConcurrentAgents || 6, 1), 6);
     } catch {
-      return 3;
+      return 6;
     }
   }
 
@@ -69,7 +69,7 @@ export class TaskProcessSupervisor {
     this.processes.set(taskId, managed);
     this.taskConfigs.set(taskId, { prompt, agentName, timeoutMs });
 
-    if (this.getActiveCount() >= this.getMaxConcurrent()) {
+    if (this.getActiveCount() >= this.getMaxConcurrent() || this.queue.length > 0) {
       this.queue.push(taskId);
       eventBus.publish({
         type: 'task.updated',
@@ -552,6 +552,7 @@ export class TaskProcessSupervisor {
       }
     }
     this.queue = [];
+    this.taskConfigs.clear();
 
     // Clear active processes and timers
     for (const [taskId, active] of this.activeProcesses.entries()) {

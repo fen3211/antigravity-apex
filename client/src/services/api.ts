@@ -336,6 +336,7 @@ export class EventStreamClient {
         }
       };
     } catch (err) {
+      console.error('[WS] Connection failed to initialize:', err);
       this.isConnecting = false;
       this.setStatus('ERROR');
       this.scheduleReconnect();

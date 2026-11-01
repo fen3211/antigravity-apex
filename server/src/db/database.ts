@@ -149,11 +149,14 @@ export function initDatabase(targetDb: any = db) {
     try {
       const parsed = JSON.parse(existingSetting.value);
       let changed = false;
-      if (parsed.maxConcurrentAgents === 3) {
+      if (parsed.maxConcurrentAgents === 3 || parsed.maxConcurrentAgents == null) {
         parsed.maxConcurrentAgents = 6;
         changed = true;
       }
-      if (Array.isArray(parsed.allowedAgents)) {
+      if (!Array.isArray(parsed.allowedAgents)) {
+        parsed.allowedAgents = [...defaultSettings.allowedAgents];
+        changed = true;
+      } else {
         for (const ag of defaultSettings.allowedAgents) {
           if (!parsed.allowedAgents.includes(ag)) {
             parsed.allowedAgents.push(ag);
