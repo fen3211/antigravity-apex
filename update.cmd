@@ -25,7 +25,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo.
 echo [2/4] Обновление зависимостей сервера и клиента...
-call npm install
+call npm install --ignore-scripts
 call npm --prefix client install
 
 echo.

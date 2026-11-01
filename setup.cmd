@@ -45,7 +45,7 @@ if not exist ".env" (
 :: 4. Install npm dependencies
 if not exist "node_modules" (
     echo [4/6] Installing root dependencies (this may take a minute)...
-    call npm install
+    call npm install --ignore-scripts
 ) else (
     echo [4/6] Root dependencies already installed (OK)
 )

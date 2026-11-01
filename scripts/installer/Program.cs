@@ -58,18 +58,22 @@ namespace AICommandCenter.Installer
 
                 // 3. Resolve Project Directory
                 string projectDir = AppDomain.CurrentDomain.BaseDirectory;
-                if (!File.Exists(Path.Combine(projectDir, "package.json")))
-                {
-                    projectDir = Directory.GetCurrentDirectory();
-                }
+                string tempDir = Path.GetTempPath();
+                bool isInsideTemp = projectDir.IndexOf(tempDir, StringComparison.OrdinalIgnoreCase) >= 0;
 
-                if (!File.Exists(Path.Combine(projectDir, "package.json")))
+                // If not in a project root or executed from a temp folder, use permanent user profile folder
+                if (!File.Exists(Path.Combine(projectDir, "package.json")) || isInsideTemp)
                 {
-                    Console.WriteLine("  [i] Repository not detected in current folder. Cloning from GitHub...");
-                    string targetFolder = Path.Combine(projectDir, "antigravity-apex");
-                    if (!Directory.Exists(targetFolder))
+                    string userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                    string targetFolder = Path.Combine(userHome, "antigravity-apex");
+
+                    if (!File.Exists(Path.Combine(targetFolder, "package.json")))
                     {
-                        RunCommandLive("git", "clone https://github.com/fen3211/antigravity-apex.git \"" + targetFolder + "\"");
+                        Console.WriteLine("  [i] Installing to user folder: " + targetFolder);
+                        if (!Directory.Exists(targetFolder))
+                        {
+                            RunCommandLive("git", "clone https://github.com/fen3211/antigravity-apex.git \"" + targetFolder + "\"");
+                        }
                     }
                     projectDir = targetFolder;
                 }
@@ -109,12 +113,12 @@ namespace AICommandCenter.Installer
                     Console.ResetColor();
                 }
 
-                // 5. Install Dependencies
+                // 5. Install Dependencies with --ignore-scripts (avoids node-gyp Visual Studio requirement)
                 Console.WriteLine("  [4/6] Verifying and installing npm packages...");
                 if (!Directory.Exists(Path.Combine(projectDir, "node_modules")))
                 {
-                    Console.WriteLine("        Running 'npm install' in root...");
-                    RunCommandLive("cmd.exe", "/c npm install");
+                    Console.WriteLine("        Running 'npm install --ignore-scripts' in root...");
+                    RunCommandLive("cmd.exe", "/c npm install --ignore-scripts");
                 }
                 else
                 {
@@ -157,10 +161,25 @@ namespace AICommandCenter.Installer
                     RunCommandLive("node", "\"" + doctorJs + "\"");
                 }
 
+                // 8. Create Desktop Launcher
+                try
+                {
+                    string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    if (Directory.Exists(desktop))
+                    {
+                        string desktopLauncher = Path.Combine(desktop, "Antigravity-Apex.cmd");
+                        string startCmd = Path.Combine(projectDir, "start.cmd");
+                        File.WriteAllText(desktopLauncher, "@echo off\r\ncd /d \"" + projectDir + "\"\r\ncall \"" + startCmd + "\"\r\n");
+                        Console.WriteLine("        Desktop launcher created: " + desktopLauncher);
+                    }
+                }
+                catch { }
+
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("=======================================================================");
                 Console.WriteLine("  SUCCESS! Antigravity Apex is fully installed and verified.");
+                Console.WriteLine("  Folder: " + projectDir);
                 Console.WriteLine("  Launching Web Dashboard: http://127.0.0.1:5173/");
                 Console.WriteLine("=======================================================================");
                 Console.ResetColor();

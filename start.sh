@@ -32,7 +32,7 @@ if [ -d ".git" ]; then
             echo -e "${GREEN}[Auto-Update] Found $BEHIND new commit(s). Pulling updates...${NC}"
             git pull origin main --quiet
             echo -e "${CYAN}[Auto-Update] Updating dependencies and building...${NC}"
-            npm install --silent
+            npm install --ignore-scripts --silent
             npm --prefix client install --silent
             npm run server:build --silent
             npm run client:build --silent

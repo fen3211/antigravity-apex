@@ -23,7 +23,7 @@ echo -e "${CYAN}[1/4] Pulling latest changes from GitHub...${NC}"
 git pull origin main
 
 echo -e "\n${CYAN}[2/4] Updating dependencies...${NC}"
-npm install
+npm install --ignore-scripts
 npm --prefix client install
 
 echo -e "\n${CYAN}[3/4] Compiling server...${NC}"
