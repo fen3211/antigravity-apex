@@ -16,3 +16,11 @@ backups/
 transcript.jsonl
 transcript_full.jsonl
 *.exe
+
+# Non-core language documentation in repo root
+README.*.md
+!README.ru.md
+CHANGELOG.*.md
+!CHANGELOG.ru.md
+SECURITY.*.md
+!SECURITY.ru.md
