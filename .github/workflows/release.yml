@@ -41,7 +41,7 @@ jobs:
           COMMAND_CENTER_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
       - name: Generate Release Notes & Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: Antigravity Apex ${{ github.ref_name }}
           body_path: CHANGELOG.md
